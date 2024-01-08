@@ -1,7 +1,8 @@
+import datetime
+
 import flask
 import flask_jwt_extended
 import flask_login
-
 
 from .. import forms
 from ...models import (
@@ -32,8 +33,18 @@ def create_api_token():
     user = flask_login.current_user
     form = forms.CreateApiTokenForm()
     if form.validate_on_submit():
+        expires_unit = form.expires_unit.data
+        if expires_unit == form.EXPIRES_NEVER:
+            expires_delta = False
+        else:
+            expires_delta = datetime.timedelta(
+                **{
+                    expires_unit.lower(): int(form.expires_number.data)
+                }
+            )
+
         token_value = flask_jwt_extended.create_access_token(
-            expires_delta=False,
+            expires_delta=expires_delta,
             identity=user.email,
         )
         api_token = ApiToken(
@@ -41,6 +52,7 @@ def create_api_token():
             value=token_value,
             user=user,
         )
+
         db.session.add(api_token)
         db.session.commit()
     return flask.redirect(flask.url_for(".api_settings"))

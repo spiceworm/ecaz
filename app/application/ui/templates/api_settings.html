@@ -11,6 +11,12 @@
             copyText.setSelectionRange(0, 99999); // For mobile devices
             navigator.clipboard.writeText(copyText.value);
         }
+
+        function toggle_expires_number() {
+            const expires_dropdown = document.getElementById("expires_unit");
+            let expires_input = document.getElementById("expires_number");
+            expires_input.disabled = (expires_dropdown.value === "never");
+        }
     </script>
 {% endblock %}
 
@@ -36,10 +42,20 @@
                                     {{ delete_api_token_form.csrf_token }}
 
                                     <div class="form-group">
-                                        <div class="col-lg-1">
-                                            <label class="control-label" for="token_{{ loop.index }}">{{ api_token.name }}</label>
+                                        <div class="col-lg-5">
+                                            <label class="control-label" for="token_{{ loop.index }}">
+                                                {% if api_token.expires_in == True %}
+                                                    {% set expires_in="Expired" %}
+                                                {% elif api_token.expires_in == False %}
+                                                    {% set expires_in="Never" %}
+                                                {% else %}
+                                                    {% set expires_in=api_token.expires_in %}
+                                                {% endif %}
+
+                                                {{ api_token.name }} (Exp: {{ expires_in }})
+                                            </label>
                                         </div>
-                                        <div class="col-lg-8">
+                                        <div class="col-lg-4">
                                             <input class="form-control" type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
                                         </div>
                                         <div class="col-lg-1">
@@ -58,14 +74,31 @@
                                 {{ create_api_token_form.csrf_token }}
 
                                 <div class="form-group">
-                                    <div class="col-lg-1">
-                                        <label class="control-label" for="token_name">Name</label>
+                                    <div class="row">
+                                        <div class="col-lg-2">
+                                            <label class="control-label" for="token_name">Name</label>
+                                        </div>
+                                        <div class="col-lg-10">
+                                            {{ create_api_token_form.token_name(class_="form-control") }}
+                                        </div>
                                     </div>
-                                    <div class="col-lg-8">
-                                        {{ create_api_token_form.token_name(class_="form-control") }}
+
+                                    <div class="row">
+                                        <div class="col-lg-2">
+                                            <label class="control-label" for="expires_toggle">Expires</label>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            {{ create_api_token_form.expires_number(class_="form-control") }}
+                                        </div>
+                                        <div class="col-lg-6">
+                                            {{ create_api_token_form.expires_unit(class_="form-control", onchange="toggle_expires_number()") }}
+                                        </div>
                                     </div>
-                                    <div class="col-lg-3">
-                                        <button class="btn btn-primary" type="submit" id="submit" name="submit">Create API Token</button>
+
+                                    <div class="row">
+                                        <div class="col-lg-offset-2">
+                                            <button class="btn btn-primary" type="submit" id="submit" name="submit">Create API Token</button>
+                                        </div>
                                     </div>
                                 </div>
                             </form>

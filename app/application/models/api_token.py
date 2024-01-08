@@ -1,4 +1,5 @@
 from datetime import timedelta
+import time
 
 import flask_jwt_extended
 import jwt
@@ -89,12 +90,22 @@ class ApiToken(db.Model):
         return token
 
     @hybrid_property
-    def is_expired(self):
+    def expires_in(self):
         try:
-            flask_jwt_extended.decode_token(self.value)
+            claims = flask_jwt_extended.decode_token(self.value)
         except jwt.ExpiredSignatureError:
+            # Token is expired
             return True
-        return False
+        else:
+            # Token never expires
+            if "exp" not in claims:
+                return False
+            else:
+                return timedelta(seconds=claims["exp"] - time.time())
+
+    @hybrid_property
+    def is_expired(self):
+        return self.expires_in is True
 
     @hybrid_property
     def tags(self):
