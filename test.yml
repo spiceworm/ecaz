@@ -20,7 +20,7 @@ services:
       POSTGRES_USER: "postgres"
       SECRET_KEY: "1234"
       WTF_CSRF_ENABLED: "0"
-    entrypoint: "tox"
+    entrypoint: "tox ${TOX_ARGS:-}"
 
   db:
     image: postgres:15.5-bookworm
