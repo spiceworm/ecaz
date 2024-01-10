@@ -1,5 +1,4 @@
-import os
-
+import flask
 import flask_migrate
 import flask_sqlalchemy
 
@@ -9,7 +8,7 @@ migrate = flask_migrate.Migrate()
 
 
 def get_encryption_key():
-    return os.environ["SECRET_KEY"]
+    return flask.current_app.config["SECRET_KEY"]
 
 
 from .api_token import *

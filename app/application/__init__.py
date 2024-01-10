@@ -1,5 +1,4 @@
-import os
-
+import decouple
 import flask
 import flask_admin
 import flask_jwt_extended
@@ -20,30 +19,31 @@ def create_app():
     )
 
     class Config:
-        BASE_URL = os.environ["BASE_URL"]
+        BASE_URL = decouple.config("BASE_URL")
 
-        DEBUG = bool(int(os.getenv("DEBUG", "1")))
-        FLASK_ADMIN_SWATCH = os.getenv("FLASK_ADMIN_SWATCH", "cerulean")
-        PROD = bool(int(os.getenv("PROD", "0")))
-        SECRET_KEY = os.environ["SECRET_KEY"]
-        TESTING = bool(int(os.getenv("TESTING", "1")))
-        WTF_CSRF_ENABLED = bool(int(os.getenv("WTF_CSRF_ENABLED", "1")))
+        DEBUG = decouple.config("DEBUG", cast=bool, default=False)
+        FLASK_ADMIN_SWATCH = decouple.config("FLASK_ADMIN_SWATCH", default="cerulean")
 
-        MAIL_DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
-        MAIL_PASSWORD = os.environ["MAIL_PASSWORD"]
-        MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
-        MAIL_SERVER = os.environ["MAIL_SERVER"]
-        MAIL_TIMEOUT = int(os.getenv("MAIL_TIMEOUT", 10))
+        PROD = decouple.config("PROD", cast=bool, default=False)
+        SECRET_KEY = decouple.config("SECRET_KEY")
+        TESTING = decouple.config("TESTING", cast=bool, default=False)
+        WTF_CSRF_ENABLED = decouple.config("WTF_CSRF_ENABLED", cast=bool, default=True)
+
+        MAIL_DEFAULT_SENDER = decouple.config("MAIL_DEFAULT_SENDER")
+        MAIL_PASSWORD = decouple.config("MAIL_PASSWORD")
+        MAIL_PORT = decouple.config("MAIL_PORT", cast=int, default=587)
+        MAIL_SERVER = decouple.config("MAIL_SERVER")
+        MAIL_TIMEOUT = decouple.config("MAIL_TIMEOUT", cast=int, default=10)
         MAIL_USE_TLS = MAIL_PORT == 587
         MAIL_USE_SSL = MAIL_PORT == 465
-        MAIL_USERNAME = os.environ["MAIL_USERNAME"]
+        MAIL_USERNAME = decouple.config("MAIL_USERNAME")
 
-        POSTGRES_DB = os.environ["POSTGRES_DB"]
-        POSTGRES_HOST = os.environ["POSTGRES_HOST"]
-        POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-        POSTGRES_PORT = os.environ["POSTGRES_PORT"]
-        POSTGRES_SSL = bool(int(os.getenv("POSTGRES_SSL", "1")))
-        POSTGRES_USER = os.environ["POSTGRES_USER"]
+        POSTGRES_DB = decouple.config("POSTGRES_DB")
+        POSTGRES_HOST = decouple.config("POSTGRES_HOST")
+        POSTGRES_PASSWORD = decouple.config("POSTGRES_PASSWORD")
+        POSTGRES_PORT = decouple.config("POSTGRES_PORT")
+        POSTGRES_SSL = decouple.config("POSTGRES_SSL", cast=bool, default=True)
+        POSTGRES_USER = decouple.config("POSTGRES_USER")
 
         # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_DATABASE_URI = (
