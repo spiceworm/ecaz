@@ -87,6 +87,7 @@ def create_app():
         index_view=admin_views.RestrictedIndexView(),
         template_mode="bootstrap4",
     )
+    admin.add_link(flask_admin.base.MenuLink(name="Site", url="/"))
     admin.add_view(admin_views.ApiTokenModelView(ApiToken, db.session))
     admin.add_view(admin_views.UserModelView(User, db.session))
 
