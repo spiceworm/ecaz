@@ -2,6 +2,7 @@ from typing import List
 
 import flask_login
 import sqlalchemy as sa
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
@@ -20,6 +21,16 @@ from . import (
 __all__ = ("User",)
 
 
+class utcnow(sa.sql.expression.FunctionElement):
+    type = sa.DateTime()
+    inherit_cache = True
+
+
+@compiles(utcnow, 'postgresql')
+def pg_utcnow(element, compiler, **kw):
+    return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
+
+
 def default_username(ctx):
     """Make `User.username` default to the value of `User.email`"""
     return ctx.get_current_parameters()["email"]
@@ -33,6 +44,11 @@ class User(db.Model, flask_login.UserMixin):
     api_tokens: Mapped[List["ApiToken"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=utcnow(),
     )
     email = sa.Column(
         StringEncryptedType(
