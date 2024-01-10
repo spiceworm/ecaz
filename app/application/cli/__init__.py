@@ -51,6 +51,15 @@ def create_admin(email, password):
     db.session.commit()
 
 
+@cli_bp.cli.command("get-config")
+def get_config():
+    """
+    Show config for current running app.
+    """
+    for k, v in sorted(flask.current_app.config.items()):
+        click.echo(f'{k}={v}')
+
+
 @cli_bp.cli.command("mark-admin")
 @click.option(
     "--email",
