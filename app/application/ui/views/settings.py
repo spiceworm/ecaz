@@ -4,6 +4,7 @@ import flask_mailman
 import psycopg2
 import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
+import pyotp
 import sqlalchemy.exc
 
 from .. import forms
@@ -18,6 +19,7 @@ __all__ = (
     "change_password",
     "change_username",
     "delete_account",
+    "disable_totp",
     "send_verify_email",
     "settings",
     "verify_account",
@@ -83,6 +85,23 @@ def delete_account():
 
 
 @flask_login.login_required
+def disable_totp():
+    totp = flask_login.current_user.totp
+    form = forms.TotpDisableForm()
+    if form.validate_on_submit():
+        if totp.enabled:
+            totp.enabled = False
+            # Reset secret so it is different if the user re-enables totp 2fa
+            totp.secret = pyotp.random_base32()
+            db.session.add(totp)
+            db.session.commit()
+            flask.flash(messages.TOTP_NOW_DISABLED)
+        else:
+            flask.flash(messages.TOTP_NOT_ENABLED, category="info")
+    return flask.redirect(flask.url_for(".settings"))
+
+
+@flask_login.login_required
 def send_verify_email():
     user = flask_login.current_user
     if user.is_verified:
@@ -113,6 +132,7 @@ def settings():
         delete_account_form=forms.DeleteAccountForm(),
         email_form=forms.EmailForm(),
         logout_form=forms.LogoutForm(),
+        totp_disable_form=forms.TotpDisableForm(),
     )
 
 

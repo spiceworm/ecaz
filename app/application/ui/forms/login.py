@@ -1,6 +1,7 @@
 import flask_wtf
 from wtforms import (
     PasswordField,
+    StringField,
     validators,
 )
 from wtforms.fields import EmailField
@@ -22,4 +23,7 @@ class LoginForm(flask_wtf.FlaskForm):
         "password",
         render_kw={"placeholder": "Password"},
         validators=[validators.DataRequired()],
+    )
+    totp_code = StringField(
+        render_kw={"placeholder": "2FA code (if enabled)"},
     )

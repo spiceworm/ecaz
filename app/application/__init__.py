@@ -19,6 +19,7 @@ def create_app():
     )
 
     class Config:
+        APP_NAME = decouple.config("APP_NAME")
         BASE_URL = decouple.config("BASE_URL")
 
         DEBUG = decouple.config("DEBUG", cast=bool, default=False)

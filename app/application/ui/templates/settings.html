@@ -16,7 +16,6 @@
                     <legend>User</legend>
                     <form class="form-horizontal" action="{{ url_for('.send_verify_email') }}" method="post">
                         {{ email_form.csrf_token }}
-
                         <div class="form-group">
                             <label class="col-lg-2 control-label" for="email">Email</label>
                             <div class="col-lg-7">
@@ -31,7 +30,6 @@
                             </div>
                         </div>
                     </form>
-
                     <form class="form-horizontal" action="{{ url_for('.change_username') }}" method="post">
                         {{ change_username_form.csrf_token }}
 
@@ -47,9 +45,34 @@
                     </form>
                 </fieldset>
 
+                <fieldset>
+                    <legend>Security</legend>
+                    {% if current_user.totp.enabled %}
+                        <form class="form-horizontal" action="{{ url_for('.disable_totp') }}" method="post">
+                            {{ totp_disable_form.csrf_token }}
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="totpDisable">2FA</label>
+                                <div class="col-lg-10">
+                                    <button class="btn btn-danger" id="totpDisable">Disable</button>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="totpSetup">2FA</label>
+                                <div class="col-lg-10">
+                                    <button class="btn btn-primary" id="totpSetup" onclick="window.location.href='{{ url_for(".setup_totp") }}'">
+                                        Enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </fieldset>
+
                 <form class="form-horizontal" action="{{ url_for('.change_password') }}" method="post">
                     {{ change_password_form.csrf_token }}
-
                     <fieldset>
                         <legend>Change Password</legend>
                         <div class="form-group">

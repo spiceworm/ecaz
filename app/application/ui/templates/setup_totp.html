@@ -1,0 +1,39 @@
+{% extends "bases/authenticated_base.html" %}
+
+
+{% block content %}
+    {{ super() }}
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6">
+        <div class="well">
+            <form class="form-horizontal" action="{{ url_for('.setup_totp') }}" method="post">
+                {{ form.csrf_token }}
+
+                <fieldset>
+                    <legend>Complete 2FA Setup</legend>
+                    <div class="text-center">
+                        <img src="data:image/png;base64, {{ totp.generate_qr_code() }}" style="width:200px;height:200px"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label" for="setup_secret">Setup Secret</label>
+                        <div class="col-lg-10">
+                            {{ form.setup_secret(class_="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label" for="totp_code">Verify code</label>
+                        <div class="col-lg-10">
+                            {{ form.totp_code(class_="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-10 col-lg-offset-2">
+                            <button class="btn btn-primary" type="submit" id="submit" name="submit">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-3"></div>
+{% endblock %}

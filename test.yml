@@ -4,6 +4,7 @@ services:
     build:
       context: .
     environment: &env
+      APP_NAME: "ecaz-test.xyz"
       BASE_URL: "http://127.0.0.1"
       DEBUG: "1"
       PROD: "0"

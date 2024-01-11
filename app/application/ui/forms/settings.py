@@ -12,6 +12,7 @@ __all__ = (
     "ChangeUsernameForm",
     "DeleteAccountForm",
     "EmailForm",
+    "TotpDisableForm",
 )
 
 
@@ -53,3 +54,7 @@ class EmailForm(flask_wtf.FlaskForm):
         "email",
         render_kw={"readonly": True},
     )
+
+
+class TotpDisableForm(flask_wtf.FlaskForm):
+    pass
