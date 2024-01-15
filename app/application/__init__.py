@@ -85,7 +85,7 @@ def create_app():
 
     admin = flask_admin.Admin(
         app,
-        index_view=admin_views.RestrictedIndexView(),
+        index_view=admin_views.RestrictedIndexView(name="CLI"),
         template_mode="bootstrap4",
     )
     admin.add_link(flask_admin.base.MenuLink(name="Site", url="/"))
