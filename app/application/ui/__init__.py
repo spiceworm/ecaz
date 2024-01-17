@@ -12,7 +12,10 @@ ui_bp = flask.Blueprint(
 )
 
 ui_bp.add_url_rule("/", view_func=views.login, methods=["GET", "POST"])
+
 ui_bp.add_url_rule("/login", view_func=views.login, methods=["GET", "POST"])
+ui_bp.add_url_rule("/login/2fa/webauthn/<jwt>", view_func=views.webauthn_login, methods=["GET", "POST"])
+
 ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
 ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
 
@@ -35,5 +38,7 @@ ui_bp.add_url_rule("/settings/change_username", view_func=views.change_username,
 ui_bp.add_url_rule("/settings/delete_account", view_func=views.delete_account, methods=["POST"])
 ui_bp.add_url_rule("/settings/totp/disable", view_func=views.disable_totp, methods=["POST"])
 ui_bp.add_url_rule("/settings/totp/setup", view_func=views.setup_totp, methods=["GET", "POST"])
+ui_bp.add_url_rule("/settings/webauthn/disable", view_func=views.disable_webauthn, methods=["POST"])
+ui_bp.add_url_rule("/settings/webauthn/setup", view_func=views.setup_webauthn, methods=["GET", "POST"])
 ui_bp.add_url_rule("/settings/verify", view_func=views.send_verify_email, methods=["POST"])
 ui_bp.add_url_rule("/settings/verify/<jwt>", view_func=views.verify_account, methods=["GET"])

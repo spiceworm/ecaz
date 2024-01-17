@@ -17,3 +17,4 @@ pyotp==2.9.0
 python-decouple==3.8
 qrcode==7.4.2
 sqlalchemy-utils==0.41.1
+webauthn==2.0.0

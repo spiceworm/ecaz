@@ -17,9 +17,9 @@ RUN apt-get update \
     && rm -Rf /var/lib/apt/lists/*
 
 COPY ./app/application/ui/static/* /static/
-#COPY ./app/package.json ./app/yarn.lock ./app/application/ui/static/* /static/
-#RUN corepack enable \
-#    && (cd /static && yarn install)
+COPY ./app/package.json ./app/yarn.lock ./app/application/ui/static/* /static/
+RUN corepack enable \
+    && (cd /static && yarn install)
 
 COPY ./app/requirements.txt /tmp/
 RUN pip install --upgrade pip \

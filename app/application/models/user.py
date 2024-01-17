@@ -16,6 +16,7 @@ from . import (
     db,
     get_encryption_key,
     Totp,
+    WebAuthn,
 )
 
 
@@ -112,11 +113,18 @@ class User(db.Model, flask_login.UserMixin):
         nullable=False,
         unique=True,
     )
+    webauthn: Mapped[List["WebAuthn"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        totp = Totp(user=self)
-        db.session.add(totp)
+        db.session.add_all([
+            Totp(user=self),
+            WebAuthn(user=self),
+        ])
         db.session.commit()
 
     @hybrid_property

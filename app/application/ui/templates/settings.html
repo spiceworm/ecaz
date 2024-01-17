@@ -69,6 +69,29 @@
                             </div>
                         </div>
                     {% endif %}
+
+                    {% if current_user.webauthn.enabled %}
+                        <form class="form-horizontal" action="{{ url_for('.disable_webauthn') }}" method="post">
+                            {{ webauthn_disable_form.csrf_token }}
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="webauthnDisable">WebAuthn</label>
+                                <div class="col-lg-10">
+                                    <button class="btn btn-danger" id="webauthnDisable">Disable</button>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="webauthnSetup">WebAuthn</label>
+                                <div class="col-lg-10">
+                                    <button class="btn btn-primary" id="webauthnSetup" onclick="window.location.href='{{ url_for(".setup_webauthn") }}'">
+                                        Enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
                 </fieldset>
 
                 <form class="form-horizontal" action="{{ url_for('.change_password') }}" method="post">

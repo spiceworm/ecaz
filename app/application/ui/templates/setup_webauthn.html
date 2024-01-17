@@ -1,0 +1,48 @@
+{% extends "bases/authenticated_base.html" %}
+
+{% block head %}
+    {{ super() }}
+
+    <script type="module">
+        import {
+            create,
+            parseCreationOptionsFromJSON,
+        } from "{{ url_for('.static', filename='node_modules/@github/webauthn-json/dist/esm/webauthn-json.browser-ponyfill.js') }}";
+
+        async function register() {
+            const registration_options = {"publicKey": {{ registration_options | safe }}};
+            const cco = parseCreationOptionsFromJSON(registration_options);
+            return create(cco); // Prompt the user to register with their physical key
+        }
+
+        window.addEventListener("load", () => {
+            try {
+                document.getElementById("register_2fa_device").addEventListener("click", () => {
+                    register().then((registration) => {
+                        document.getElementById("credential_creation_options").value = JSON.stringify(registration);
+                        document.getElementById("setup_webauthn_form").submit();
+                    });
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    </script>
+{% endblock %}
+
+
+{% block content %}
+    {{ super() }}
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6">
+        <div class="well">
+            <h1>Add device</h1>
+            <button id="register_2fa_device" type="submit">Submit</button>
+            <form id="setup_webauthn_form" method="post">
+                {{ form.csrf_token }}
+                {{ form.credential_creation_options() }}
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-3"></div>
+{% endblock %}

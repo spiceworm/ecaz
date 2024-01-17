@@ -13,6 +13,7 @@ __all__ = (
     "DeleteAccountForm",
     "EmailForm",
     "TotpDisableForm",
+    "WebAuthnDisableForm",
 )
 
 
@@ -57,4 +58,8 @@ class EmailForm(flask_wtf.FlaskForm):
 
 
 class TotpDisableForm(flask_wtf.FlaskForm):
+    pass
+
+
+class WebAuthnDisableForm(flask_wtf.FlaskForm):
     pass

@@ -7,3 +7,4 @@ from .register import *
 from .reset_password import *
 from .settings import *
 from .setup_totp import *
+from .setup_webauthn import *

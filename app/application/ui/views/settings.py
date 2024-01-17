@@ -6,6 +6,7 @@ import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import pyotp
 import sqlalchemy.exc
+import webauthn
 
 from .. import forms
 from ...constants import messages
@@ -20,6 +21,7 @@ __all__ = (
     "change_username",
     "delete_account",
     "disable_totp",
+    "disable_webauthn",
     "send_verify_email",
     "settings",
     "verify_account",
@@ -102,6 +104,24 @@ def disable_totp():
 
 
 @flask_login.login_required
+def disable_webauthn():
+    _webauthn = flask_login.current_user.webauthn
+    form = forms.WebAuthnDisableForm()
+    if form.validate_on_submit():
+        if _webauthn.enabled:
+            _webauthn.enabled = False
+            # Reset secrets so they are different if the user re-enables webauthn 2fa
+            _webauthn.challenge = webauthn.helpers.generate_challenge()
+            _webauthn.user_handle = webauthn.helpers.generate_user_handle()
+            db.session.add(_webauthn)
+            db.session.commit()
+            flask.flash(messages.WEBAUTHN_NOW_DISABLED)
+        else:
+            flask.flash(messages.WEBAUTHN_NOT_ENABLED, category="info")
+    return flask.redirect(flask.url_for(".settings"))
+
+
+@flask_login.login_required
 def send_verify_email():
     user = flask_login.current_user
     if user.is_verified:
@@ -133,6 +153,7 @@ def settings():
         email_form=forms.EmailForm(),
         logout_form=forms.LogoutForm(),
         totp_disable_form=forms.TotpDisableForm(),
+        webauthn_disable_form=forms.WebAuthnDisableForm(),
     )
 
 
