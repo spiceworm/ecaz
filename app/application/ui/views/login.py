@@ -15,6 +15,7 @@ from application.ui import forms
 
 __all__ = (
     "login",
+    "totp_login",
     "webauthn_login",
 )
 
@@ -38,12 +39,12 @@ def login():
     form = forms.LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
-        if user is not None and all([
-            user.password == form.password.data,
-            user.totp.enabled and user.totp.verify(form.totp_code.data) or not user.totp.enabled
-        ]):
+        if user and user.password == form.password.data:
             if user.is_deleted:
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
+            elif user.totp.enabled:
+                totp_token = ApiToken.create_2fa_totp_token(user)
+                return flask.redirect(flask.url_for(".totp_login", jwt=totp_token.value))
             elif user.webauthn.enabled:
                 webauthn_token = ApiToken.create_2fa_webauthn_token(user)
                 return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
@@ -52,6 +53,27 @@ def login():
         else:
             flask.flash(messages.INVALID_LOGIN_ERROR, category="error")
     return flask.render_template("login.html", form=form)
+
+
+def totp_login(jwt):
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for(".profile"))
+
+    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
+    if token and not token.is_expired and ApiToken.TOTP_2FA_TAG in token.tags:
+        form = forms.TotpLoginForm()
+        if form.validate_on_submit():
+            if token.user.totp.verify(form.totp_code.data):
+                return _login(token.user)
+            else:
+                flask.flash(messages.TOTP_CODE_INVALID, category="error")
+        return flask.render_template(
+            "totp_login.html",
+            form=form,
+        )
+    else:
+        flask.flash(messages.INVALID_TOKEN, category="error")
+        return flask.redirect(flask.url_for(".login"))
 
 
 def webauthn_login(jwt):

@@ -25,6 +25,7 @@ class ApiToken(db.Model):
     FRONTEND_TAG = "frontend"
     HIDDEN_TAG = "hidden"
     RESET_PASSWORD_TAG = "reset-password"
+    TOTP_2FA_TAG = "2fa/totp"
     VERIFY_EMAIL_TAG = "verify-email"
     WEBAUTHN_2FA_TAG = "2fa/webauthn"
 
@@ -66,6 +67,18 @@ class ApiToken(db.Model):
             value=token_value,
             user=user,
         )
+
+    @classmethod
+    def create_2fa_totp_token(cls, user, expires_delta=False):
+        token = cls.create(
+            user,
+            cls.TOTP_2FA_TAG,
+            [cls.HIDDEN_TAG, cls.TOTP_2FA_TAG],
+            expires_delta or timedelta(seconds=60),
+        )
+        db.session.add(token)
+        db.session.commit()
+        return token
 
     @classmethod
     def create_2fa_webauthn_token(cls, user, expires_delta=False):
