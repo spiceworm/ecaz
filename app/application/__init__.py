@@ -7,16 +7,16 @@ import flask_mailman
 
 
 def create_app():
-    from .admin import views as admin_views
-    from .api import api_bp
-    from .cli import cli_bp
-    from .ui import ui_bp
-    from .models import (
+    from application.admin import views as admin_views
+    from application.api import api_bp
+    from application.cli import cli_bp
+    from application.models import (
         ApiToken,
         db,
         migrate,
         User,
     )
+    from application.ui import ui_bp
 
     class Config:
         APP_NAME = decouple.config("APP_NAME")

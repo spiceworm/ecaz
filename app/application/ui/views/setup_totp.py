@@ -1,11 +1,9 @@
 import flask
 import flask_login
 
-from . import (
-    messages,
-    forms,
-)
-from ...models import db
+from application.constants import messages
+from application.models import db
+from application.ui import forms
 
 
 __all__ = (

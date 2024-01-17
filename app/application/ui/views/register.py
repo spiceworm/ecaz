@@ -4,12 +4,12 @@ import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import sqlalchemy.exc
 
-from .. import forms
-from ...constants import messages
-from ...models import (
+from application.constants import messages
+from application.models import (
     db,
     User,
 )
+from application.ui import forms
 
 
 __all__ = ("register",)
