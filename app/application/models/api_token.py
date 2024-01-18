@@ -25,9 +25,9 @@ class ApiToken(db.Model):
     FRONTEND_TAG = "frontend"
     HIDDEN_TAG = "hidden"
     RESET_PASSWORD_TAG = "reset-password"
-    TOTP_2FA_TAG = "2fa/totp"
+    TOTP_MFA_TAG = "mfa/totp"
     VERIFY_EMAIL_TAG = "verify-email"
-    WEBAUTHN_2FA_TAG = "2fa/webauthn"
+    WEBAUTHN_MFA_TAG = "mfa/webauthn"
 
     id: Mapped[int] = mapped_column(
         nullable=False,
@@ -69,11 +69,11 @@ class ApiToken(db.Model):
         )
 
     @classmethod
-    def create_2fa_totp_token(cls, user, expires_delta=False):
+    def create_mfa_totp_token(cls, user, expires_delta=False):
         token = cls.create(
             user,
-            cls.TOTP_2FA_TAG,
-            [cls.HIDDEN_TAG, cls.TOTP_2FA_TAG],
+            cls.TOTP_MFA_TAG,
+            [cls.HIDDEN_TAG, cls.TOTP_MFA_TAG],
             expires_delta or timedelta(seconds=60),
         )
         db.session.add(token)
@@ -81,11 +81,11 @@ class ApiToken(db.Model):
         return token
 
     @classmethod
-    def create_2fa_webauthn_token(cls, user, expires_delta=False):
+    def create_mfa_webauthn_token(cls, user, expires_delta=False):
         token = cls.create(
             user,
-            cls.WEBAUTHN_2FA_TAG,
-            [cls.HIDDEN_TAG, cls.WEBAUTHN_2FA_TAG],
+            cls.WEBAUTHN_MFA_TAG,
+            [cls.HIDDEN_TAG, cls.WEBAUTHN_MFA_TAG],
             expires_delta or timedelta(seconds=60),
         )
         db.session.add(token)

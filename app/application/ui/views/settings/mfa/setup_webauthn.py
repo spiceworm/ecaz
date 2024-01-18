@@ -53,7 +53,7 @@ def setup_webauthn():
     )
 
     return flask.render_template(
-        "setup_webauthn.html",
+        "settings/mfa/setup_webauthn.html",
         form=form,
         logout_form=forms.LogoutForm(),
         registration_options=registration_options,

@@ -35,4 +35,4 @@ def forgot_password():
 
         msg = messages.PASSWORD_RESET_EMAIL_SENT
         flask.flash(msg, category="info")
-    return flask.render_template("forgot_password.html", form=form)
+    return flask.render_template("access/forgot_password.html", form=form)

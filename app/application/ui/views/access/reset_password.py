@@ -33,4 +33,4 @@ def reset_password(jwt):
             flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")
             return flask.redirect(flask.url_for(".login"))
 
-    return flask.render_template("reset_password.html", form=form, jwt=jwt)
+    return flask.render_template("access/reset_password.html", form=form, jwt=jwt)

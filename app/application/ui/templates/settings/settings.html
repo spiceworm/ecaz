@@ -46,12 +46,26 @@
                 </fieldset>
 
                 <fieldset>
+                    <legend>API</legend>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label" for="apiSettings">Settings</label>
+                            <div class="col-lg-10">
+                                <button class="btn btn-primary" id="apiSettings" onclick="window.location.href='{{ url_for(".api_settings") }}'">
+                                    Manage
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
                     <legend>Security</legend>
                     {% if current_user.totp.enabled %}
                         <form class="form-horizontal" action="{{ url_for('.disable_totp') }}" method="post">
                             {{ totp_disable_form.csrf_token }}
                             <div class="form-group">
-                                <label class="col-lg-2 control-label" for="totpDisable">2FA</label>
+                                <label class="col-lg-2 control-label" for="totpDisable">Totp</label>
                                 <div class="col-lg-10">
                                     <button class="btn btn-danger" id="totpDisable">Disable</button>
                                 </div>
@@ -60,7 +74,7 @@
                     {% else %}
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label class="col-lg-2 control-label" for="totpSetup">2FA</label>
+                                <label class="col-lg-2 control-label" for="totpSetup">Totp</label>
                                 <div class="col-lg-10">
                                     <button class="btn btn-primary" id="totpSetup" onclick="window.location.href='{{ url_for(".setup_totp") }}'">
                                         Enable

@@ -38,4 +38,4 @@ def register():
         else:
             flask_login.login_user(user)
             return flask.redirect(flask.url_for(".profile"))
-    return flask.render_template("register.html", form=form)
+    return flask.render_template("access/register.html", form=form)
