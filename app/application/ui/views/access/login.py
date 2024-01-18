@@ -42,12 +42,13 @@ def login():
         if user and user.password == form.password.data:
             if user.is_deleted:
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
+            elif user.webauthn.enabled:
+                # WebAuthn MFA supersedes Totp MFA
+                webauthn_token = ApiToken.create_mfa_webauthn_token(user)
+                return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
             elif user.totp.enabled:
                 totp_token = ApiToken.create_mfa_totp_token(user)
                 return flask.redirect(flask.url_for(".totp_login", jwt=totp_token.value))
-            elif user.webauthn.enabled:
-                webauthn_token = ApiToken.create_mfa_webauthn_token(user)
-                return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
             else:
                 return _login(user)
         else:

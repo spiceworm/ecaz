@@ -1,10 +1,12 @@
 import flask
 import flask_login
 import pyotp
-import webauthn
 
 from application.constants import messages
-from application.models import db
+from application.models import (
+    db,
+    WebAuthn,
+)
 from application.ui import forms
 
 
@@ -60,11 +62,9 @@ def disable_webauthn():
     form = forms.WebAuthnDisableForm()
     if form.validate_on_submit():
         if _webauthn.enabled:
-            _webauthn.enabled = False
-            # Reset secrets so they are different if the user re-enables webauthn mfa
-            _webauthn.challenge = webauthn.helpers.generate_challenge()
-            _webauthn.user_handle = webauthn.helpers.generate_user_handle()
-            db.session.add(_webauthn)
+            # Reset WebAuthn instance associated with current user
+            db.session.delete(_webauthn)
+            db.session.add(WebAuthn(user=flask_login.current_user))
             db.session.commit()
             flask.flash(messages.WEBAUTHN_NOW_DISABLED)
         else:
