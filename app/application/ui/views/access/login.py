@@ -3,13 +3,13 @@ import flask_login
 import webauthn
 from webauthn.helpers.exceptions import InvalidAuthenticationResponse
 
-from application import util
 from application.constants import messages
 from application.models import (
     ApiToken,
     db,
     User,
 )
+from application.third_party.util import url_has_allowed_host_and_scheme
 from application.ui import forms
 
 
@@ -26,7 +26,7 @@ def _login(user):
 
     # If the user was trying to access a login protected page but were not logged in.
     # Prevent open redirection vulnerability.
-    if next_page and util.url_has_allowed_host_and_scheme(next_page, flask.request.host):
+    if next_page and url_has_allowed_host_and_scheme(next_page, flask.request.host):
         return flask.redirect(next_page)
     else:
         return flask.redirect(flask.url_for(".profile"))
