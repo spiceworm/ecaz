@@ -143,6 +143,37 @@ def test_disable_totp_when_enabled(ui_user):
     assert resp.request.path == "/settings"
 
 
+def test_disable_webauthn_when_disabled(ui_user):
+    """
+    Verify the correct error message is shown if a user attempts to disable WebAuthn
+    MFA when it is not enabled for that user.
+    """
+    user = ui_user()
+    resp = user.post(
+        "/settings/mfa/webauthn/disable",
+        follow_redirects=True,
+    )
+    assert messages.WEBAUTHN_NOT_ENABLED in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/settings"
+
+
+def test_disable_webauthn_when_enabled(ui_user):
+    """
+    Verify the correct success message is shown if a user successfully disables
+    WebAuthn MFA.
+    """
+    user = ui_user()
+    user.webauthn.enabled = True
+    resp = user.post(
+        "/settings/mfa/webauthn/disable",
+        follow_redirects=True,
+    )
+    assert messages.WEBAUTHN_NOW_DISABLED in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/settings"
+
+
 def test_send_verify_email(ui_user):
     """
     Verify that when a user clicks the verify button next to their email address

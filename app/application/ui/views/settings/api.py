@@ -43,17 +43,12 @@ def create_api_token():
                 }
             )
 
-        token_value = flask_jwt_extended.create_access_token(
-            expires_delta=expires_delta,
-            identity=user.email,
-        )
-        api_token = ApiToken(
-            name=form.token_name.data,
-            value=token_value,
+        token = ApiToken.create(
             user=user,
+            name=form.token_name.data,
+            expires_delta=expires_delta,
         )
-
-        db.session.add(api_token)
+        db.session.add(token)
         db.session.commit()
     return flask.redirect(flask.url_for(".api_settings"))
 

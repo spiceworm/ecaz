@@ -16,6 +16,10 @@ __all__ = (
 @flask_login.login_required
 def setup_webauthn():
     user = flask_login.current_user
+    if user.webauthn.enabled:
+        flask.flash(messages.WEBAUTHN_ALREADY_ENABLED, category="error")
+        return flask.redirect(flask.url_for(".settings"))
+
     form = forms.SetupWebauthnForm()
     if form.validate_on_submit():
         try:
