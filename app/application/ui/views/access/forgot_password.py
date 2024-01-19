@@ -21,12 +21,6 @@ def forgot_password():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
         if user:
-            # Delete any old tokens from prior password reset requests
-            AuthToken.query.filter(
-                AuthToken.name == AuthToken.RESET_PASSWORD_TAG,
-                AuthToken.user == user,
-            ).delete()
-
             token = AuthToken.create_reset_password_token(user)
             url = flask.url_for(".reset_password", jwt=token.value, _external=True)
             msg = flask_mailman.EmailMessage(subject="Reset Password", body=url, to=[user.email])
