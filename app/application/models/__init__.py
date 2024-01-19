@@ -18,7 +18,7 @@ from .webauthn import *
 from .user import *
 
 
-@event.listens_for(db.session, 'loaded_as_persistent')
+@event.listens_for(db.session, "loaded_as_persistent")
 def receive_loaded_as_persistent(session, instance):
     """Automatically delete expired `AuthToken` entries."""
     if isinstance(instance, AuthToken) and instance.is_expired:

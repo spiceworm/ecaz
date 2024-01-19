@@ -6,9 +6,7 @@ from application.models import db
 from application.ui import forms
 
 
-__all__ = (
-    "setup_totp",
-)
+__all__ = ("setup_totp",)
 
 
 @flask_login.login_required

@@ -54,7 +54,7 @@ class Totp(db.Model):
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
         qr.add_data(self.uri)
         qr.make(fit=True)
-        img = qr.make_image(fill_color='black', back_color='white')
+        img = qr.make_image(fill_color="black", back_color="white")
         buffered = io.BytesIO()
         img.save(buffered)
         return base64.b64encode(buffered.getvalue()).decode("utf-8")

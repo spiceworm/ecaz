@@ -5,9 +5,7 @@ from wtforms import (
 )
 
 
-__all__ = (
-    "SetupTotpForm",
-)
+__all__ = ("SetupTotpForm",)
 
 
 class SetupTotpForm(flask_wtf.FlaskForm):

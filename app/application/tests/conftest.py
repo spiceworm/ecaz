@@ -100,6 +100,7 @@ def auth_token(_app):
         db.session.add(_token)
         db.session.commit()
         return _token
+
     return func
 
 
@@ -152,4 +153,5 @@ def user():
         db.session.add(_user)
         db.session.commit()
         return _user
+
     return func

@@ -34,7 +34,9 @@ def test_setup_with_invalid_webauthn_options(ui_user):
         "response": {
             "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVkBZ0mWDeWIDoxodDQXD2R2YFuP5K65ooYyx5lc87qDHZdjRQAAAAAAAAAAAAAAAAAAAAAAAAAAACBmggo_UlC8p2tiPVtNQ8nZ5NSxst4WS_5fnElA2viTq6QBAwM5AQAgWQEA31dtHqc70D_h7XHQ6V_nBs3Tscu91kBL7FOw56_VFiaKYRH6Z4KLr4J0S12hFJ_3fBxpKfxyMfK66ZMeAVbOl_wemY4S5Xs4yHSWy21Xm_dgWhLJjZ9R1tjfV49kDPHB_ssdvP7wo3_NmoUPYMgK-edgZ_ehttp_I6hUUCnVaTvn_m76b2j9yEPReSwl-wlGsabYG6INUhTuhSOqG-UpVVQdNJVV7GmIPHCA2cQpJBDZBohT4MBGme_feUgm4sgqVCWzKk6CzIKIz5AIVnspLbu05SulAVnSTB3NxTwCLNJR_9v9oSkvphiNbmQBVQH1tV_psyi9HM1Jtj9VJVKMeyFDAQAB",
             "clientDataJSON": webauthn.helpers.bytes_to_base64url(
-                b'{"type":"webauthn.create","challenge":"' + webauthn.helpers.bytes_to_base64url(user.webauthn.challenge).encode() + b'","origin":"http://invalid-origin","crossOrigin":false}'
+                b'{"type":"webauthn.create","challenge":"'
+                + webauthn.helpers.bytes_to_base64url(user.webauthn.challenge).encode()
+                + b'","origin":"http://invalid-origin","crossOrigin":false}'
             ),
             "transports": ["internal"],
         },
@@ -65,7 +67,9 @@ def test_setup_with_valid_webauthn_device(ui_user):
         "response": {
             "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVkBZ0mWDeWIDoxodDQXD2R2YFuP5K65ooYyx5lc87qDHZdjRQAAAAAAAAAAAAAAAAAAAAAAAAAAACBmggo_UlC8p2tiPVtNQ8nZ5NSxst4WS_5fnElA2viTq6QBAwM5AQAgWQEA31dtHqc70D_h7XHQ6V_nBs3Tscu91kBL7FOw56_VFiaKYRH6Z4KLr4J0S12hFJ_3fBxpKfxyMfK66ZMeAVbOl_wemY4S5Xs4yHSWy21Xm_dgWhLJjZ9R1tjfV49kDPHB_ssdvP7wo3_NmoUPYMgK-edgZ_ehttp_I6hUUCnVaTvn_m76b2j9yEPReSwl-wlGsabYG6INUhTuhSOqG-UpVVQdNJVV7GmIPHCA2cQpJBDZBohT4MBGme_feUgm4sgqVCWzKk6CzIKIz5AIVnspLbu05SulAVnSTB3NxTwCLNJR_9v9oSkvphiNbmQBVQH1tV_psyi9HM1Jtj9VJVKMeyFDAQAB",
             "clientDataJSON": webauthn.helpers.bytes_to_base64url(
-                b'{"type":"webauthn.create","challenge":"' + webauthn.helpers.bytes_to_base64url(user.webauthn.challenge).encode() + b'","origin":"http://localhost","crossOrigin":false}'
+                b'{"type":"webauthn.create","challenge":"'
+                + webauthn.helpers.bytes_to_base64url(user.webauthn.challenge).encode()
+                + b'","origin":"http://localhost","crossOrigin":false}'
             ),
             "transports": ["internal"],
         },

@@ -18,13 +18,16 @@ def test_create(user):
     assert len(token.value) > 0
 
 
-@pytest.mark.parametrize("method, tag", [
-    (AuthToken.create_email_verification_token, AuthToken.VERIFY_EMAIL_TAG),
-    (AuthToken.create_frontend_token, AuthToken.FRONTEND_TAG),
-    (AuthToken.create_reset_password_token, AuthToken.RESET_PASSWORD_TAG),
-    (AuthToken.create_mfa_totp_token, AuthToken.TOTP_MFA_TAG),
-    (AuthToken.create_mfa_webauthn_token, AuthToken.WEBAUTHN_MFA_TAG),
-])
+@pytest.mark.parametrize(
+    "method, tag",
+    [
+        (AuthToken.create_email_verification_token, AuthToken.VERIFY_EMAIL_TAG),
+        (AuthToken.create_frontend_token, AuthToken.FRONTEND_TAG),
+        (AuthToken.create_reset_password_token, AuthToken.RESET_PASSWORD_TAG),
+        (AuthToken.create_mfa_totp_token, AuthToken.TOTP_MFA_TAG),
+        (AuthToken.create_mfa_webauthn_token, AuthToken.WEBAUTHN_MFA_TAG),
+    ],
+)
 def test_action_specific_tokens(user, method, tag):
     """
     Verify attributes of AuthToken instance used for specific operations.
