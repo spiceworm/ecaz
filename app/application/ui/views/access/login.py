@@ -11,6 +11,10 @@ from application.models import (
 )
 from application.third_party.util import url_has_allowed_host_and_scheme
 from application.ui import forms
+from application.util import (
+    process_jwt_auth_token,
+    require_unauthenticated,
+)
 
 
 __all__ = (
@@ -32,10 +36,8 @@ def _login(user):
         return flask.redirect(flask.url_for(".profile"))
 
 
+@require_unauthenticated(if_authenticated_redirect_to=".profile")
 def login():
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for(".profile"))
-
     form = forms.LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
@@ -56,66 +58,54 @@ def login():
     return flask.render_template("access/login/login.html", form=form)
 
 
-def totp_login(jwt):
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for(".profile"))
-
-    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
-    if token and not token.is_expired and AuthToken.TOTP_MFA_TAG in token.tags:
-        form = forms.TotpLoginForm()
-        if form.validate_on_submit():
-            if token.user.totp.verify(form.totp_code.data):
-                db.session.delete(token)
-                db.session.commit()
-                return _login(token.user)
-            else:
-                flask.flash(messages.TOTP_CODE_INVALID, category="error")
-        return flask.render_template("access/login/totp_login.html", form=form)
-    else:
-        flask.flash(messages.INVALID_TOKEN, category="error")
-        return flask.redirect(flask.url_for(".login"))
+@require_unauthenticated(if_authenticated_redirect_to=".profile")
+@process_jwt_auth_token(require_tags=[AuthToken.TOTP_MFA_TAG], error_redirect=".login")
+def totp_login(token):
+    form = forms.TotpLoginForm()
+    if form.validate_on_submit():
+        if token.user.totp.verify(form.totp_code.data):
+            db.session.delete(token)
+            db.session.commit()
+            return _login(token.user)
+        else:
+            flask.flash(messages.TOTP_CODE_INVALID, category="error")
+    return flask.render_template("access/login/totp_login.html", form=form)
 
 
-def webauthn_login(jwt):
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for(".profile"))
+@require_unauthenticated(if_authenticated_redirect_to=".profile")
+@process_jwt_auth_token(require_tags=[AuthToken.WEBAUTHN_MFA_TAG], error_redirect=".login")
+def webauthn_login(token):
+    user = token.user
+    authentication_options = webauthn.options_to_json(
+        webauthn.generate_authentication_options(
+            rp_id=flask.g.config.APP_NAME,
+            challenge=user.webauthn.challenge,
+            allow_credentials=user.webauthn.registrations,
+        )
+    )
 
-    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
-    if token and not token.is_expired and AuthToken.WEBAUTHN_MFA_TAG in token.tags:
-        user = token.user
-        authentication_options = webauthn.options_to_json(
-            webauthn.generate_authentication_options(
-                rp_id=flask.g.config.APP_NAME,
-                challenge=user.webauthn.challenge,
-                allow_credentials=user.webauthn.registrations,
+    form = forms.WebauthnLoginForm()
+    if form.validate_on_submit():
+        try:
+            authentication = webauthn.verify_authentication_response(
+                credential=form.credential_authentication_options.data,
+                expected_challenge=user.webauthn.challenge,
+                expected_rp_id=flask.g.config.APP_NAME,
+                expected_origin=flask.g.config.BASE_URL,
+                credential_public_key=user.webauthn.public_key,
+                credential_current_sign_count=user.webauthn.credential_sign_count,
             )
-        )
-
-        form = forms.WebauthnLoginForm()
-        if form.validate_on_submit():
-            try:
-                authentication = webauthn.verify_authentication_response(
-                    credential=form.credential_authentication_options.data,
-                    expected_challenge=user.webauthn.challenge,
-                    expected_rp_id=flask.g.config.APP_NAME,
-                    expected_origin=flask.g.config.BASE_URL,
-                    credential_public_key=user.webauthn.public_key,
-                    credential_current_sign_count=user.webauthn.credential_sign_count,
-                )
-            except InvalidAuthenticationResponse as e:
-                flask.flash(messages.WEBAUTHN_AUTHENTICATION_ERROR + f": {e}", category="error")
-                return flask.redirect(flask.url_for(".login"))
-            else:
-                user.webauthn.credential_sign_count = authentication.new_sign_count
-                db.session.delete(token)
-                db.session.add(user)
-                db.session.commit()
-                return _login(token.user)
-        return flask.render_template(
-            "access/login/webauth_login.html",
-            authentication_options=authentication_options,
-            form=form,
-        )
-    else:
-        flask.flash(messages.INVALID_TOKEN, category="error")
-        return flask.redirect(flask.url_for(".login"))
+        except InvalidAuthenticationResponse as e:
+            flask.flash(messages.WEBAUTHN_AUTHENTICATION_ERROR + f": {e}", category="error")
+            return flask.redirect(flask.url_for(".login"))
+        else:
+            user.webauthn.credential_sign_count = authentication.new_sign_count
+            db.session.delete(token)
+            db.session.add(user)
+            db.session.commit()
+            return _login(token.user)
+    return flask.render_template(
+        "access/login/webauth_login.html",
+        authentication_options=authentication_options,
+        form=form,
+    )

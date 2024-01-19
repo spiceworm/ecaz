@@ -12,6 +12,7 @@ from application.models import (
     db,
 )
 from application.ui import forms
+from application.util import process_jwt_auth_token
 
 
 __all__ = (
@@ -75,13 +76,10 @@ def send_verify_email():
 
 
 @flask_login.login_required
-def verify_email(jwt):
-    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
-    if token and not token.is_expired and AuthToken.VERIFY_EMAIL_TAG in token.tags:
-        token.user.is_verified = True
-        flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
-        db.session.delete(token)
-        db.session.commit()
-    else:
-        flask.flash(messages.INVALID_TOKEN, category="error")
+@process_jwt_auth_token(require_tags=[AuthToken.VERIFY_EMAIL_TAG], error_redirect=".settings")
+def verify_email(token):
+    token.user.is_verified = True
+    flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
+    db.session.delete(token)
+    db.session.commit()
     return flask.redirect(flask.url_for(".settings"))
