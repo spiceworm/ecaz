@@ -18,10 +18,10 @@ from application.models import (
 )
 
 
-__all__ = ("ApiToken",)
+__all__ = ("AuthToken",)
 
 
-class ApiToken(db.Model):
+class AuthToken(db.Model):
     FRONTEND_TAG = "frontend"
     HIDDEN_TAG = "hidden"
     RESET_PASSWORD_TAG = "reset-password"
@@ -41,7 +41,7 @@ class ApiToken(db.Model):
         nullable=False,
     )
     user: Mapped["User"] = relationship(
-        back_populates="api_tokens",
+        back_populates="auth_tokens",
     )
     user_id: Mapped[int] = mapped_column(
         sa.ForeignKey("user.id"),
@@ -107,7 +107,7 @@ class ApiToken(db.Model):
     @classmethod
     def create_frontend_token(cls, user, expires_delta=False):
         """
-        Creates an `ApiToken` used for the frontend to authenticate to the API.
+        Creates an `AuthToken` used for the frontend to authenticate to the API.
         """
         token = cls.create(
             user,

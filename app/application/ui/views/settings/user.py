@@ -8,7 +8,7 @@ import sqlalchemy.exc
 
 from application.constants import messages
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
 )
 from application.ui import forms
@@ -66,12 +66,12 @@ def send_verify_email():
         flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
     else:
         # Delete any old tokens when a user asks to be sent a verification email
-        ApiToken.query.filter(
-            ApiToken.name == ApiToken.VERIFY_EMAIL_TAG,
-            ApiToken.user == user,
+        AuthToken.query.filter(
+            AuthToken.name == AuthToken.VERIFY_EMAIL_TAG,
+            AuthToken.user == user,
         ).delete()
 
-        token = ApiToken.create_email_verification_token(user)
+        token = AuthToken.create_email_verification_token(user)
         url = flask.url_for(".verify_email", jwt=token.value, _external=True)
         email = flask_mailman.EmailMessage(subject="Verify your account", body=url, to=[user.email])
         email.content_subtype = "html"
@@ -83,8 +83,8 @@ def send_verify_email():
 
 @flask_login.login_required
 def verify_email(jwt):
-    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and not token.is_expired and ApiToken.VERIFY_EMAIL_TAG in token.tags:
+    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
+    if token and not token.is_expired and AuthToken.VERIFY_EMAIL_TAG in token.tags:
         token.user.is_verified = True
         flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
         db.session.delete(token)

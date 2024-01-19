@@ -2,7 +2,7 @@ import flask
 
 from application.constants import messages
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
 )
 from application.ui import forms
@@ -13,9 +13,9 @@ __all__ = ("reset_password",)
 
 def reset_password(jwt):
     form = forms.ResetPasswordForm()
-    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
+    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
 
-    if not token or ApiToken.RESET_PASSWORD_TAG not in token.tags or token.is_expired:
+    if not token or AuthToken.RESET_PASSWORD_TAG not in token.tags or token.is_expired:
         flask.flash(messages.INVALID_TOKEN, category="error")
         return flask.redirect(flask.url_for(".forgot_password"))
 

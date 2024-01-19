@@ -1,0 +1,49 @@
+from datetime import timedelta
+
+from application.ui.forms import CreateAuthTokenForm
+
+
+def test_create_auth_token(ui_user):
+    """
+    Verify /api_settings/create_auth_token form submission.
+    """
+    user = ui_user()
+    token_name = "test-token-1"
+    assert len(user.auth_tokens) == 0
+    user.post("/settings/auth_token/create", data={"token_name": token_name})
+    assert len(user.auth_tokens) == 1
+    assert user.auth_tokens[0].name == token_name
+
+
+def test_create_expiring_auth_token(ui_user):
+    """
+    Verify /api_settings/create_auth_token form submission for an expiring token.
+    """
+    user = ui_user()
+    token_name = "test-token-1"
+    assert len(user.auth_tokens) == 0
+    user.post(
+        "/settings/auth_token/create",
+        data={
+            "expires_number": "1",
+            "expires_unit": CreateAuthTokenForm.EXPIRES_UNIT_DAYS,
+            "token_name": token_name,
+        },
+    )
+    assert len(user.auth_tokens) == 1
+    token = user.auth_tokens[0]
+    assert token.name == token_name
+    assert timedelta(hours=23, minutes=59) < token.expires_in < timedelta(days=1, seconds=1)
+
+
+def test_delete_auth_token(ui_user):
+    """
+    Verify /api_settings/delete_auth_token form submission.
+    """
+    user = ui_user()
+    token_name = "test-token-1"
+    assert len(user.auth_tokens) == 0
+    user.post("/settings/auth_token/create", data={"token_name": token_name})
+    assert len(user.auth_tokens) == 1
+    user.post("/settings/auth_token/delete", data={"id": user.auth_tokens[0].id})
+    assert len(user.auth_tokens) == 0

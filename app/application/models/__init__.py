@@ -11,7 +11,7 @@ def get_encryption_key():
     return flask.current_app.config["SECRET_KEY"]
 
 
-from .api_token import *
+from .auth_token import *
 from .totp import *
 from .webauthn import *
 from .user import *

@@ -1,37 +1,36 @@
 import datetime
 
 import flask
-import flask_jwt_extended
 import flask_login
 
 from application.ui import forms
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
 )
 
 
 __all__ = (
-    "api_settings",
-    "create_api_token",
-    "delete_api_token",
+    "auth_token_settings",
+    "create_auth_token",
+    "delete_auth_token",
 )
 
 
 @flask_login.login_required
-def api_settings():
+def auth_token_settings():
     return flask.render_template(
-        "settings/api.html",
-        create_api_token_form=forms.CreateApiTokenForm(),
-        delete_api_token_form=forms.DeleteApiTokenForm(),
+        "settings/auth_tokens.html",
+        create_auth_token_form=forms.CreateAuthTokenForm(),
+        delete_auth_token_form=forms.DeleteAuthTokenForm(),
         logout_form=forms.LogoutForm(),
     )
 
 
 @flask_login.login_required
-def create_api_token():
+def create_auth_token():
     user = flask_login.current_user
-    form = forms.CreateApiTokenForm()
+    form = forms.CreateAuthTokenForm()
     if form.validate_on_submit():
         expires_unit = form.expires_unit.data
         if expires_unit == form.EXPIRES_NEVER:
@@ -43,24 +42,24 @@ def create_api_token():
                 }
             )
 
-        token = ApiToken.create(
+        token = AuthToken.create(
             user=user,
             name=form.token_name.data,
             expires_delta=expires_delta,
         )
         db.session.add(token)
         db.session.commit()
-    return flask.redirect(flask.url_for(".api_settings"))
+    return flask.redirect(flask.url_for(".auth_token_settings"))
 
 
 @flask_login.login_required
-def delete_api_token():
+def delete_auth_token():
     user = flask_login.current_user
-    form = forms.DeleteApiTokenForm()
+    form = forms.DeleteAuthTokenForm()
     if form.validate_on_submit():
-        ApiToken.query.filter(
-            ApiToken.id == form.id.data,
-            ApiToken.user_id == user.id,
+        AuthToken.query.filter(
+            AuthToken.id == form.id.data,
+            AuthToken.user_id == user.id,
         ).delete()
         db.session.commit()
-    return flask.redirect(flask.url_for(".api_settings"))
+    return flask.redirect(flask.url_for(".auth_token_settings"))

@@ -5,7 +5,7 @@ from webauthn.helpers.exceptions import InvalidAuthenticationResponse
 
 from application.constants import messages
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
     User,
 )
@@ -44,10 +44,10 @@ def login():
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
             elif user.webauthn.enabled:
                 # WebAuthn MFA supersedes Totp MFA
-                webauthn_token = ApiToken.create_mfa_webauthn_token(user)
+                webauthn_token = AuthToken.create_mfa_webauthn_token(user)
                 return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
             elif user.totp.enabled:
-                totp_token = ApiToken.create_mfa_totp_token(user)
+                totp_token = AuthToken.create_mfa_totp_token(user)
                 return flask.redirect(flask.url_for(".totp_login", jwt=totp_token.value))
             else:
                 return _login(user)
@@ -60,8 +60,8 @@ def totp_login(jwt):
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for(".profile"))
 
-    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and not token.is_expired and ApiToken.TOTP_MFA_TAG in token.tags:
+    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
+    if token and not token.is_expired and AuthToken.TOTP_MFA_TAG in token.tags:
         form = forms.TotpLoginForm()
         if form.validate_on_submit():
             if token.user.totp.verify(form.totp_code.data):
@@ -78,8 +78,8 @@ def webauthn_login(jwt):
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for(".profile"))
 
-    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and not token.is_expired and ApiToken.WEBAUTHN_MFA_TAG in token.tags:
+    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
+    if token and not token.is_expired and AuthToken.WEBAUTHN_MFA_TAG in token.tags:
         user = token.user
         authentication_options = webauthn.options_to_json(
             webauthn.generate_authentication_options(

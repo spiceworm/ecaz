@@ -4,7 +4,7 @@ import flask_mailman
 
 from application.constants import messages
 from application.models import (
-    ApiToken,
+    AuthToken,
     User,
 )
 from application.ui import forms
@@ -22,12 +22,12 @@ def forgot_password():
         user = User.query.filter_by(email=form.email.data).one_or_none()
         if user:
             # Delete any old tokens from prior password reset requests
-            ApiToken.query.filter(
-                ApiToken.name == ApiToken.RESET_PASSWORD_TAG,
-                ApiToken.user == user,
+            AuthToken.query.filter(
+                AuthToken.name == AuthToken.RESET_PASSWORD_TAG,
+                AuthToken.user == user,
             ).delete()
 
-            token = ApiToken.create_reset_password_token(user)
+            token = AuthToken.create_reset_password_token(user)
             url = flask.url_for(".reset_password", jwt=token.value, _external=True)
             msg = flask_mailman.EmailMessage(subject="Reset Password", body=url, to=[user.email])
             msg.content_subtype = "html"

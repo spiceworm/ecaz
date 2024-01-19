@@ -1,7 +1,7 @@
 import pytest
 
 from application.constants import messages
-from application.models import ApiToken
+from application.models import AuthToken
 
 
 def test_bad_login(client):
@@ -87,12 +87,12 @@ def test_login_with_valid_next_url_param(client, user):
     """
     u = user()
     resp = client.post(
-        "/login?next=%2Fsettings%2Fapi",
+        "/login?next=%2Fsettings%2Fauth_token",
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings/api"
+    assert resp.request.path == "/settings/auth_token"
 
 
 def test_bad_login_with_next_url_preserves_next_params(client):
@@ -102,11 +102,11 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     trying to access is preserved in the URL.
     """
     resp = client.post(
-        "/login?next=%2Fsettings%2Fapi",
+        "/login?next=%2Fsettings%2Fauth_token",
         follow_redirects=True,
         data={"email": "invalid@test.com", "password": "invalid123"},
     )
-    assert resp.request.args["next"] == "/settings/api"
+    assert resp.request.args["next"] == "/settings/auth_token"
 
 
 def test_login_with_totp_mfa_enabled(client, user):
@@ -122,10 +122,10 @@ def test_login_with_totp_mfa_enabled(client, user):
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
-    token = u.api_tokens[0]
+    token = u.auth_tokens[0]
     totp_login_url = f"/login/mfa/totp/{token.value}"
 
-    assert ApiToken.TOTP_MFA_TAG in token.tags
+    assert AuthToken.TOTP_MFA_TAG in token.tags
     assert len(resp1.history) == 1
     assert resp1.request.path == totp_login_url
 
@@ -151,10 +151,10 @@ def test_login_with_invalid_totp_code(client, user):
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
-    token = u.api_tokens[0]
+    token = u.auth_tokens[0]
     totp_login_url = f"/login/mfa/totp/{token.value}"
 
-    assert ApiToken.TOTP_MFA_TAG in token.tags
+    assert AuthToken.TOTP_MFA_TAG in token.tags
     assert len(resp1.history) == 1
     assert resp1.request.path == totp_login_url
 
@@ -176,7 +176,7 @@ def test_access_mfa_login_page_if_already_authenticated(ui_user, mfa_type):
     """
     user = ui_user()
     getattr(user, mfa_type).enabled = True
-    token = getattr(ApiToken, f"create_mfa_{mfa_type}_token")(user)
+    token = getattr(AuthToken, f"create_mfa_{mfa_type}_token")(user)
     resp = user.get(
         f"/login/mfa/{mfa_type}/{token.value}",
         follow_redirects=True,
@@ -193,7 +193,7 @@ def test_access_mfa_login_page_with_invalid_jwt_in_url(client, user, mfa_type):
     """
     u = user()
     getattr(u, mfa_type).enabled = True
-    token = ApiToken.create_email_verification_token(u)
+    token = AuthToken.create_email_verification_token(u)
     resp = client.get(
         f"/login/mfa/{mfa_type}/{token.value}",
         follow_redirects=True,

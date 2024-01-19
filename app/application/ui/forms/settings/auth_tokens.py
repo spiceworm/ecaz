@@ -8,12 +8,12 @@ from wtforms import (
 
 
 __all__ = (
-    "CreateApiTokenForm",
-    "DeleteApiTokenForm",
+    "CreateAuthTokenForm",
+    "DeleteAuthTokenForm",
 )
 
 
-class CreateApiTokenForm(flask_wtf.FlaskForm):
+class CreateAuthTokenForm(flask_wtf.FlaskForm):
     EXPIRES_NEVER = "Never"
     EXPIRES_UNIT_MICROSECONDS = "Microseconds"
     EXPIRES_UNIT_MILLISECONDS = "Milliseconds"
@@ -49,7 +49,7 @@ class CreateApiTokenForm(flask_wtf.FlaskForm):
     )
 
 
-class DeleteApiTokenForm(flask_wtf.FlaskForm):
+class DeleteAuthTokenForm(flask_wtf.FlaskForm):
     id = IntegerField(
         "id",
         validators=[validators.DataRequired()],

@@ -1,7 +1,7 @@
 import pytest
 
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
 )
 
@@ -25,33 +25,33 @@ def test_defaults(user, attr_name, exp_value):
 
 def test_frontend_tokens(user):
     """
-    Test that each call to `User.frontend_token` returns a new `ApiToken` instance
-    with the `ApiToken.FRONTEND_TAG`.
+    Test that each call to `User.frontend_token` returns a new `AuthToken` instance
+    with the `AuthToken.FRONTEND_TAG`.
     """
     u = user()
     t1 = u.frontend_token
     t1_value = t1.value
-    assert ApiToken.FRONTEND_TAG in t1.tags
+    assert AuthToken.FRONTEND_TAG in t1.tags
     t2 = u.frontend_token
     t2_value = t2.value
-    assert ApiToken.FRONTEND_TAG in t1.tags
+    assert AuthToken.FRONTEND_TAG in t1.tags
     assert t1_value != t2_value
 
 
-def test_public_api_tokens(api_token, user):
+def test_public_auth_tokens(auth_token, user):
     """
-    Test `User.api_tokens` attribute excludes `ApiToken`s that have the
-    `ApiToken.HIDDEN_TAG` in its claims.
+    Test `User.auth_tokens` attribute excludes `AuthToken`s that have the
+    `AuthToken.HIDDEN_TAG` in its claims.
     """
     u = user()
-    api_token(name="t1", user=u, tags=[ApiToken.HIDDEN_TAG])
-    api_token(name="t2", user=u, tags=[ApiToken.HIDDEN_TAG])
-    api_token(name="t3", user=u, tags=[ApiToken.HIDDEN_TAG])
+    auth_token(name="t1", user=u, tags=[AuthToken.HIDDEN_TAG])
+    auth_token(name="t2", user=u, tags=[AuthToken.HIDDEN_TAG])
+    auth_token(name="t3", user=u, tags=[AuthToken.HIDDEN_TAG])
     db.session.commit()
-    assert u.public_api_tokens == []
+    assert u.public_auth_tokens == []
 
-    t4 = api_token(name="t4", user=u)
-    t5 = api_token(name="t5", user=u)
-    t6 = api_token(name="t6", user=u)
+    t4 = auth_token(name="t4", user=u)
+    t5 = auth_token(name="t5", user=u)
+    t6 = auth_token(name="t6", user=u)
     db.session.commit()
-    assert u.public_api_tokens == [t4, t5, t6]
+    assert u.public_auth_tokens == [t4, t5, t6]

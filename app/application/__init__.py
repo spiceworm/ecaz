@@ -11,7 +11,7 @@ def create_app():
     from application.api import api_bp
     from application.cli import cli_bp
     from application.models import (
-        ApiToken,
+        AuthToken,
         db,
         migrate,
         User,
@@ -89,7 +89,7 @@ def create_app():
         template_mode="bootstrap4",
     )
     admin.add_link(flask_admin.base.MenuLink(name="Site", url="/"))
-    admin.add_view(admin_views.ApiTokenModelView(ApiToken, db.session))
+    admin.add_view(admin_views.AuthTokenModelView(AuthToken, db.session))
     admin.add_view(admin_views.UserModelView(User, db.session))
 
     db.init_app(app)

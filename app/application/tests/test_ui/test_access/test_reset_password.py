@@ -2,7 +2,7 @@ from datetime import timedelta
 import time
 
 from application.constants import messages
-from application.models import ApiToken
+from application.models import AuthToken
 
 
 def test_reset_password_submit_new_password(client, user):
@@ -12,7 +12,7 @@ def test_reset_password_submit_new_password(client, user):
     that it does reset their password and redirect them to the login page.
     """
     u = user()
-    token = ApiToken.create_reset_password_token(u)
+    token = AuthToken.create_reset_password_token(u)
     new_password = "new-password"
     resp = client.post(
         f"/reset_password/{token.value}",
@@ -34,7 +34,7 @@ def test_reset_password_submit_non_matching_passwords(client, user):
     """
     u = user()
     old_password = u.password
-    token = ApiToken.create_reset_password_token(u)
+    token = AuthToken.create_reset_password_token(u)
     resp = client.post(
         f"/reset_password/{token.value}",
         follow_redirects=True,
@@ -52,7 +52,7 @@ def test_reset_password_using_expired_token(client, user):
     they are shown the correct error message and redirected back to /forgot_password
     page to have a new link emailed to them.
     """
-    token = ApiToken.create_reset_password_token(
+    token = AuthToken.create_reset_password_token(
         user(),
         timedelta(microseconds=1),
     )
@@ -72,7 +72,7 @@ def test_reset_password_using_invalid_email_link(client, user):
     URL for resetting their password, that they are redirected back to the
     /forgot_password page if the token in the link is not valid.
     """
-    token = ApiToken.create(user(), "not-password-reset-token")
+    token = AuthToken.create(user(), "not-password-reset-token")
     resp = client.get(
         f"/reset_password/{token.value}",
         follow_redirects=True,
@@ -88,6 +88,6 @@ def test_reset_password_using_valid_email_link(client, user):
     URL for resetting their password, it takes them to the page containing the
     password reset form.
     """
-    token = ApiToken.create_reset_password_token(user())
+    token = AuthToken.create_reset_password_token(user())
     resp = client.get(f"/reset_password/{token.value}")
     assert resp.request.path == f"/reset_password/{token.value}"
