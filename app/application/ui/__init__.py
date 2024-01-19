@@ -1,3 +1,5 @@
+import collections
+
 import flask
 
 from application.ui import views
@@ -11,28 +13,32 @@ ui_bp = flask.Blueprint(
     static_url_path="/static",
 )
 
-ui_bp.add_url_rule("/", view_func=views.login, methods=["GET", "POST"])
+Route = collections.namedtuple("Route", ["rule", "view_func", "methods"])
+GET = "GET"
+POST = "POST"
 
-ui_bp.add_url_rule("/forgot_password", view_func=views.forgot_password, methods=["GET", "POST"])
-ui_bp.add_url_rule("/login", view_func=views.login, methods=["GET", "POST"])
-ui_bp.add_url_rule("/login/mfa/totp/<jwt>", view_func=views.totp_login, methods=["GET", "POST"])
-ui_bp.add_url_rule("/login/mfa/webauthn/<jwt>", view_func=views.webauthn_login, methods=["GET", "POST"])
-ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
-ui_bp.add_url_rule("/register", view_func=views.register, methods=["GET", "POST"])
-ui_bp.add_url_rule("/reset_password/<jwt>", view_func=views.reset_password, methods=["GET", "POST"])
-
-ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
-
-ui_bp.add_url_rule("/settings", view_func=views.settings, methods=["GET"])
-ui_bp.add_url_rule("/settings/auth_token", view_func=views.auth_token_settings, methods=["GET"])
-ui_bp.add_url_rule("/settings/auth_token/create", view_func=views.create_auth_token, methods=["POST"])
-ui_bp.add_url_rule("/settings/auth_token/delete", view_func=views.delete_auth_token, methods=["POST"])
-ui_bp.add_url_rule("/settings/user/email/verify", view_func=views.send_verify_email, methods=["POST"])
-ui_bp.add_url_rule("/settings/user/email/verify/<jwt>", view_func=views.verify_email, methods=["GET"])
-ui_bp.add_url_rule("/settings/user/password", view_func=views.change_password, methods=["POST"])
-ui_bp.add_url_rule("/settings/user/username", view_func=views.change_username, methods=["POST"])
-ui_bp.add_url_rule("/settings/account/delete", view_func=views.delete_account, methods=["POST"])
-ui_bp.add_url_rule("/settings/mfa/totp/disable", view_func=views.disable_totp, methods=["POST"])
-ui_bp.add_url_rule("/settings/mfa/totp/setup", view_func=views.setup_totp, methods=["GET", "POST"])
-ui_bp.add_url_rule("/settings/mfa/webauthn/disable", view_func=views.disable_webauthn, methods=["POST"])
-ui_bp.add_url_rule("/settings/mfa/webauthn/setup", view_func=views.setup_webauthn, methods=["GET", "POST"])
+for route in [
+    Route("/", views.login, [GET, POST]),
+    Route("/forgot_password", views.forgot_password, [GET, POST]),
+    Route("/login", views.login, [GET, POST]),
+    Route("/login/mfa/totp/<jwt>", views.totp_login, [GET, POST]),
+    Route("/login/mfa/webauthn/<jwt>", views.webauthn_login, [GET, POST]),
+    Route("/logout", views.logout, [POST]),
+    Route("/register", views.register, [GET, POST]),
+    Route("/reset_password/<jwt>", views.reset_password, [GET, POST]),
+    Route("/profile", views.profile, [GET]),
+    Route("/settings", views.settings, [GET]),
+    Route("/settings/auth_token", views.auth_token_settings, [GET]),
+    Route("/settings/auth_token/create", views.create_auth_token, [POST]),
+    Route("/settings/auth_token/delete", views.delete_auth_token, [POST]),
+    Route("/settings/user/email/verify", views.send_verify_email, [POST]),
+    Route("/settings/user/email/verify/<jwt>", views.verify_email, [GET]),
+    Route("/settings/user/password", views.change_password, [POST]),
+    Route("/settings/user/username", views.change_username, [POST]),
+    Route("/settings/account/delete", views.delete_account, [POST]),
+    Route("/settings/mfa/totp/disable", views.disable_totp, [POST]),
+    Route("/settings/mfa/totp/setup", views.setup_totp, [GET, POST]),
+    Route("/settings/mfa/webauthn/disable", views.disable_webauthn, [POST]),
+    Route("/settings/mfa/webauthn/setup", views.setup_webauthn, [GET, POST]),
+]:
+    ui_bp.add_url_rule(rule=route.rule, view_func=route.view_func, methods=route.methods)
