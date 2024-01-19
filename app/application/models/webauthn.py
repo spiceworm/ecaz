@@ -7,7 +7,6 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
-from sqlalchemy.types import LargeBinary
 from sqlalchemy_utils import StringEncryptedType
 import webauthn
 from webauthn.helpers.structs import (
@@ -24,14 +23,25 @@ from application.models import (
 __all__ = ("WebAuthn",)
 
 
+def challenge_default():
+    return webauthn.helpers.bytes_to_base64url(webauthn.helpers.generate_challenge())
+
+
+def user_handle_default():
+    return webauthn.helpers.bytes_to_base64url(webauthn.helpers.generate_user_handle())
+
+
 class WebAuthn(db.Model):
     id: Mapped[int] = mapped_column(
         nullable=False,
         primary_key=True,
     )
-    challenge = sa.Column(
-        LargeBinary,
-        default=webauthn.helpers.generate_challenge,
+    _challenge = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding="pkcs5",
+        ),
+        default=challenge_default,
     )
     enabled = sa.Column(
         StringEncryptedType(
@@ -68,10 +78,17 @@ class WebAuthn(db.Model):
         sa.ForeignKey("user.id"),
         nullable=False,
     )
-    user_handle = sa.Column(
-        LargeBinary,
-        default=webauthn.helpers.generate_user_handle,
+    _user_handle = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding="pkcs5",
+        ),
+        default=user_handle_default,
     )
+
+    @hybrid_property
+    def challenge(self):
+        return webauthn.helpers.base64url_to_bytes(self._challenge)
 
     @hybrid_property
     def public_key(self):
@@ -97,3 +114,7 @@ class WebAuthn(db.Model):
             for obj in registrations:
                 obj["id"] = webauthn.helpers.bytes_to_base64url(obj["id"])
             self._registrations = json.dumps(registrations)
+
+    @hybrid_property
+    def user_handle(self):
+        return webauthn.helpers.base64url_to_bytes(self._user_handle)
