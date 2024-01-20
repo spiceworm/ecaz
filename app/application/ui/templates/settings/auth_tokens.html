@@ -42,20 +42,12 @@
                                     {{ delete_auth_token_form.csrf_token }}
 
                                     <div class="form-group">
-                                        <div class="col-lg-5">
+                                        <div class="col-lg-4">
                                             <label class="control-label" for="token_{{ loop.index }}">
-                                                {% if token.expires_in == True %}
-                                                    {% set expires_in="Expired" %}
-                                                {% elif token.expires_in == False %}
-                                                    {% set expires_in="Never" %}
-                                                {% else %}
-                                                    {% set expires_in=token.expires_in %}
-                                                {% endif %}
-
-                                                {{ token.name }} (Exp: {{ expires_in }})
+                                                {{ token.name }} (Expires in {{ token.humanized_expires_in }})
                                             </label>
                                         </div>
-                                        <div class="col-lg-4">
+                                        <div class="col-lg-5">
                                             <input class="form-control" type="text" readonly value="{{ token.value }}" id="token_{{ loop.index }}">
                                         </div>
                                         <div class="col-lg-1">
@@ -75,18 +67,14 @@
 
                                 <div class="form-group">
                                     <div class="row">
-                                        <div class="col-lg-2">
-                                            <label class="control-label" for="token_name">Name</label>
-                                        </div>
+                                        <label class="col-lg-2 control-label" for="token_name">Name</label>
                                         <div class="col-lg-10">
                                             {{ create_auth_token_form.token_name(class_="form-control") }}
                                         </div>
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-lg-2">
-                                            <label class="control-label" for="expires_toggle">Expires</label>
-                                        </div>
+                                        <label class="col-lg-2 control-label" for="expires_toggle">Expires</label>
                                         <div class="col-lg-4">
                                             {{ create_auth_token_form.expires_number(class_="form-control") }}
                                         </div>

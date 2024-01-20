@@ -1,6 +1,7 @@
 from typing import List
 
 import flask_login
+import humanize
 import sqlalchemy as sa
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -128,6 +129,10 @@ class User(db.Model, flask_login.UserMixin):
             ]
         )
         db.session.commit()
+
+    @property
+    def humanized_created_at(self):
+        return humanize.naturaltime(self.created_at)
 
     @hybrid_property
     def frontend_token(self):
