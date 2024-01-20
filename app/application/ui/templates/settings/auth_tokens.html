@@ -43,9 +43,15 @@
 
                                     <div class="form-group">
                                         <div class="col-lg-4">
-                                            <label class="control-label" for="token_{{ loop.index }}">
-                                                {{ token.name }} (Expires in {{ token.humanized_expires_in }})
-                                            </label>
+                                            {% if token.humanized_expires_in == "Never" %}
+                                                <label class="control-label" for="token_{{ loop.index }}">
+                                                    {{ token.name }} ({{ token.humanized_expires_in }} expires)
+                                                </label>
+                                            {% else %}
+                                                <label class="control-label" for="token_{{ loop.index }}" title="{{ token.expires_in }}">
+                                                    {{ token.name }} (Expires in {{ token.humanized_expires_in }})
+                                                </label>
+                                            {% endif %}
                                         </div>
                                         <div class="col-lg-5">
                                             <input class="form-control" type="text" readonly value="{{ token.value }}" id="token_{{ loop.index }}">
