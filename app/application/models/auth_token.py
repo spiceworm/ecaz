@@ -168,3 +168,6 @@ class AuthToken(db.Model):
             return []
         else:
             return claims.get("tags", [])
+
+    def validate(self, require_tags=(), allow_expired=False) -> bool:
+        return (not self.is_expired and not allow_expired) and set(require_tags).issubset(self.tags)
