@@ -1,5 +1,10 @@
+from __future__ import annotations
 from datetime import timedelta
 import time
+from typing import (
+    List,
+    Union,
+)
 
 import flask_jwt_extended
 import humanize
@@ -57,7 +62,7 @@ class AuthToken(db.Model):
     )
 
     @classmethod
-    def create(cls, user, name, tags=None, expires_delta=False):
+    def create(cls, user, name, tags=None, expires_delta=False) -> AuthToken:
         token_value = flask_jwt_extended.create_access_token(
             additional_claims={"tags": tags or []},
             expires_delta=expires_delta,
@@ -70,7 +75,7 @@ class AuthToken(db.Model):
         )
 
     @classmethod
-    def create_mfa_totp_token(cls, user, expires_delta=False):
+    def create_mfa_totp_token(cls, user, expires_delta=False) -> AuthToken:
         token = cls.create(
             user,
             cls.TOTP_MFA_TAG,
@@ -82,7 +87,7 @@ class AuthToken(db.Model):
         return token
 
     @classmethod
-    def create_mfa_webauthn_token(cls, user, expires_delta=False):
+    def create_mfa_webauthn_token(cls, user, expires_delta=False) -> AuthToken:
         token = cls.create(
             user,
             cls.WEBAUTHN_MFA_TAG,
@@ -94,7 +99,7 @@ class AuthToken(db.Model):
         return token
 
     @classmethod
-    def create_email_verification_token(cls, user, expires_delta=False):
+    def create_email_verification_token(cls, user, expires_delta=False) -> AuthToken:
         token = cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
@@ -106,7 +111,7 @@ class AuthToken(db.Model):
         return token
 
     @classmethod
-    def create_frontend_token(cls, user, expires_delta=False):
+    def create_frontend_token(cls, user, expires_delta=False) -> AuthToken:
         """
         Creates an `AuthToken` used for the frontend to authenticate to the API.
         """
@@ -121,7 +126,7 @@ class AuthToken(db.Model):
         return token
 
     @classmethod
-    def create_reset_password_token(cls, user, expires_delta=False):
+    def create_reset_password_token(cls, user, expires_delta=False) -> AuthToken:
         token = cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
@@ -133,7 +138,7 @@ class AuthToken(db.Model):
         return token
 
     @property
-    def expires_in(self):
+    def expires_in(self) -> Union[bool, timedelta]:
         try:
             claims = flask_jwt_extended.decode_token(self.value)
         except jwt.ExpiredSignatureError:
@@ -147,7 +152,7 @@ class AuthToken(db.Model):
                 return timedelta(seconds=claims["exp"] - time.time())
 
     @property
-    def humanized_expires_in(self):
+    def humanized_expires_in(self) -> str:
         match exp := self.expires_in:
             case True:
                 return "Expired"
@@ -157,11 +162,11 @@ class AuthToken(db.Model):
                 return humanize.naturaldelta(exp)
 
     @hybrid_property
-    def is_expired(self):
+    def is_expired(self) -> bool:
         return self.expires_in is True
 
     @hybrid_property
-    def tags(self):
+    def tags(self) -> List[str]:
         try:
             claims = flask_jwt_extended.decode_token(self.value)
         except jwt.ExpiredSignatureError:

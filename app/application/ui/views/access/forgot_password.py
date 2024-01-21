@@ -14,7 +14,7 @@ __all__ = ("forgot_password",)
 
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
-def forgot_password():
+def forgot_password() -> str:
     form = forms.ForgotPasswordForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()

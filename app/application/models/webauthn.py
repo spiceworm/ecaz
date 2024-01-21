@@ -1,4 +1,8 @@
 import json
+from typing import (
+    ByteString,
+    List,
+)
 
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -23,11 +27,11 @@ from application.models import (
 __all__ = ("WebAuthn",)
 
 
-def challenge_default():
+def challenge_default() -> str:
     return webauthn.helpers.bytes_to_base64url(webauthn.helpers.generate_challenge())
 
 
-def user_handle_default():
+def user_handle_default() -> str:
     return webauthn.helpers.bytes_to_base64url(webauthn.helpers.generate_user_handle())
 
 
@@ -87,19 +91,19 @@ class WebAuthn(db.Model):
     )
 
     @hybrid_property
-    def challenge(self):
+    def challenge(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._challenge)
 
     @hybrid_property
-    def public_key(self):
+    def public_key(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._public_key)
 
     @public_key.setter
-    def public_key(self, key):
+    def public_key(self, key) -> None:
         self._public_key = webauthn.helpers.bytes_to_base64url(key)
 
     @hybrid_property
-    def registrations(self):
+    def registrations(self) -> List[PublicKeyCredentialDescriptor]:
         retval = []
         if self._registrations:
             for obj in json.loads(self._registrations):
@@ -109,12 +113,12 @@ class WebAuthn(db.Model):
         return retval
 
     @registrations.setter
-    def registrations(self, registrations):
+    def registrations(self, registrations) -> None:
         if registrations:
             for obj in registrations:
                 obj["id"] = webauthn.helpers.bytes_to_base64url(obj["id"])
             self._registrations = json.dumps(registrations)
 
     @hybrid_property
-    def user_handle(self):
+    def user_handle(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._user_handle)

@@ -1,7 +1,10 @@
+from typing import Union
+
 import flask
 import flask_login
 import webauthn
 from webauthn.helpers.exceptions import InvalidRegistrationResponse
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import db
@@ -12,7 +15,7 @@ __all__ = ("setup_webauthn",)
 
 
 @flask_login.login_required
-def setup_webauthn():
+def setup_webauthn() -> Union[str, Response]:
     user = flask_login.current_user
     if user.webauthn.enabled:
         flask.flash(messages.WEBAUTHN_ALREADY_ENABLED, category="error")

@@ -30,11 +30,11 @@ class utcnow(sa.sql.expression.FunctionElement):
 
 
 @compiles(utcnow, "postgresql")
-def pg_utcnow(element, compiler, **kw):
+def pg_utcnow(element, compiler, **kw) -> str:
     return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
-def default_username(ctx):
+def default_username(ctx) -> str:
     """Make `User.username` default to the value of `User.email`"""
     return ctx.get_current_parameters()["email"]
 
@@ -131,11 +131,11 @@ class User(db.Model, flask_login.UserMixin):
         db.session.commit()
 
     @property
-    def humanized_created_at(self):
+    def humanized_created_at(self) -> str:
         return humanize.naturaltime(self.created_at)
 
     @hybrid_property
-    def frontend_token(self):
+    def frontend_token(self) -> AuthToken:
         """
         Returns an `AuthToken` used by the frontend to communicate with the API.
         Returns a new `AuthToken` instance each time the property is accessed.
@@ -148,5 +148,5 @@ class User(db.Model, flask_login.UserMixin):
         return AuthToken.create_frontend_token(self)
 
     @hybrid_property
-    def public_auth_tokens(self):
+    def public_auth_tokens(self) -> List[AuthToken]:
         return [t for t in self.auth_tokens if AuthToken.HIDDEN_TAG not in t.tags]

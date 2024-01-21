@@ -1,7 +1,10 @@
+from typing import Union
+
 import flask
 import flask_login
 import webauthn
 from webauthn.helpers.exceptions import InvalidAuthenticationResponse
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
@@ -24,7 +27,7 @@ __all__ = (
 )
 
 
-def _login(user):
+def _login(user) -> Response:
     flask_login.login_user(user)
     next_page = flask.request.args.get("next")
 
@@ -37,7 +40,7 @@ def _login(user):
 
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
-def login():
+def login() -> Union[str, Response]:
     form = forms.LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
@@ -60,7 +63,7 @@ def login():
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
 @validate_jwt_as_auth_token(require_tags=[AuthToken.TOTP_MFA_TAG], error_redirect=".login")
-def totp_login(token):
+def totp_login(token) -> Union[str, Response]:
     form = forms.TotpLoginForm()
     if form.validate_on_submit():
         if token.user.totp.verify(form.totp_code.data):
@@ -74,7 +77,7 @@ def totp_login(token):
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
 @validate_jwt_as_auth_token(require_tags=[AuthToken.WEBAUTHN_MFA_TAG], error_redirect=".login")
-def webauthn_login(token):
+def webauthn_login(token) -> Union[str, Response]:
     user = token.user
     authentication_options = webauthn.options_to_json(
         webauthn.generate_authentication_options(

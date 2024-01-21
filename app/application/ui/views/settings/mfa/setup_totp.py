@@ -1,5 +1,8 @@
+from typing import Union
+
 import flask
 import flask_login
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import db
@@ -10,7 +13,7 @@ __all__ = ("setup_totp",)
 
 
 @flask_login.login_required
-def setup_totp():
+def setup_totp() -> Union[str, Response]:
     totp = flask_login.current_user.totp
     if totp.enabled:
         flask.flash(messages.TOTP_ALREADY_ENABLED, category="info")

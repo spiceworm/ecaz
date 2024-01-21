@@ -2,6 +2,7 @@ import datetime
 
 import flask
 import flask_login
+from werkzeug.wrappers import Response
 
 from application.ui import forms
 from application.models import (
@@ -18,7 +19,7 @@ __all__ = (
 
 
 @flask_login.login_required
-def auth_token_settings():
+def auth_token_settings() -> str:
     return flask.render_template(
         "settings/auth_tokens.html",
         create_auth_token_form=forms.CreateAuthTokenForm(),
@@ -28,7 +29,7 @@ def auth_token_settings():
 
 
 @flask_login.login_required
-def create_auth_token():
+def create_auth_token() -> Response:
     user = flask_login.current_user
     form = forms.CreateAuthTokenForm()
     if form.validate_on_submit():
@@ -51,7 +52,7 @@ def create_auth_token():
 
 
 @flask_login.login_required
-def delete_auth_token():
+def delete_auth_token() -> Response:
     form = forms.DeleteAuthTokenForm()
     if form.validate_on_submit():
         AuthToken.query.filter(

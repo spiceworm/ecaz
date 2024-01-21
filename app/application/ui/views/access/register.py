@@ -1,8 +1,11 @@
+from typing import Union
+
 import flask
 import flask_login
 import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import sqlalchemy.exc
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
@@ -17,7 +20,7 @@ __all__ = ("register",)
 
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
-def register():
+def register() -> Union[str, Response]:
     form = forms.RegisterForm()
     if form.validate_on_submit():
         try:
