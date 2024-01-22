@@ -68,74 +68,62 @@ class AuthToken(db.Model):
             expires_delta=expires_delta,
             identity=user.email,
         )
-        return cls(
+        token = cls(
             name=name,
             value=token_value,
             user=user,
         )
+        db.session.add(token)
+        db.session.commit()
+        return token
 
     @classmethod
     def create_mfa_totp_token(cls, user, expires_delta=False) -> AuthToken:
-        token = cls.create(
+        return cls.create(
             user,
             cls.TOTP_MFA_TAG,
             [cls.HIDDEN_TAG, cls.TOTP_MFA_TAG],
             expires_delta or timedelta(seconds=60),
         )
-        db.session.add(token)
-        db.session.commit()
-        return token
 
     @classmethod
     def create_mfa_webauthn_token(cls, user, expires_delta=False) -> AuthToken:
-        token = cls.create(
+        return cls.create(
             user,
             cls.WEBAUTHN_MFA_TAG,
             [cls.HIDDEN_TAG, cls.WEBAUTHN_MFA_TAG],
             expires_delta or timedelta(seconds=60),
         )
-        db.session.add(token)
-        db.session.commit()
-        return token
 
     @classmethod
     def create_email_verification_token(cls, user, expires_delta=False) -> AuthToken:
-        token = cls.create(
+        return cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
             [cls.HIDDEN_TAG, cls.VERIFY_EMAIL_TAG],
             expires_delta or timedelta(hours=24),
         )
-        db.session.add(token)
-        db.session.commit()
-        return token
 
     @classmethod
     def create_frontend_token(cls, user, expires_delta=False) -> AuthToken:
         """
         Creates an `AuthToken` used for the frontend to authenticate to the API.
         """
-        token = cls.create(
+        return cls.create(
             user,
             cls.FRONTEND_TAG,
             [cls.HIDDEN_TAG, cls.FRONTEND_TAG],
             expires_delta,
         )
-        db.session.add(token)
-        db.session.commit()
-        return token
 
     @classmethod
     def create_reset_password_token(cls, user, expires_delta=False) -> AuthToken:
-        token = cls.create(
+        return cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
             [cls.HIDDEN_TAG, cls.RESET_PASSWORD_TAG],
             expires_delta or timedelta(hours=24),
         )
-        db.session.add(token)
-        db.session.commit()
-        return token
 
     @property
     def expires_in(self) -> Union[bool, timedelta]:

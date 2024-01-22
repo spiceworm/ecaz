@@ -93,17 +93,6 @@ def _app():
         yield _a
 
 
-@pytest.fixture
-def auth_token(_app):
-    def func(*args, **kwargs):
-        _token = AuthToken.create(*args, **kwargs)
-        db.session.add(_token)
-        db.session.commit()
-        return _token
-
-    return func
-
-
 @pytest.fixture()
 def api_user(_app):
     return functools.partial(_ApiUser, _app)

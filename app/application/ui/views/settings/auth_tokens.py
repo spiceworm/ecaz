@@ -41,13 +41,11 @@ def create_auth_token() -> Response:
                 **{expires_unit.lower(): int(form.expires_number.data)}
             )
 
-        token = AuthToken.create(
+        AuthToken.create(
             user=user,
             name=form.token_name.data,
             expires_delta=expires_delta,
         )
-        db.session.add(token)
-        db.session.commit()
     return flask.redirect(flask.url_for(".auth_token_settings"))
 
 
