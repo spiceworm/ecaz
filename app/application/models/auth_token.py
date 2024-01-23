@@ -10,7 +10,6 @@ import flask_jwt_extended
 import humanize
 import jwt
 import sqlalchemy as sa
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -149,11 +148,11 @@ class AuthToken(db.Model):
             case _:
                 return humanize.naturaldelta(exp)
 
-    @hybrid_property
+    @property
     def is_expired(self) -> bool:
         return self.expires_in is True
 
-    @hybrid_property
+    @property
     def tags(self) -> List[str]:
         try:
             claims = flask_jwt_extended.decode_token(self.value)

@@ -5,7 +5,6 @@ import flask
 import pyotp
 import qrcode
 import sqlalchemy as sa
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -67,7 +66,7 @@ class Totp(db.Model):
             name=self.user.username,
         )
 
-    @hybrid_property
+    @property
     def uri(self) -> str:
         return self.handler.provisioning_uri()
 
