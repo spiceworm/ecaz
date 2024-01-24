@@ -110,6 +110,11 @@ def api_user(app):
     return functools.partial(ApiUser, app)
 
 
+@pytest.fixture
+def cli_runner(app):
+    return app.test_cli_runner()
+
+
 @pytest.fixture()
 def ui_user(app):
     return functools.partial(UiUser, app)

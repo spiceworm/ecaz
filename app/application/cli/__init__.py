@@ -3,6 +3,7 @@ import re
 import click
 import flask
 
+from ..constants import messages
 from ..models import (
     db,
     User,
@@ -20,7 +21,7 @@ EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 def validate_email(ctx, param, value):
     if not EMAIL_REGEX.match(value):
-        raise ValueError("Invalid email address")
+        raise ValueError(messages.INVALID_EMAIL_ADDRESS)
     return value
 
 
@@ -63,7 +64,7 @@ def mark_admin(email):
     """
     user = User.query.filter(User.email == email).one_or_none()
     if not user:
-        raise ValueError(f"No user with email '{email}' exists")
+        raise ValueError(messages.NO_USER_FOR_PROVIDED_EMAIL)
     user.is_admin = True
     db.session.add(user)
     db.session.commit()
