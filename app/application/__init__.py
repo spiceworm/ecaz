@@ -82,7 +82,11 @@ def create_app():
     login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
 
-    admin = flask_admin.Admin(app, template_mode="bootstrap4")
+    admin = flask_admin.Admin(
+        app,
+        index_view=admin_views.RestrictedIndexView(),
+        template_mode="bootstrap4",
+    )
     admin.add_view(admin_views.ApiTokenModelView(ApiToken, db.session))
     admin.add_view(admin_views.UserModelView(User, db.session))
 
