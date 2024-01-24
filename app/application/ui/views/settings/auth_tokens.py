@@ -54,12 +54,11 @@ def create_auth_token():
 
 @flask_login.login_required
 def delete_auth_token():
-    user = flask_login.current_user
     form = forms.DeleteAuthTokenForm()
     if form.validate_on_submit():
         AuthToken.query.filter(
             AuthToken.id == form.id.data,
-            AuthToken.user_id == user.id,
+            AuthToken.user_id == flask_login.current_user.id,
         ).delete()
         db.session.commit()
     return flask.redirect(flask.url_for(".auth_token_settings"))

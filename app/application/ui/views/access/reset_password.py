@@ -6,31 +6,25 @@ from application.models import (
     db,
 )
 from application.ui import forms
+from application.util import process_jwt_auth_token
 
 
 __all__ = ("reset_password",)
 
 
-def reset_password(jwt):
+@process_jwt_auth_token(require_tags=[AuthToken.RESET_PASSWORD_TAG], error_redirect=".forgot_password")
+def reset_password(token):
     form = forms.ResetPasswordForm()
-    token = AuthToken.query.filter(AuthToken.value == jwt).one_or_none()
-
-    if not token or AuthToken.RESET_PASSWORD_TAG not in token.tags or token.is_expired:
-        flask.flash(messages.INVALID_TOKEN, category="error")
-        return flask.redirect(flask.url_for(".forgot_password"))
-
     if form.validate_on_submit():
         password1 = form.password1.data
         password2 = form.password2.data
-        if password1 != password2:
-            flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
-        else:
-            user = token.user
-            user.password = password1
-            db.session.add(user)
+        if password1 == password2:
+            token.user.password = password1
+            db.session.add(token.user)
             db.session.delete(token)
             db.session.commit()
             flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")
             return flask.redirect(flask.url_for(".login"))
-
-    return flask.render_template("access/reset_password.html", form=form, jwt=jwt)
+        else:
+            flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
+    return flask.render_template("access/reset_password.html", form=form, jwt=token.value)

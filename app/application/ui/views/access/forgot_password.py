@@ -1,5 +1,4 @@
 import flask
-import flask_login
 import flask_mailman
 
 from application.constants import messages
@@ -8,15 +7,14 @@ from application.models import (
     User,
 )
 from application.ui import forms
+from application.util import require_unauthenticated
 
 
 __all__ = ("forgot_password",)
 
 
+@require_unauthenticated(if_authenticated_redirect_to=".profile")
 def forgot_password():
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for(".profile"))
-
     form = forms.ForgotPasswordForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()

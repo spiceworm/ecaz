@@ -10,15 +10,14 @@ from application.models import (
     User,
 )
 from application.ui import forms
+from application.util import require_unauthenticated
 
 
 __all__ = ("register",)
 
 
+@require_unauthenticated(if_authenticated_redirect_to=".profile")
 def register():
-    if flask_login.current_user.is_authenticated:
-        return flask.redirect(flask.url_for(".profile"))
-
     form = forms.RegisterForm()
     if form.validate_on_submit():
         try:
