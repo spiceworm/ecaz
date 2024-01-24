@@ -65,24 +65,24 @@ class ApiToken(db.Model):
         )
 
     @classmethod
-    def create_email_verification_token(cls, user):
+    def create_email_verification_token(cls, user, expires_delta=None):
         token = cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
             [cls.HIDDEN_TAG, cls.VERIFY_EMAIL_TAG],
-            timedelta(hours=24),
+            expires_delta or timedelta(hours=24),
         )
         db.session.add(token)
         db.session.commit()
         return token
 
     @classmethod
-    def create_reset_password_token(cls, user):
+    def create_reset_password_token(cls, user, expires_delta=None):
         token = cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
             [cls.HIDDEN_TAG, cls.RESET_PASSWORD_TAG],
-            timedelta(hours=24),
+            expires_delta or timedelta(hours=24),
         )
         db.session.add(token)
         db.session.commit()

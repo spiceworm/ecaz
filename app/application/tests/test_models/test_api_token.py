@@ -54,11 +54,9 @@ def test_tags_when_token_expired(user):
     """
     Verify `ApiToken.tags` attribute behavior when token is expired.
     """
-    token1 = ApiToken.create(
-        name="t1",
-        user=user(),
-        expires_delta=timedelta(microseconds=1),
-        tags=[ApiToken.HIDDEN_TAG, ApiToken.VERIFY_EMAIL_TAG],
+    token = ApiToken.create_email_verification_token(
+        user(),
+        timedelta(microseconds=1),
     )
     time.sleep(0.0000011)
-    assert token1.tags == []
+    assert token.tags == []

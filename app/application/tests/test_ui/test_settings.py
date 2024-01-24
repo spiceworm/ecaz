@@ -167,11 +167,9 @@ def test_verify_account_using_expired_token(ui_user):
     has expired.
     """
     user = ui_user()
-    token = ApiToken.create(
+    token = ApiToken.create_email_verification_token(
         user,
-        ApiToken.RESET_PASSWORD_TAG,
-        [ApiToken.HIDDEN_TAG, ApiToken.RESET_PASSWORD_TAG],
-        expires_delta=timedelta(microseconds=1),
+        timedelta(microseconds=1),
     )
     resp = user.get(
         f"/settings/verify/{token.value}",

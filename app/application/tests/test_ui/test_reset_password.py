@@ -54,11 +54,9 @@ def test_reset_password_using_expired_token(client, user):
     they are shown the correct error message and redirected back to /forgot_password
     page to have a new link emailed to them.
     """
-    token = ApiToken.create(
+    token = ApiToken.create_reset_password_token(
         user(),
-        ApiToken.RESET_PASSWORD_TAG,
-        [ApiToken.HIDDEN_TAG, ApiToken.RESET_PASSWORD_TAG],
-        expires_delta=timedelta(microseconds=1),
+        timedelta(microseconds=1),
     )
     time.sleep(0.0000011)
     resp = client.get(
