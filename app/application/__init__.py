@@ -10,6 +10,7 @@ from flask_admin.contrib.sqla import ModelView
 import flask_bcrypt
 import flask_jwt_extended
 import flask_login
+import flask_mailman
 
 
 class AdminModelView(ModelView):
@@ -37,6 +38,15 @@ def create_app():
         SECRET_KEY = os.environ["SECRET_KEY"]
         TESTING = bool(int(os.getenv("TESTING", "1")))
         WTF_CSRF_ENABLED = bool(int(os.getenv("WTF_CSRF_ENABLED", "1")))
+
+        MAIL_DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
+        MAIL_PASSWORD = os.environ["MAIL_PASSWORD"]
+        MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
+        MAIL_SERVER = os.environ["MAIL_SERVER"]
+        MAIL_TIMEOUT = int(os.getenv("MAIL_TIMEOUT", 10))
+        MAIL_USE_TLS = MAIL_PORT == 587
+        MAIL_USE_SSL = MAIL_PORT == 465
+        MAIL_USERNAME = os.environ["MAIL_USERNAME"]
 
         POSTGRES_DB = os.environ["POSTGRES_DB"]
         POSTGRES_HOST = os.environ["POSTGRES_HOST"]
@@ -76,6 +86,7 @@ def create_app():
 
     bcrypt = flask_bcrypt.Bcrypt(app)
     flask_jwt_extended.JWTManager(app)
+    flask_mailman.Mail(app)
 
     login_manager = flask_login.LoginManager()
     login_manager.login_view = "ui_bp.login"

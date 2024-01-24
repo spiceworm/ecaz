@@ -4,6 +4,7 @@ flask-admin==1.6.1
 flask-bcrypt==1.0.1
 flask-jwt-extended==4.5.3
 flask-login @ git+https://github.com/maxcountryman/flask-login@main
+flask-mailman==1.0.0
 Flask-Migrate==4.0.5
 flask-restful==0.3.10
 Flask-SQLAlchemy==3.1.1
