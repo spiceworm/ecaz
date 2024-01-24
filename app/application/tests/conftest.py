@@ -97,7 +97,7 @@ def app():
 @pytest.fixture
 def api_token(app):
     def func(*args, **kwargs):
-        _token = ApiToken(*args, **kwargs)
+        _token = ApiToken.create(*args, **kwargs)
         db.session.add(_token)
         db.session.commit()
         return _token
