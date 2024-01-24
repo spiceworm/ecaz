@@ -1,6 +1,9 @@
 import flask
 import flask_login
-
+import psycopg2
+import psycopg2.errors
+from psycopg2.errorcodes import UNIQUE_VIOLATION
+import sqlalchemy.exc
 
 from .. import forms
 from ...constants import messages
@@ -9,6 +12,7 @@ from ...models import db
 
 __all__ = (
     "change_password",
+    "change_username",
     "delete_account",
     "settings",
 )
@@ -28,6 +32,25 @@ def change_password():
             flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")
         else:
             flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
+    return flask.redirect(flask.url_for(".settings"))
+
+
+@flask_login.login_required
+def change_username():
+    form = forms.ChangeUsernameForm()
+    if form.validate_on_submit():
+        user = flask_login.current_user
+        user.username = form.username.data
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
+                flask.flash(messages.DUPLICATE_USERNAME_ERROR, category="error")
+            else:
+                raise e
+        else:
+            flask.flash(messages.USERNAME_UPDATE_SUCCESS, category="success")
     return flask.redirect(flask.url_for(".settings"))
 
 
@@ -57,6 +80,7 @@ def settings():
     return flask.render_template(
         "settings.html",
         change_password_form=forms.ChangePasswordForm(),
+        change_username_form=forms.ChangeUsernameForm(),
         delete_account_form=forms.DeleteAccountForm(),
         email_form=forms.EmailForm(),
         logout_form=forms.LogoutForm(),

@@ -1,13 +1,15 @@
 import flask_wtf
 from wtforms import (
+    EmailField,
     PasswordField,
+    StringField,
     validators,
 )
-from wtforms.fields import EmailField
 
 
 __all__ = (
     "ChangePasswordForm",
+    "ChangeUsernameForm",
     "DeleteAccountForm",
     "EmailForm",
 )
@@ -28,6 +30,16 @@ class ChangePasswordForm(flask_wtf.FlaskForm):
         validators=[
             validators.DataRequired(),
             validators.Length(min=8),
+        ],
+    )
+
+
+class ChangeUsernameForm(flask_wtf.FlaskForm):
+    username = StringField(
+        'username',
+        render_kw={"placeholder": "Username"},
+        validators=[
+            validators.DataRequired(),
         ],
     )
 

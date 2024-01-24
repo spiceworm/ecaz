@@ -30,6 +30,7 @@ def register():
         user = User(
             email=form.email.data,
             password=form.password.data,
+            username=form.email.data,
         )
         db.session.add(user)
         try:

@@ -56,13 +56,12 @@ class User(db.Model, flask_login.UserMixin):
             padding="pkcs5",
         ),
     )
-    verified = sa.Column(
+    username = sa.Column(
         StringEncryptedType(
-            type_in=sa.Boolean,
             key=get_encryption_key,
-            padding="zeroes",
+            padding="pkcs5",
         ),
-        default=False,
+        unique=True,
     )
 
     @hybrid_property
