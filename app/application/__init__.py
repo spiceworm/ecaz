@@ -83,6 +83,8 @@ def create_app():
 
     @app.before_request
     def define_globals():
+        """No custom attributes will be available on `flask.g` unless
+        they are set on the `flask.g` object here."""
         g.config = config
         g.bcrypt = bcrypt
 

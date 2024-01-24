@@ -6,9 +6,8 @@ docker compose up --build
 docker exec -it ecaz_xyz-app-1 flask shell
 
 # Deploy
-docker compose build \
-  && docker tag ecaz_xyz-app:latest registry.digitalocean.com/ecaz-xyz/app:0.1.0 \
-  && docker push registry.digitalocean.com/ecaz-xyz/app:0.1.0
+# Bump TAG in deploy.sh and then run deploy script
+./deploy.sh
 ```
 
 ```python
@@ -16,6 +15,11 @@ docker compose build \
 import requests
 
 jwt = ""  # Generate JWT through UI after logging in
-resp = requests.get('http://127.0.0.1/api/v1/user', headers={'Authorization': f'Bearer {jwt}'})
+
+local_instance = 'http://127.0.0.1'
+production_instance = 'https://ecaz.xyz'
+
+# Send API call to local or production instance
+resp = requests.get(f'{production_instance}/api/v1/user', headers={'Authorization': f'Bearer {jwt}'})
 resp.json()
 ```
