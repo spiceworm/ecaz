@@ -1,6 +1,7 @@
 import flask_login
 import flask_migrate
 import flask_sqlalchemy
+from sqlalchemy_utils import EmailType
 
 
 db = flask_sqlalchemy.SQLAlchemy()
@@ -17,6 +18,6 @@ class ApiToken(db.Model):
 class User(db.Model, flask_login.UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     api_tokens = db.relationship("ApiToken", backref="user")
+    email = db.Column(EmailType, unique=True)
     is_admin = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String)
-    username = db.Column(db.String, unique=True)

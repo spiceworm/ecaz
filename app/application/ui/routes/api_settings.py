@@ -34,7 +34,7 @@ def create_api_token():
     if form.validate_on_submit():
         token_value = create_access_token(
             expires_delta=False,
-            identity=user.username,
+            identity=user.email,
         )
         api_token = ApiToken(
             name=form.token_name.data,

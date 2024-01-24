@@ -20,7 +20,7 @@ def register():
     if form.validate_on_submit():
         password_hash = flask.g.bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(
-            username=form.username.data,
+            email=form.email.data,
             password_hash=password_hash,
         )
         db.session.add(user)
@@ -28,7 +28,7 @@ def register():
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
-                flask.flash("Error: Username already taken")
+                flask.flash("Error: Email already taken")
             else:
                 raise e
         else:

@@ -30,7 +30,7 @@ def client(app):
 def user(app):
     bcrypt = Bcrypt(app)
     password_hash = bcrypt.generate_password_hash("test-password").decode("utf-8")
-    user = User(username="test-username", password_hash=password_hash)
+    user = User(email="email@test.com", password_hash=password_hash)
     db.session.add(user)
     db.session.commit()
     yield user
@@ -40,7 +40,7 @@ def user(app):
 
 @pytest.fixture()
 def auth_token(app, user):
-    token_value = create_access_token(expires_delta=False, identity=user.username)
+    token_value = create_access_token(expires_delta=False, identity=user.email)
     token = ApiToken(name="test-token", value=token_value, user=user)
     db.session.add(token)
     db.session.commit()
@@ -69,7 +69,7 @@ def api_auth_get(auth_token, api_client):
 @pytest.fixture()
 def ui_client(app, user):
     """Requests sent by `client` are automatically authenticated with the
-    username and password of `user`"""
+    email and password of `user`"""
     with app.test_client(user=user) as client:
         yield client
 

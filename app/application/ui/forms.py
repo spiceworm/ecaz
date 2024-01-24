@@ -4,19 +4,20 @@ from wtforms import (
     PasswordField,
     StringField,
 )
-from wtforms.validators import DataRequired
+from wtforms.fields import EmailField
+from wtforms import validators
 
 
 class ChangePassword(FlaskForm):
     password1 = PasswordField(
         "password1",
         render_kw={"placeholder": "New Password"},
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )
     password2 = PasswordField(
         "password2",
         render_kw={"placeholder": "Repeat Password"},
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )
 
 
@@ -24,27 +25,27 @@ class CreateApiToken(FlaskForm):
     token_name = StringField(
         "name",
         render_kw={"placeholder": "Name"},
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )
 
 
 class DeleteApiToken(FlaskForm):
     id = IntegerField(
         "id",
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )
 
 
 class Login(FlaskForm):
+    email = EmailField(
+        "email",
+        render_kw={"placeholder": "Email"},
+        validators=[validators.DataRequired(), validators.Email()],
+    )
     password = PasswordField(
         "password",
         render_kw={"placeholder": "Password"},
-        validators=[DataRequired()],
-    )
-    username = StringField(
-        "username",
-        render_kw={"placeholder": "Username"},
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )
 
 
@@ -53,13 +54,13 @@ class Logout(FlaskForm):
 
 
 class Register(FlaskForm):
+    email = EmailField(
+        "email",
+        render_kw={"placeholder": "Email"},
+        validators=[validators.DataRequired(), validators.Email()],
+    )
     password = PasswordField(
         "password",
         render_kw={"placeholder": "Password"},
-        validators=[DataRequired()],
-    )
-    username = StringField(
-        "username",
-        render_kw={"placeholder": "Username"},
-        validators=[DataRequired()],
+        validators=[validators.DataRequired()],
     )

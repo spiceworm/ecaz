@@ -60,7 +60,7 @@ def test_login(client, user):
     resp = client.post(
         "/login",
         follow_redirects=True,
-        data={"username": user.username, "password": "test-password"},
+        data={"email": user.email, "password": "test-password"},
     )
     assert len(resp.history) == 1
     assert resp.request.path == "/profile"
@@ -70,7 +70,7 @@ def test_bad_login(client):
     resp = client.post(
         "/login",
         follow_redirects=True,
-        data={"username": "invalid-username", "password": "invalid-password"},
+        data={"email": "bad@test.com", "password": "invalid-password"},
     )
     assert len(resp.history) == 0
     assert resp.request.path == "/login"
@@ -80,7 +80,7 @@ def test_login_with_next_url_param(client, user):
     resp = client.post(
         "/login?next=%2Fapi_settings",
         follow_redirects=True,
-        data={"username": user.username, "password": "test-password"},
+        data={"email": user.email, "password": "test-password"},
     )
     assert len(resp.history) == 1
     assert resp.request.path == "/api_settings"
@@ -90,7 +90,7 @@ def test_login_with_bad_next_url_param(client, user):
     resp = client.post(
         "/login?next=%2Fdoes_not_exist",
         follow_redirects=True,
-        data={"username": user.username, "password": "test-password"},
+        data={"email": user.email, "password": "test-password"},
     )
     assert len(resp.history) == 1
     assert resp.status_code == int(HTTPStatus.NOT_FOUND)
@@ -100,7 +100,7 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     resp = client.post(
         "/login?next=%2Fapi_settings",
         follow_redirects=True,
-        data={"username": "invalid", "password": "invalid"},
+        data={"email": "invalid@test.com", "password": "invalid"},
     )
     assert resp.request.args["next"] == "/api_settings"
 
@@ -121,9 +121,9 @@ def test_register(client):
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"username": "u", "password": "p"},
+        data={"email": "u@test.com", "password": "p"},
     )
-    user = User.query.filter_by(username="u")
+    user = User.query.filter_by(email="u@test.com")
     assert user
     assert len(resp.history) == 1
     assert resp.request.path == "/profile"
@@ -131,21 +131,21 @@ def test_register(client):
     db.session.commit()
 
 
-def test_register_duplicate_username(client):
+def test_register_duplicate_email(client):
     client.post(
         "/register",
         follow_redirects=True,
-        data={"username": "u", "password": "p"},
+        data={"email": "u@test.com", "password": "p"},
     )
     client.post("/logout")
 
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"username": "u", "password": "p"},
+        data={"email": "u@test.com", "password": "p"},
     )
-    assert "Username already taken" in resp.data.decode()
+    assert "Email already taken" in resp.data.decode()
     db.session.rollback()
 
-    User.query.filter_by(username="u").delete()
+    User.query.filter_by(email="u@test.com").delete()
     db.session.commit()

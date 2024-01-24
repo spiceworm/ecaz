@@ -12,7 +12,7 @@ def login():
 
     form = forms.Login()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).one_or_none()
+        user = User.query.filter_by(email=form.email.data).one_or_none()
         if user is not None:
             is_correct_password = flask.g.bcrypt.check_password_hash(
                 user.password_hash,

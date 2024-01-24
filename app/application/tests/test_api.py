@@ -5,4 +5,4 @@ def test_status_endpoint(api_get):
 
 def test_user_endpoint(api_auth_get, user):
     resp = api_auth_get("/api/v1/user")
-    assert resp.json == {"logged_in_as": user.username}
+    assert resp.json == {"logged_in_as": user.email}

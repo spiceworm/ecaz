@@ -1,3 +1,4 @@
+email-validator==2.1.0.post1
 Flask==3.0.0
 flask-admin==1.6.1
 flask-bcrypt==1.0.1
@@ -11,3 +12,4 @@ gunicorn==21.2.0
 ipython
 psycopg2-binary==2.9.9  # sqlalchemy does not support psycopg[binary,pool] yet
 PyJWT==2.8.0
+sqlalchemy-utils==0.41.1
