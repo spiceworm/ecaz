@@ -43,14 +43,19 @@ def create_app() -> flask.Flask:
         POSTGRES_HOST = decouple.config("POSTGRES_HOST")
         POSTGRES_PASSWORD = decouple.config("POSTGRES_PASSWORD")
         POSTGRES_PORT = decouple.config("POSTGRES_PORT")
-        POSTGRES_SSL = decouple.config("POSTGRES_SSL", cast=bool, default=True)
+        POSTGRES_SSLMODE = decouple.config(
+            "POSTGRES_SSLMODE",
+            cast=decouple.Choices(["disable", "require"]),
+            default="require",
+        )
         POSTGRES_USER = decouple.config("POSTGRES_USER")
 
         # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_DATABASE_URI = (
             f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
             f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-        ) + ("?sslmode=require" if POSTGRES_SSL else "")
+            f"?sslmode={POSTGRES_SSLMODE}"
+        )
 
         # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_ENGINE_OPTIONS = {
