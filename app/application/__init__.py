@@ -10,21 +10,22 @@ from flask_login import LoginManager
 
 
 class Config:
-    DB_PATH = os.environ['DB_PATH']
-    DEBUG = bool(int(os.getenv('DEBUG', '0')))
-    PROD = bool(int(os.getenv('PROD', '0')))
-    TESTING = bool(int(os.getenv('TESTING', '0')))
+    DB_PATH = os.environ["DB_PATH"]
+    DEBUG = bool(int(os.getenv("DEBUG", "0")))
+    PROD = bool(int(os.getenv("PROD", "0")))
+    TESTING = bool(int(os.getenv("TESTING", "0")))
     SECRET_KEY = os.environ["SECRET_KEY"]
-    SQLALCHEMY_DATABASE_URI = f'sqlite:///{DB_PATH}'
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"
 
     def json(self):
         return {
-            attr: getattr(self, attr) for attr in (
-                'DB_PATH',
-                'DEBUG',
-                'PROD',
-                'TESTING',
-                'SQLALCHEMY_DATABASE_URI',
+            attr: getattr(self, attr)
+            for attr in (
+                "DB_PATH",
+                "DEBUG",
+                "PROD",
+                "TESTING",
+                "SQLALCHEMY_DATABASE_URI",
             )
         }
 
@@ -32,21 +33,24 @@ class Config:
 config = Config()
 
 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO' if config.PROD else 'DEBUG',
-        'handlers': ['wsgi']
+dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+            }
+        },
+        "handlers": {
+            "wsgi": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://flask.logging.wsgi_errors_stream",
+                "formatter": "default",
+            }
+        },
+        "root": {"level": "INFO" if config.PROD else "DEBUG", "handlers": ["wsgi"]},
     }
-})
+)
 
 
 def create_app():
@@ -74,6 +78,7 @@ def create_app():
     app.register_blueprint(ui_bp)
 
     from .models import db, User
+
     db.init_app(app)
 
     @login_manager.user_loader

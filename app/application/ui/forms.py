@@ -8,12 +8,12 @@ from wtforms.validators import DataRequired
 
 class Login(FlaskForm):
     password = PasswordField(
-        'password',
+        "password",
         render_kw={"placeholder": "Password"},
         validators=[DataRequired()],
     )
     username = StringField(
-        'username',
+        "username",
         render_kw={"placeholder": "Username"},
         validators=[DataRequired()],
     )

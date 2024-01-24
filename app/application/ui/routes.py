@@ -12,8 +12,8 @@ from . import (
 from ..models import User
 
 
-@ui_bp.route("/", methods=['GET', 'POST'])
-@ui_bp.route("/login", methods=['GET', 'POST'])
+@ui_bp.route("/", methods=["GET", "POST"])
+@ui_bp.route("/login", methods=["GET", "POST"])
 def login():
     form = forms.Login()
     if form.validate_on_submit():
@@ -22,16 +22,16 @@ def login():
             username=form.username.data,
         ).all()
 
-        current_app.logger.debug(f'Match count = {len(matches)}')
+        current_app.logger.debug(f"Match count = {len(matches)}")
         current_app.logger.debug(matches)
 
         if matches:
             if len(matches) == 1:
                 user = matches[0]
-                flash(f'Logged in as {user.username}')
+                flash(f"Logged in as {user.username}")
             else:
-                flash('Multiple matches found for log in credentials')
+                flash("Multiple matches found for log in credentials")
         else:
-            flash('Invalid log in credentials')
+            flash("Invalid log in credentials")
 
     return render_template("login.html", form=form)

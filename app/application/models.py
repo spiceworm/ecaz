@@ -14,5 +14,5 @@ class User(db.Model, flask_login.UserMixin):
 
 
 class LoginForm(flask_wtf.Form):
-    username = wtforms.StringField('username')
-    password = wtforms.PasswordField('password')
+    username = wtforms.StringField("username")
+    password = wtforms.PasswordField("password")
