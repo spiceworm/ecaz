@@ -6,12 +6,15 @@ from application.models import (
 )
 
 
-@pytest.mark.parametrize("attr_name, exp_value", (
-    ("is_admin", False),
-    ("is_banned", False),
-    ("is_deleted", False),
-    ("is_verified", False),
-))
+@pytest.mark.parametrize(
+    "attr_name, exp_value",
+    (
+        ("is_admin", False),
+        ("is_banned", False),
+        ("is_deleted", False),
+        ("is_verified", False),
+    ),
+)
 def test_defaults(user, attr_name, exp_value):
     u = user()
     assert getattr(u, attr_name) == exp_value

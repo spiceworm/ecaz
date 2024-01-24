@@ -1,6 +1,6 @@
 from datetime import timedelta
 from http import HTTPStatus
-import  time
+import time
 
 from application.constants import messages
 from application.models import (

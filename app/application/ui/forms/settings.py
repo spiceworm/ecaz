@@ -36,7 +36,7 @@ class ChangePasswordForm(flask_wtf.FlaskForm):
 
 class ChangeUsernameForm(flask_wtf.FlaskForm):
     username = StringField(
-        'username',
+        "username",
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),

@@ -101,6 +101,7 @@ def api_token(app):
         db.session.add(_token)
         db.session.commit()
         return _token
+
     return func
 
 
@@ -125,6 +126,7 @@ def user(app):
         db.session.add(_user)
         db.session.commit()
         return _user
+
     return func
 
 
