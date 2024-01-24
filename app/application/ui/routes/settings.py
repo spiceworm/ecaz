@@ -16,7 +16,7 @@ __all__ = (
 
 @flask_login.login_required
 def change_password():
-    form = forms.ChangePassword()
+    form = forms.ChangePasswordForm()
     if form.validate_on_submit():
         password1 = form.password1.data
         password2 = form.password2.data
@@ -39,7 +39,7 @@ def delete_account():
     were many objects related the user object that also required deletion which could
     cause the client's request to timeout while each object was deleted.
     """
-    form = forms.DeleteAccount()
+    form = forms.DeleteAccountForm()
     if form.validate_on_submit():
         # Setting this attribute for the future where a deletion queue exists and a job
         # that checks for all user accounts marked for deletion runs periodically.
@@ -56,7 +56,7 @@ def delete_account():
 def settings():
     return flask.render_template(
         "settings.html",
-        change_password_form=forms.ChangePassword(),
-        delete_account_form=forms.DeleteAccount(),
-        logout_form=forms.Logout(),
+        change_password_form=forms.ChangePasswordForm(),
+        delete_account_form=forms.DeleteAccountForm(),
+        logout_form=forms.LogoutForm(),
     )

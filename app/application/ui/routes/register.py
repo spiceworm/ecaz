@@ -17,7 +17,7 @@ def register():
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for(".profile"))
 
-    form = forms.Register()
+    form = forms.RegisterForm()
     if form.validate_on_submit():
         password_hash = flask.g.bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(

@@ -11,7 +11,7 @@ def login():
     if flask_login.current_user.is_authenticated:
         return flask.redirect(flask.url_for(".profile"))
 
-    form = forms.Login()
+    form = forms.LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
         if user is not None:

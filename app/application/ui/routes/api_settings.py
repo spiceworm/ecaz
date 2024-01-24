@@ -21,16 +21,16 @@ __all__ = (
 def api_settings():
     return flask.render_template(
         "api_settings.html",
-        create_api_token_form=forms.CreateApiToken(),
-        delete_api_token_form=forms.DeleteApiToken(),
-        logout_form=forms.Logout(),
+        create_api_token_form=forms.CreateApiTokenForm(),
+        delete_api_token_form=forms.DeleteApiTokenForm(),
+        logout_form=forms.LogoutForm(),
     )
 
 
 @flask_login.login_required
 def create_api_token():
     user = flask_login.current_user
-    form = forms.CreateApiToken()
+    form = forms.CreateApiTokenForm()
     if form.validate_on_submit():
         token_value = create_access_token(
             expires_delta=False,
@@ -49,7 +49,7 @@ def create_api_token():
 @flask_login.login_required
 def delete_api_token():
     user = flask_login.current_user
-    form = forms.DeleteApiToken()
+    form = forms.DeleteApiTokenForm()
     if form.validate_on_submit():
         ApiToken.query.filter(
             ApiToken.id == form.id.data,
