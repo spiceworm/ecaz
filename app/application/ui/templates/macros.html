@@ -1,15 +1,15 @@
 {% macro messages() %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="row">
-                {% for category, message in messages %}
-                    {% if category == "success" %}
-                        {% set alert_class="alert-success" %}
-                    {% elif category == "error" %}
-                        {% set alert_class="alert-danger" %}
-                    {% else %}
-                        {% set alert_class="alert-info" %}
-                    {% endif %}
+            {% for category, message in messages %}
+                {% if category == "success" %}
+                    {% set alert_class="alert-success" %}
+                {% elif category == "error" %}
+                    {% set alert_class="alert-danger" %}
+                {% else %}
+                    {% set alert_class="alert-info" %}
+                {% endif %}
+                <div class="row">
                     <div class="col-lg-4"></div>
                     <div class="col-lg-4">
                         <div class="alert alert-dismissible {{ alert_class }}">
@@ -17,8 +17,8 @@
                         </div>
                     </div>
                     <div class="col-lg-4"></div>
-                {% endfor %}
-            </div>
+                </div>
+            {% endfor %}
         {% endif %}
     {% endwith %}
 {% endmacro %}
