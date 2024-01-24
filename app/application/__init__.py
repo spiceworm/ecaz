@@ -1,12 +1,23 @@
 import os
 
+import flask
 from flask import (
     Flask,
     g,
 )
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from flask_login import LoginManager
+import flask_login
+
+
+class AdminModelView(ModelView):
+    def is_accessible(self):
+        return flask_login.current_user.is_authenticated and flask_login.current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return flask.redirect(flask.url_for("ui_bp.login", next=flask.request.url))
 
 
 def create_app():
@@ -15,6 +26,7 @@ def create_app():
         PROD = bool(int(os.getenv("PROD", "0")))
         TESTING = bool(int(os.getenv("TESTING", "1")))
         SECRET_KEY = os.environ["SECRET_KEY"]
+        FLASK_ADMIN_SWATCH = os.getenv("FLASK_ADMIN_SWATCH", "cerulean")
         WTF_CSRF_ENABLED = bool(int(os.getenv("WTF_CSRF_ENABLED", "1")))
 
         POSTGRES_DB = os.environ["POSTGRES_DB"]
@@ -38,6 +50,7 @@ def create_app():
                     "PROD",
                     "TESTING",
                     "SECRET_KEY",
+                    "FLASK_ADMIN_SWATCH",
                     "WTF_CSRF_ENABLED",
                     "POSTGRES_DB",
                     "POSTGRES_HOST",
@@ -62,13 +75,14 @@ def create_app():
     bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
 
-    login_manager = LoginManager()
+    login_manager = flask_login.LoginManager()
     login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
 
     from .api import api_bp
     from .ui import ui_bp
     from .models import (
+        ApiToken,
         db,
         migrate,
         User,
@@ -82,6 +96,10 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+
+    admin = Admin(app, name="ecaz_xyz", template_mode="bootstrap3")
+    admin.add_view(AdminModelView(ApiToken, db.session))
+    admin.add_view(AdminModelView(User, db.session))
 
     @app.before_request
     def define_globals():
