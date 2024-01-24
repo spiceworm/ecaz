@@ -5,10 +5,10 @@ from flask import (
     Flask,
     g,
 )
-from flask_admin import Admin
+import flask_admin
 from flask_admin.contrib.sqla import ModelView
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
+import flask_bcrypt
+import flask_jwt_extended
 import flask_login
 
 
@@ -21,12 +21,21 @@ class AdminModelView(ModelView):
 
 
 def create_app():
+    from .api import api_bp
+    from .ui import ui_bp
+    from .models import (
+        ApiToken,
+        db,
+        migrate,
+        User,
+    )
+
     class Config:
         DEBUG = bool(int(os.getenv("DEBUG", "1")))
-        PROD = bool(int(os.getenv("PROD", "0")))
-        TESTING = bool(int(os.getenv("TESTING", "1")))
-        SECRET_KEY = os.environ["SECRET_KEY"]
         FLASK_ADMIN_SWATCH = os.getenv("FLASK_ADMIN_SWATCH", "cerulean")
+        PROD = bool(int(os.getenv("PROD", "0")))
+        SECRET_KEY = os.environ["SECRET_KEY"]
+        TESTING = bool(int(os.getenv("TESTING", "1")))
         WTF_CSRF_ENABLED = bool(int(os.getenv("WTF_CSRF_ENABLED", "1")))
 
         POSTGRES_DB = os.environ["POSTGRES_DB"]
@@ -47,10 +56,10 @@ def create_app():
                 attr: getattr(self, attr)
                 for attr in (
                     "DEBUG",
-                    "PROD",
-                    "TESTING",
-                    "SECRET_KEY",
                     "FLASK_ADMIN_SWATCH",
+                    "PROD",
+                    "SECRET_KEY",
+                    "TESTING",
                     "WTF_CSRF_ENABLED",
                     "POSTGRES_DB",
                     "POSTGRES_HOST",
@@ -67,37 +76,26 @@ def create_app():
         static_folder=None,
         template_folder=None,
     )
+    app.register_blueprint(api_bp)
+    app.register_blueprint(ui_bp)
 
     config = Config()
     app.config.from_object(config)
     app.logger.debug(config.json())
 
-    bcrypt = Bcrypt(app)
-    jwt = JWTManager(app)
+    bcrypt = flask_bcrypt.Bcrypt(app)
+    flask_jwt_extended.JWTManager(app)
 
     login_manager = flask_login.LoginManager()
     login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
 
-    from .api import api_bp
-    from .ui import ui_bp
-    from .models import (
-        ApiToken,
-        db,
-        migrate,
-        User,
-    )
-
-    app.register_blueprint(api_bp)
-    app.register_blueprint(ui_bp)
-
     db.init_app(app)
     migrate.init_app(app, db)
-
     with app.app_context():
         db.create_all()
 
-    admin = Admin(app, name="ecaz_xyz", template_mode="bootstrap3")
+    admin = flask_admin.Admin(app, name="ecaz_xyz", template_mode="bootstrap3")
     admin.add_view(AdminModelView(ApiToken, db.session))
     admin.add_view(AdminModelView(User, db.session))
 
