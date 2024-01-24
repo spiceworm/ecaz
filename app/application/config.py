@@ -1,4 +1,5 @@
 import os
+import secrets
 
 __all__ = (
     "Development",
@@ -13,6 +14,7 @@ class _Config:
 
 class Development(_Config):
     DEBUG = True
+    SECRET_KEY = secrets.token_hex()
 
 
 class Production(_Config):

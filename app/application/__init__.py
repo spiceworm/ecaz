@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_login import LoginManager
 
 from . import config
 
@@ -18,6 +19,14 @@ def create_app():
         app.config.from_object(config.Testing())
     else:
         app.config.from_object(config.Development())
+
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        pass
+        # return User.get(user_id)
 
     from .api import api_bp
 

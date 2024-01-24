@@ -1,0 +1,28 @@
+<link href="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.css') }}" rel="stylesheet" type="text/css" >
+<script src="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.js') }}"></script>
+
+<style>
+    body{
+        background-image: url("{{ url_for('.static', filename='pixel_art_desert_landscape.gif') }}");
+        background-size: cover;
+        height: 100vh;
+        padding:0;
+        margin:0;
+    }
+</style>
+
+<div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
+	<div class="rpgui-container framed">
+        <form action="/login" method="post">
+            {{ form.csrf_token }}
+            {{ form.username }}
+            {{ form.password }}
+            <div style="display:flex;justify-content:center;align-items:center;">
+              <button class="rpgui-button" type="submit" id="submit" name="submit">Submit</button>
+            </div>
+        </form>
+	</div>
+</div>
+
+<script>
+</script>

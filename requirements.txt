@@ -1,2 +1,4 @@
 Flask==3.0.0
+flask-login @ git+https://github.com/maxcountryman/flask-login@main
+Flask-WTF==1.2.1
 gunicorn==21.2.0
