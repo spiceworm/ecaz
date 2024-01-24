@@ -101,6 +101,11 @@ def create_app():
         they are set on the `flask.g` object here."""
         flask.g.config = config
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        flask.flash(str(e), category="error")
+        return flask.redirect(flask.url_for("ui_bp.login"))
+
     @login_manager.user_loader
     def load_user(user_id):
         """Callback function that tells flask-login how to reload

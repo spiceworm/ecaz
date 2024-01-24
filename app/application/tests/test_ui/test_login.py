@@ -59,8 +59,8 @@ def test_login_with_bad_next_url_param(client, user):
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
-    assert len(resp.history) == 1
-    assert resp.status_code == int(HTTPStatus.NOT_FOUND)
+    assert len(resp.history) == 3
+    assert resp.request.path == "/profile"
 
 
 def test_login_with_delete_pending(client, user):
