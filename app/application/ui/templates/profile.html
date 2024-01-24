@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "authenticated_base.html" %}
 
 
 {% block head %}
@@ -16,6 +16,8 @@
 
 
 {% block content %}
+    {{ super() }}
+
     <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
 
         <div class="rpgui-container framed">
