@@ -67,16 +67,18 @@ def create_app():
     login_manager.init_app(app)
 
     from .api import api_bp
+    from .ui import ui_bp
+    from .models import (
+        db,
+        migrate,
+        User,
+    )
 
     app.register_blueprint(api_bp)
-
-    from .ui import ui_bp
-
     app.register_blueprint(ui_bp)
 
-    from .models import db, User
-
     db.init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         db.create_all()

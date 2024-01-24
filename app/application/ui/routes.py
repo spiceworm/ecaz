@@ -7,7 +7,11 @@ from . import (
     forms,
     ui_bp,
 )
-from ..models import ApiToken, db, User
+from ..models import (
+    ApiToken,
+    db,
+    User,
+)
 
 
 @ui_bp.route("/create_api_token", methods=["POST"])

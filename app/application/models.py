@@ -1,8 +1,10 @@
 import flask_login
+import flask_migrate
 import flask_sqlalchemy
 
 
 db = flask_sqlalchemy.SQLAlchemy()
+migrate = flask_migrate.Migrate()
 
 
 class ApiToken(db.Model):
