@@ -36,3 +36,14 @@ def test_is_expired(user):
     time.sleep(0.0000011)
     assert token1.is_expired
     assert not token2.is_expired
+
+
+def test_tags_when_token_expired(user):
+    token1 = ApiToken.create(
+        name="t1",
+        user=user(),
+        expires_delta=timedelta(microseconds=1),
+        tags=[ApiToken.HIDDEN_TAG, ApiToken.VERIFY_EMAIL_TAG],
+    )
+    time.sleep(0.0000011)
+    assert token1.tags == []
