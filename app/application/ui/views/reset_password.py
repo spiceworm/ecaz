@@ -1,11 +1,12 @@
 import flask
 
-from .. import forms
-from ...constants import messages
-from ...models import (
+from application.constants import messages
+from application.models import (
     ApiToken,
     db,
 )
+from application.ui import forms
+
 
 __all__ = ("reset_password",)
 

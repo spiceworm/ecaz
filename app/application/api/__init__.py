@@ -1,6 +1,6 @@
 import flask
 
-from .v1.routes import api_v1_bp
+from application.api.v1.routes import api_v1_bp
 
 api_bp = flask.Blueprint(
     "api_bp",

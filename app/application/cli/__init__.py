@@ -3,8 +3,8 @@ import re
 import click
 import flask
 
-from ..constants import messages
-from ..models import (
+from application.constants import messages
+from application.models import (
     db,
     User,
 )

@@ -2,9 +2,7 @@ from datetime import timedelta
 import time
 
 from application.constants import messages
-from application.models import (
-    ApiToken,
-)
+from application.models import ApiToken
 
 
 def test_reset_password_submit_new_password(client, user):

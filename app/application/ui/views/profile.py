@@ -1,8 +1,7 @@
 import flask
 import flask_login
 
-
-from .. import forms
+from application.ui import forms
 
 
 __all__ = ("profile",)

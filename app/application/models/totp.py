@@ -13,7 +13,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy_utils import StringEncryptedType
 
-from . import (
+from application.models import (
     db,
     get_encryption_key,
 )

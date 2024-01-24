@@ -4,8 +4,8 @@ import flask
 import flask_jwt_extended
 import flask_login
 
-from .. import forms
-from ...models import (
+from application.ui import forms
+from application.models import (
     ApiToken,
     db,
 )

@@ -1,6 +1,6 @@
 import flask
 
-from . import views
+from application.ui import views
 
 
 ui_bp = flask.Blueprint(

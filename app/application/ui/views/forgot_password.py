@@ -2,12 +2,12 @@ import flask
 import flask_login
 import flask_mailman
 
-from .. import forms
-from ...constants import messages
-from ...models import (
+from application.constants import messages
+from application.models import (
     ApiToken,
     User,
 )
+from application.ui import forms
 
 
 __all__ = ("forgot_password",)
