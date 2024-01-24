@@ -1,9 +1,37 @@
+from logging.config import dictConfig
 import os
 
 from flask import Flask
 from flask_login import LoginManager
 
-from . import config
+
+class Config:
+    DEBUG = bool(int(os.getenv('DEBUG', '0')))
+    PROD = bool(int(os.getenv('PROD', '0')))
+    TESTING = bool(int(os.getenv('TESTING', '0')))
+    SECRET_KEY = os.environ["SECRET_KEY"]
+
+    def __str__(self):
+        return f'{self.DEBUG=}, {self.PROD=}, {self.TESTING=}'
+
+
+config = Config()
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO' if config.PROD else 'DEBUG',
+        'handlers': ['wsgi']
+    }
+})
 
 
 def create_app():
@@ -13,12 +41,8 @@ def create_app():
         template_folder=None,
     )
 
-    if "PROD" in os.environ:
-        app.config.from_object(config.Production())
-    elif "TEST" in os.environ:
-        app.config.from_object(config.Testing())
-    else:
-        app.config.from_object(config.Development())
+    app.config.from_object(config)
+    app.logger.debug(config)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
