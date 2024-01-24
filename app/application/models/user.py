@@ -3,7 +3,6 @@ from typing import List
 import flask_login
 import humanize
 import sqlalchemy as sa
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -14,23 +13,15 @@ from sqlalchemy_utils import StringEncryptedType
 from application.models import (
     AuthToken,
     db,
+    Discussion,
     get_encryption_key,
     Totp,
+    utcnow,
     WebAuthn,
 )
 
 
 __all__ = ("User",)
-
-
-class utcnow(sa.sql.expression.FunctionElement):
-    type = sa.DateTime()
-    inherit_cache = True
-
-
-@compiles(utcnow, "postgresql")
-def pg_utcnow(element, compiler, **kw) -> str:
-    return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
 def default_username(ctx) -> str:
@@ -51,6 +42,11 @@ class User(db.Model, flask_login.UserMixin):
         db.DateTime(timezone=True),
         nullable=False,
         default=utcnow(),
+    )
+    discussion: Mapped[List["Discussion"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
     email = sa.Column(
         StringEncryptedType(
@@ -123,6 +119,7 @@ class User(db.Model, flask_login.UserMixin):
         super().__init__(*args, **kwargs)
         db.session.add_all(
             [
+                Discussion(user=self),
                 Totp(user=self),
                 WebAuthn(user=self),
             ]
