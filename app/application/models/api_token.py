@@ -26,6 +26,7 @@ class ApiToken(db.Model):
     HIDDEN_TAG = "hidden"
     RESET_PASSWORD_TAG = "reset-password"
     VERIFY_EMAIL_TAG = "verify-email"
+    WEBAUTHN_2FA_TAG = "2fa/webauthn"
 
     id: Mapped[int] = mapped_column(
         nullable=False,
@@ -65,6 +66,18 @@ class ApiToken(db.Model):
             value=token_value,
             user=user,
         )
+
+    @classmethod
+    def create_2fa_webauthn_token(cls, user, expires_delta=False):
+        token = cls.create(
+            user,
+            cls.WEBAUTHN_2FA_TAG,
+            [cls.HIDDEN_TAG, cls.WEBAUTHN_2FA_TAG],
+            expires_delta or timedelta(seconds=60),
+        )
+        db.session.add(token)
+        db.session.commit()
+        return token
 
     @classmethod
     def create_email_verification_token(cls, user, expires_delta=False):

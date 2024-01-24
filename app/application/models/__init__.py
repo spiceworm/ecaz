@@ -13,4 +13,5 @@ def get_encryption_key():
 
 from .api_token import *
 from .totp import *
+from .webauthn import *
 from .user import *
