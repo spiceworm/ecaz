@@ -17,6 +17,15 @@ def test_register(client):
     assert resp.request.path == "/profile"
 
 
+def test_register_attempt_if_authenticated(ui_user):
+    resp = ui_user().get(
+        "/register",
+        follow_redirects=True,
+    )
+    assert len(resp.history) == 1
+    assert resp.request.path == "/profile"
+
+
 def test_register_duplicate_email(client):
     client.post(
         "/register",
