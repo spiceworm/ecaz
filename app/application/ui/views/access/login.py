@@ -12,8 +12,8 @@ from application.models import (
 from application.third_party.util import url_has_allowed_host_and_scheme
 from application.ui import forms
 from application.util import (
-    process_jwt_auth_token,
     require_unauthenticated,
+    validate_jwt_as_auth_token,
 )
 
 
@@ -59,7 +59,7 @@ def login():
 
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
-@process_jwt_auth_token(require_tags=[AuthToken.TOTP_MFA_TAG], error_redirect=".login")
+@validate_jwt_as_auth_token(require_tags=[AuthToken.TOTP_MFA_TAG], error_redirect=".login")
 def totp_login(token):
     form = forms.TotpLoginForm()
     if form.validate_on_submit():
@@ -73,7 +73,7 @@ def totp_login(token):
 
 
 @require_unauthenticated(if_authenticated_redirect_to=".profile")
-@process_jwt_auth_token(require_tags=[AuthToken.WEBAUTHN_MFA_TAG], error_redirect=".login")
+@validate_jwt_as_auth_token(require_tags=[AuthToken.WEBAUTHN_MFA_TAG], error_redirect=".login")
 def webauthn_login(token):
     user = token.user
     authentication_options = webauthn.options_to_json(

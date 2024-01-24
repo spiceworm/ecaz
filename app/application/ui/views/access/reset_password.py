@@ -6,13 +6,13 @@ from application.models import (
     db,
 )
 from application.ui import forms
-from application.util import process_jwt_auth_token
+from application.util import validate_jwt_as_auth_token
 
 
 __all__ = ("reset_password",)
 
 
-@process_jwt_auth_token(
+@validate_jwt_as_auth_token(
     require_tags=[AuthToken.RESET_PASSWORD_TAG], error_redirect=".forgot_password"
 )
 def reset_password(token):
