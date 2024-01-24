@@ -12,6 +12,9 @@ ui_bp = Blueprint(
 )
 
 ui_bp.add_url_rule("/", view_func=views.login, methods=["GET", "POST"])
+ui_bp.add_url_rule("/login", view_func=views.login, methods=["GET", "POST"])
+ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
+ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
 
 ui_bp.add_url_rule("/api_settings", view_func=views.api_settings, methods=["GET"])
 ui_bp.add_url_rule(
@@ -21,11 +24,8 @@ ui_bp.add_url_rule(
     "/api_settings/delete_api_token", view_func=views.delete_api_token, methods=["POST"]
 )
 
-ui_bp.add_url_rule("/login", view_func=views.login, methods=["GET", "POST"])
-
-ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
-
-ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
+ui_bp.add_url_rule("/forgot_password", view_func=views.forgot_password, methods=["GET", "POST"])
+ui_bp.add_url_rule("/reset_password/<jwt>", view_func=views.reset_password, methods=["GET", "POST"])
 
 ui_bp.add_url_rule("/register", view_func=views.register, methods=["GET", "POST"])
 ui_bp.add_url_rule("/register/verify", view_func=views.send_verify_email, methods=["POST"])
