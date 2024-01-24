@@ -15,6 +15,7 @@ from . import (
     ApiToken,
     db,
     get_encryption_key,
+    Totp,
 )
 
 
@@ -97,6 +98,11 @@ class User(db.Model, flask_login.UserMixin):
         ),
         nullable=False,
     )
+    totp: Mapped[List["Totp"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
     username = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
@@ -106,6 +112,12 @@ class User(db.Model, flask_login.UserMixin):
         nullable=False,
         unique=True,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        totp = Totp(user=self)
+        db.session.add(totp)
+        db.session.commit()
 
     @hybrid_property
     def frontend_token(self):

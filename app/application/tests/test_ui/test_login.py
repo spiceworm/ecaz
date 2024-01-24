@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from application.constants import messages
 
 

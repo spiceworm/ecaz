@@ -112,6 +112,37 @@ def test_delete_account_cascades(api_token, ui_user):
     assert ApiToken.query.filter_by(name=t3.name).one_or_none() is None
 
 
+def test_disable_totp_when_disabled(ui_user):
+    """
+    Verify the correct error message is shown if a user attempts to disable TOTP
+    2FA when it is not enabled for that user.
+    """
+    user = ui_user()
+    resp = user.post(
+        "/settings/totp/disable",
+        follow_redirects=True,
+    )
+    assert messages.TOTP_NOT_ENABLED in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/settings"
+
+
+def test_disable_totp_when_enabled(ui_user):
+    """
+    Verify the correct success message is shown if a user successfully disables
+    TOTP 2FA.
+    """
+    user = ui_user()
+    user.totp.enabled = True
+    resp = user.post(
+        "/settings/totp/disable",
+        follow_redirects=True,
+    )
+    assert messages.TOTP_NOW_DISABLED in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/settings"
+
+
 def test_send_verify_email(ui_user):
     """
     Verify that when a user clicks the verify button next to their email address
