@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+
 {% block content %}
     {{ super() }}
 
@@ -10,13 +11,12 @@
                 {{ form.username }}
                 {{ form.password }}
 
-                <div style='text-align: center;'>
-                    <div style='display: inline-block; vertical-align: top;'>
-                        <button class="rpgui-button" type="submit" id="submit" name="submit">Submit</button>
-                    </div>
-                    <div style='display: inline-block; vertical-align: top;'>
-                        <button class="rpgui-button" type="submit" id="register" name="register">Register</button>
-                    </div>
+                <div style="display:flex;justify-content:center;align-items:center;">
+                    <button class="rpgui-button" type="submit" id="submit" name="submit">Submit</button>
+                </div>
+
+                <div style="display:flex;justify-content:center;align-items:center;">
+                    <a href="{{ url_for('.register') }}">Register</a>
                 </div>
             </form>
         </div>

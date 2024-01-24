@@ -17,3 +17,16 @@ class Login(FlaskForm):
         render_kw={"placeholder": "Username"},
         validators=[DataRequired()],
     )
+
+
+class Register(FlaskForm):
+    password = PasswordField(
+        "password",
+        render_kw={"placeholder": "Password"},
+        validators=[DataRequired()],
+    )
+    username = StringField(
+        "username",
+        render_kw={"placeholder": "Username"},
+        validators=[DataRequired()],
+    )

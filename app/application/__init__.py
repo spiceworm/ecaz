@@ -45,6 +45,7 @@ def create_app():
         g.config = config
 
     login_manager = LoginManager()
+    login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
 
     from .api import api_bp

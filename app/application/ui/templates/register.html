@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    {{ super() }}
+
+    <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
+        <div class="rpgui-container framed">
+            <form action="/register" method="post">
+                {{ form.csrf_token }}
+                {{ form.username }}
+                {{ form.password }}
+
+                <div style='text-align: center;'>
+                    <div style='display: inline-block; vertical-align: top;'>
+                        <button class="rpgui-button" type="submit" id="register" name="register">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
