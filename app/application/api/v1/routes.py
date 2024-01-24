@@ -2,6 +2,7 @@ from flask import (
     Blueprint,
     jsonify,
 )
+import flask_restful
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
@@ -15,12 +16,17 @@ api_v1_bp = Blueprint(
 )
 
 
-@api_v1_bp.route("status")
-def status():
-    return {"message": "ok"}
+class StatusApi(flask_restful.Resource):
+    def get(self):
+        return {"message": "ok"}
 
 
-@api_v1_bp.route("user")
-@jwt_required()
-def user():
-    return jsonify(logged_in_as=get_jwt_identity())
+class UserApi(flask_restful.Resource):
+    @jwt_required()
+    def get(self):
+        return jsonify(logged_in_as=get_jwt_identity())
+
+
+api = flask_restful.Api(api_v1_bp)
+api.add_resource(StatusApi, '/status')
+api.add_resource(UserApi, '/user')
