@@ -27,10 +27,9 @@ def register():
 
     form = forms.RegisterForm()
     if form.validate_on_submit():
-        password_hash = flask.g.bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(
             email=form.email.data,
-            password_hash=password_hash,
+            password=form.password.data,
         )
         db.session.add(user)
         try:

@@ -7,7 +7,6 @@ from flask import (
 )
 import flask_admin
 from flask_admin.contrib.sqla import ModelView
-import flask_bcrypt
 import flask_jwt_extended
 import flask_login
 import flask_mailman
@@ -86,7 +85,6 @@ def create_app():
     app.config.from_object(config)
     app.logger.debug(config.json())
 
-    bcrypt = flask_bcrypt.Bcrypt(app)
     flask_jwt_extended.JWTManager(app)
     flask_mailman.Mail(app)
 
@@ -108,7 +106,6 @@ def create_app():
         """No custom attributes will be available on `flask.g` unless
         they are set on the `flask.g` object here."""
         g.config = config
-        g.bcrypt = bcrypt
 
     @login_manager.user_loader
     def load_user(user_id):

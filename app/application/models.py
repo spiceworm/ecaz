@@ -1,16 +1,28 @@
 from datetime import timedelta
+import os
+from typing import List
 
 import flask_jwt_extended
 import flask_login
 import flask_migrate
 import flask_sqlalchemy
 import jwt
+import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy_utils import EmailType
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
+from sqlalchemy_utils import StringEncryptedType
 
 
 db = flask_sqlalchemy.SQLAlchemy()
 migrate = flask_migrate.Migrate()
+
+
+def get_encryption_key():
+    return os.environ["SECRET_KEY"]
 
 
 class ApiToken(db.Model):
@@ -18,10 +30,27 @@ class ApiToken(db.Model):
     RESET_PASSWORD_TAG = "reset-password"
     VERIFY_EMAIL_TAG = "verify-email"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    value = db.Column(db.String)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+    )
+    name = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding='pkcs5',
+        ),
+    )
+    user: Mapped["User"] = relationship(
+        back_populates="api_tokens",
+    )
+    user_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("user.id"),
+    )
+    value = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding='pkcs5',
+        ),
+    )
 
     @classmethod
     def _create_token(cls, user, name, tags=None, expires_delta=None):
@@ -79,13 +108,50 @@ class ApiToken(db.Model):
 
 
 class User(db.Model, flask_login.UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    api_tokens = db.relationship("ApiToken", backref="user", cascade="all, delete")
-    deleted = db.Column(db.Boolean, default=False)
-    email = db.Column(EmailType, unique=True)
-    is_admin = db.Column(db.Boolean, default=False)
-    password_hash = db.Column(db.String)
-    verified = db.Column(db.Boolean, default=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+    )
+    api_tokens: Mapped[List["ApiToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    deleted = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding='zeroes',
+        ),
+        default=False,
+    )
+    email = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding='pkcs5',
+        ),
+        unique=True,
+    )
+    is_admin = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding='zeroes',
+        ),
+        default=False,
+    )
+    password = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding='pkcs5',
+        ),
+    )
+    verified = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding='zeroes',
+        ),
+        default=False,
+    )
 
     @hybrid_property
     def public_api_tokens(self):

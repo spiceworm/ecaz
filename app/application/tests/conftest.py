@@ -1,6 +1,5 @@
 import functools
 
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 from flask_login import FlaskLoginClient
 import pytest
@@ -28,9 +27,7 @@ def client(app):
 
 @pytest.fixture()
 def user(app):
-    bcrypt = Bcrypt(app)
-    password_hash = bcrypt.generate_password_hash("test-password").decode("utf-8")
-    user = User(email="email@test.com", password_hash=password_hash)
+    user = User(email="email@test.com", password="test-password")
     db.session.add(user)
     db.session.commit()
     yield user

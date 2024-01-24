@@ -31,7 +31,7 @@ def reset_password(jwt):
             flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
         else:
             user = token.user
-            user.password_hash = flask.g.bcrypt.generate_password_hash(password1).decode("utf-8")
+            user.password = password1
             db.session.add(user)
             db.session.delete(token)
             db.session.commit()

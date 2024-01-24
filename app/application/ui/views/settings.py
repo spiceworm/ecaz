@@ -22,7 +22,7 @@ def change_password():
         password2 = form.password2.data
         if password1 == password2:
             user = flask_login.current_user
-            user.password_hash = flask.g.bcrypt.generate_password_hash(password1).decode("utf-8")
+            user.password = password1
             db.session.add(user)
             db.session.commit()
             flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")

@@ -15,11 +15,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
         if user is not None:
-            is_correct_password = flask.g.bcrypt.check_password_hash(
-                user.password_hash,
-                form.password.data,
-            )
-            if is_correct_password:
+            if user.password == form.password.data:
                 if user.deleted:
                     flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
                 else:
