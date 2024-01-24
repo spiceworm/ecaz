@@ -57,16 +57,15 @@ def login():
     form = forms.Login()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        is_correct_password = flask.g.bcrypt.check_password_hash(
-            user.password_hash,
-            form.password.data,
-        )
-
-        if not is_correct_password:
-            flask.flash("Invalid login credentials")
-        else:
-            flask_login.login_user(user)
-            return flask.redirect(flask.url_for(".profile"))
+        if user is not None:
+            is_correct_password = flask.g.bcrypt.check_password_hash(
+                user.password_hash,
+                form.password.data,
+            )
+            if is_correct_password:
+                flask_login.login_user(user)
+                return flask.redirect(flask.url_for(".profile"))
+        flask.flash("Invalid login credentials")
     return flask.render_template("login.html", form=form)
 
 

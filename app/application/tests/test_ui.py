@@ -31,6 +31,16 @@ def test_login(app, user):
     assert resp.request.path == "/profile"
 
 
+def test_bad_login(app):
+    resp = app.test_client().post(
+        "/login",
+        follow_redirects=True,
+        data={"username": "invalid-username", "password": "invalid-password"},
+    )
+    assert len(resp.history) == 0
+    assert resp.request.path == "/login"
+
+
 def test_logout(ui_auth_post):
     resp = ui_auth_post("/logout", follow_redirects=True)
     assert len(resp.history) == 1
