@@ -45,11 +45,19 @@ def create_app():
         POSTGRES_SSL = bool(int(os.getenv("POSTGRES_SSL", "1")))
         POSTGRES_USER = os.environ["POSTGRES_USER"]
 
-        # Magic environment variable looked for by sqlalchemy
+        # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_DATABASE_URI = (
             f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
             f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
         ) + ("?sslmode=require" if POSTGRES_SSL else "")
+
+        # Magic flask-sqlalchemy environment variable
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            # Each time the connection is used, send a SELECT 1 query to check the connection.
+            # If it fails, then the connection is recycled and checked again.
+            # Upon success, the query is then executed.
+            "pool_pre_ping": True,
+        }
 
         def json(self):
             return {
