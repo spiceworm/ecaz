@@ -16,8 +16,6 @@ from ...models import (
 
 __all__ = (
     "register",
-    "send_verify_email",
-    "verify_account",
 )
 
 
@@ -45,41 +43,3 @@ def register():
             flask_login.login_user(user)
             return flask.redirect(flask.url_for(".profile"))
     return flask.render_template("register.html", form=form)
-
-
-@flask_login.login_required
-def send_verify_email():
-    user = flask_login.current_user
-    if user.is_verified:
-        flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
-    else:
-        # Delete any old tokens when a user asks to be sent a verification email
-        ApiToken.query.filter(
-            ApiToken.name == ApiToken.VERIFY_EMAIL_TAG,
-            ApiToken.user == user,
-        ).delete()
-
-        token = ApiToken.create_email_verification_token(user)
-        url = flask.url_for(".verify_account", jwt=token.value, _external=True)
-        email = flask_mailman.EmailMessage(subject="Verify your account", body=url, to=[user.email])
-        email.content_subtype = "html"
-        email.send()
-
-        flask.flash(messages.VERIFICATION_EMAIL_SENT, category="info")
-    return flask.redirect(flask.request.referrer)
-
-
-@flask_login.login_required
-def verify_account(jwt):
-    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and ApiToken.VERIFY_EMAIL_TAG in token.tags:
-        if token.is_expired:
-            flask.flash(messages.TOKEN_EXPIRED, category="error")
-        else:
-            token.user.is_verified = True
-            flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
-        db.session.delete(token)
-        db.session.commit()
-    else:
-        flask.flash(messages.INVALID_TOKEN, category="error")
-    return flask.redirect(flask.url_for(".settings"))
