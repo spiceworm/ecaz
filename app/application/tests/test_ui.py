@@ -64,3 +64,25 @@ def test_register(app):
     assert resp.request.path == "/profile"
     user.delete()
     db.session.commit()
+
+
+def test_register_duplicate_username(app):
+    client = app.test_client()
+
+    client.post(
+        "/register",
+        follow_redirects=True,
+        data={"username": "u", "password": "p"},
+    )
+    client.post("/logout")
+
+    resp = client.post(
+        "/register",
+        follow_redirects=True,
+        data={"username": "u", "password": "p"},
+    )
+    assert "Username already taken" in resp.data.decode()
+    db.session.rollback()
+
+    User.query.filter_by(username="u").delete()
+    db.session.commit()

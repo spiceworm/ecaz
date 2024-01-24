@@ -1,6 +1,9 @@
 import flask
 from flask_jwt_extended import create_access_token
 import flask_login
+import psycopg2.errors
+from psycopg2.errorcodes import UNIQUE_VIOLATION
+import sqlalchemy.exc
 
 
 from . import (
@@ -56,7 +59,7 @@ def login():
 
     form = forms.Login()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data).one_or_none()
         if user is not None:
             is_correct_password = flask.g.bcrypt.check_password_hash(
                 user.password_hash,
@@ -102,7 +105,14 @@ def register():
             password_hash=password_hash,
         )
         db.session.add(user)
-        db.session.commit()
-        flask_login.login_user(user)
-        return flask.redirect(flask.url_for(".profile"))
+        try:
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError as e:
+            if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
+                flask.flash("Username already taken")
+            else:
+                raise e
+        else:
+            flask_login.login_user(user)
+            return flask.redirect(flask.url_for(".profile"))
     return flask.render_template("register.html", form=form)

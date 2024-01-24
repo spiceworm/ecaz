@@ -19,4 +19,4 @@ class User(db.Model, flask_login.UserMixin):
     api_tokens = db.relationship("ApiToken", backref="user")
     is_admin = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String)
-    username = db.Column(db.String)
+    username = db.Column(db.String, unique=True)
