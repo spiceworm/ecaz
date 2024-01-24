@@ -17,7 +17,7 @@
 
         window.addEventListener("load", () => {
             try {
-                document.getElementById("register_2fa_device").addEventListener("click", () => {
+                document.getElementById("register_webauthn_device").addEventListener("click", () => {
                     register().then((registration) => {
                         document.getElementById("credential_creation_options").value = JSON.stringify(registration);
                         document.getElementById("setup_webauthn_form").submit();
@@ -37,7 +37,7 @@
     <div class="col-lg-6">
         <div class="well">
             <h1>Add device</h1>
-            <button id="register_2fa_device" type="submit">Submit</button>
+            <button id="register_webauthn_device" type="submit">Submit</button>
             <form id="setup_webauthn_form" method="post">
                 {{ form.csrf_token }}
                 {{ form.credential_creation_options() }}

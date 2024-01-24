@@ -84,12 +84,12 @@ def test_login_with_next_url_param(client, user):
     """
     u = user()
     resp = client.post(
-        "/login?next=%2Fapi_settings",
+        "/login?next=%2Fsettings%2Fapi",
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/api_settings"
+    assert resp.request.path == "/settings/api"
 
 
 def test_bad_login_with_next_url_preserves_next_params(client):
@@ -99,8 +99,8 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     trying to access is preserved in the URL.
     """
     resp = client.post(
-        "/login?next=%2Fapi_settings",
+        "/login?next=%2Fsettings%2Fapi",
         follow_redirects=True,
         data={"email": "invalid@test.com", "password": "invalid123"},
     )
-    assert resp.request.args["next"] == "/api_settings"
+    assert resp.request.args["next"] == "/settings/api"

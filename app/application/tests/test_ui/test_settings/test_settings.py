@@ -15,7 +15,7 @@ def test_change_password(ui_user):
     user = ui_user()
     password = "new-password"
     resp1 = user.post(
-        "/settings/change_password",
+        "/settings/user/password",
         follow_redirects=True,
         data={
             "password1": password,
@@ -34,7 +34,7 @@ def test_change_password_not_matching(ui_user):
     user = ui_user()
     old_password = user.password
     resp = user.post(
-        "/settings/change_password",
+        "/settings/user/password",
         follow_redirects=True,
         data={
             "password1": "new-password",
@@ -54,7 +54,7 @@ def test_change_username(ui_user):
     new_username = "new-username"
     assert user.username != new_username
     resp1 = user.post(
-        "/settings/change_username",
+        "/settings/user/username",
         follow_redirects=True,
         data={"username": new_username},
     )
@@ -74,7 +74,7 @@ def test_change_username_to_duplicate(ui_user):
     user = ui_user(email="user2@test.com", password="password2")
     old_username = user.email
     resp = user.post(
-        "/settings/change_username",
+        "/settings/user/username",
         follow_redirects=True,
         data={"username": duplicate_username},
     )
@@ -88,7 +88,7 @@ def test_delete_account(ui_user):
     and deletes the user.
     """
     user = ui_user()
-    resp = user.post("/settings/delete_account", follow_redirects=True)
+    resp = user.post("/settings/account/delete", follow_redirects=True)
     assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
     assert User.query.filter_by(email=user.email).one_or_none() is None
     assert len(resp.history) == 1
@@ -105,7 +105,7 @@ def test_delete_account_cascades(api_token, ui_user):
     t2 = api_token(user=user, name="t2")
     t3 = api_token(user=user, name="t3")
     assert len(user.api_tokens) == 3
-    user.post("/settings/delete_account")
+    user.post("/settings/account/delete")
     assert User.query.filter_by(email=user.email).one_or_none() is None
     assert ApiToken.query.filter_by(name=t1.name).one_or_none() is None
     assert ApiToken.query.filter_by(name=t2.name).one_or_none() is None
@@ -115,11 +115,11 @@ def test_delete_account_cascades(api_token, ui_user):
 def test_disable_totp_when_disabled(ui_user):
     """
     Verify the correct error message is shown if a user attempts to disable TOTP
-    2FA when it is not enabled for that user.
+    MFA when it is not enabled for that user.
     """
     user = ui_user()
     resp = user.post(
-        "/settings/totp/disable",
+        "/settings/mfa/totp/disable",
         follow_redirects=True,
     )
     assert messages.TOTP_NOT_ENABLED in resp.data.decode()
@@ -130,12 +130,12 @@ def test_disable_totp_when_disabled(ui_user):
 def test_disable_totp_when_enabled(ui_user):
     """
     Verify the correct success message is shown if a user successfully disables
-    TOTP 2FA.
+    TOTP MFA.
     """
     user = ui_user()
     user.totp.enabled = True
     resp = user.post(
-        "/settings/totp/disable",
+        "/settings/mfa/totp/disable",
         follow_redirects=True,
     )
     assert messages.TOTP_NOW_DISABLED in resp.data.decode()
@@ -153,7 +153,7 @@ def test_send_verify_email(ui_user):
     user = ui_user()
     assert len(user.api_tokens) == 0
     resp = user.post(
-        "/settings/verify",
+        "/settings/user/email/verify",
         follow_redirects=True,
     )
     assert len(resp.history) == 1
@@ -169,13 +169,13 @@ def test_send_verify_email_if_already_verified(ui_user):
     already verified their email, that the appropriate notification is shown.
     """
     resp = ui_user(is_verified=True).post(
-        "/settings/verify",
+        "/settings/user/email/verify",
         follow_redirects=True,
     )
     assert messages.ACCOUNT_ALREADY_VERIFIED in resp.data.decode()
 
 
-def test_verify_account(ui_user):
+def test_verify_email(ui_user):
     """
     Test happy happy path for when a user clicks the unique link emailed to them
     to verify their email address.
@@ -184,14 +184,14 @@ def test_verify_account(ui_user):
     assert not user.is_verified
     token = ApiToken.create_email_verification_token(user)
     resp = user.get(
-        f"/settings/verify/{token.value}",
+        f"/settings/user/email/verify/{token.value}",
         follow_redirects=True,
     )
     assert user.is_verified
     assert messages.ACCOUNT_VERIFIED_SUCCESS in resp.data.decode()
 
 
-def test_verify_account_using_expired_token(ui_user):
+def test_verify_email_using_expired_token(ui_user):
     """
     Verify that the correct error message is shown if the user clicks the link
     emailed to them to verify their email address but the token in the link
@@ -203,7 +203,7 @@ def test_verify_account_using_expired_token(ui_user):
         timedelta(microseconds=1),
     )
     resp = user.get(
-        f"/settings/verify/{token.value}",
+        f"/settings/user/email/verify/{token.value}",
         follow_redirects=True,
     )
     assert not user.is_verified

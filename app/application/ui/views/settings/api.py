@@ -21,7 +21,7 @@ __all__ = (
 @flask_login.login_required
 def api_settings():
     return flask.render_template(
-        "api_settings.html",
+        "settings/api.html",
         create_api_token_form=forms.CreateApiTokenForm(),
         delete_api_token_form=forms.DeleteApiTokenForm(),
         logout_form=forms.LogoutForm(),

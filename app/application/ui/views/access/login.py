@@ -43,16 +43,16 @@ def login():
             if user.is_deleted:
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
             elif user.totp.enabled:
-                totp_token = ApiToken.create_2fa_totp_token(user)
+                totp_token = ApiToken.create_mfa_totp_token(user)
                 return flask.redirect(flask.url_for(".totp_login", jwt=totp_token.value))
             elif user.webauthn.enabled:
-                webauthn_token = ApiToken.create_2fa_webauthn_token(user)
+                webauthn_token = ApiToken.create_mfa_webauthn_token(user)
                 return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
             else:
                 return _login(user)
         else:
             flask.flash(messages.INVALID_LOGIN_ERROR, category="error")
-    return flask.render_template("login.html", form=form)
+    return flask.render_template("access/login/login.html", form=form)
 
 
 def totp_login(jwt):
@@ -60,17 +60,14 @@ def totp_login(jwt):
         return flask.redirect(flask.url_for(".profile"))
 
     token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and not token.is_expired and ApiToken.TOTP_2FA_TAG in token.tags:
+    if token and not token.is_expired and ApiToken.TOTP_MFA_TAG in token.tags:
         form = forms.TotpLoginForm()
         if form.validate_on_submit():
             if token.user.totp.verify(form.totp_code.data):
                 return _login(token.user)
             else:
                 flask.flash(messages.TOTP_CODE_INVALID, category="error")
-        return flask.render_template(
-            "totp_login.html",
-            form=form,
-        )
+        return flask.render_template("access/login/totp_login.html", form=form)
     else:
         flask.flash(messages.INVALID_TOKEN, category="error")
         return flask.redirect(flask.url_for(".login"))
@@ -81,7 +78,7 @@ def webauthn_login(jwt):
         return flask.redirect(flask.url_for(".profile"))
 
     token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and not token.is_expired and ApiToken.WEBAUTHN_2FA_TAG in token.tags:
+    if token and not token.is_expired and ApiToken.WEBAUTHN_MFA_TAG in token.tags:
         user = token.user
         authentication_options = webauthn.options_to_json(
             webauthn.generate_authentication_options(
@@ -112,7 +109,7 @@ def webauthn_login(jwt):
                 db.session.commit()
                 return _login(token.user)
         return flask.render_template(
-            "webauth_login.html",
+            "access/login/webauth_login.html",
             authentication_options=authentication_options,
             form=form,
         )

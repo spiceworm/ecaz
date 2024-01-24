@@ -30,8 +30,7 @@ def setup_totp():
             flask.flash(messages.TOTP_SETUP_VERIFICATION_ERROR, category="error")
 
     return flask.render_template(
-        "setup_totp.html",
+        "settings/mfa/setup_totp.html",
         form=form,
         logout_form=forms.LogoutForm(),
-        totp=totp,
     )
