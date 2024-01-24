@@ -10,9 +10,9 @@ services:
       PROD: "0"
       TESTING: "1"
       MAIL_DEFAULT_SENDER: "admin@ecaz.xyz"
-      MAIL_PASSWORD: ""
-      MAIL_SERVER: "localhost"
-      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SERVER: ${MAIL_SERVER}
+      MAIL_USERNAME: ${MAIL_USERNAME}
       POSTGRES_DB: "postgres"
       POSTGRES_HOST: "db"
       POSTGRES_PASSWORD: "1234"
