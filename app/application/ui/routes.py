@@ -97,6 +97,6 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        flask.flash("Registration successful. Please sign in.")
-        return flask.render_template("login.html", form=forms.Login())
+        flask_login.login_user(user)
+        return flask.redirect(flask.url_for(".profile"))
     return flask.render_template("register.html", form=form)
