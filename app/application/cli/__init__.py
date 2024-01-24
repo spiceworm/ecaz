@@ -21,7 +21,7 @@ EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 def validate_email(ctx, param, value):
     if not EMAIL_REGEX.match(value):
-        raise ValueError(messages.INVALID_EMAIL_ADDRESS)
+        raise click.BadParameter(messages.INVALID_EMAIL_ADDRESS)
     return value
 
 
@@ -64,7 +64,7 @@ def mark_admin(email):
     """
     user = User.query.filter(User.email == email).one_or_none()
     if not user:
-        raise ValueError(messages.NO_USER_FOR_PROVIDED_EMAIL)
+        raise click.UsageError(messages.NO_USER_FOR_PROVIDED_EMAIL)
     user.is_admin = True
     db.session.add(user)
     db.session.commit()
