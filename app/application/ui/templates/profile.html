@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
 
-{% block head %}
-    {{ super() }}
-{% endblock %}
 {% block content %}
     {% if current_user.is_authenticated %}
         <h1>Logged in as {{ current_user.username }}</h1>
     {% endif %}
+
+    <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
+        <div class="rpgui-container framed">
+            <iframe src="https://giphy.com/embed/6sxhKR7xVtboY" width="356" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/metalocalypse-dethklok-nathan-explosion-6sxhKR7xVtboY">via GIPHY</a></p>
+        </div>
+    </div>
 {% endblock %}

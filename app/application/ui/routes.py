@@ -13,7 +13,7 @@ from ..models import db, User
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
-    return flask.url_for(".login")
+    return flask.redirect(flask.url_for(".login"))
 
 
 @ui_bp.route("/profile", methods=["GET"])
@@ -25,20 +25,28 @@ def profile():
 @ui_bp.route("/", methods=["GET", "POST"])
 @ui_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for(".profile"))
+
     form = forms.Login()
     if form.validate_on_submit():
         user = User.query.filter_by(
             password=form.password.data,
             username=form.username.data,
         ).first()
-        flask_login.login_user(user)
-        nxt = flask.request.args.get("next")
-        return flask.redirect(nxt or flask.url_for(".profile"))
+        if user is None:
+            flask.flash("Invalid login credentials")
+        else:
+            flask_login.login_user(user)
+            return flask.redirect(flask.url_for(".profile"))
     return flask.render_template("login.html", form=form)
 
 
 @ui_bp.route("/register", methods=["GET", "POST"])
 def register():
+    if flask_login.current_user.is_authenticated:
+        return flask.redirect(flask.url_for(".profile"))
+
     form = forms.Register()
     if form.validate_on_submit():
         user = User(
