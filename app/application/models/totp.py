@@ -50,7 +50,7 @@ class Totp(db.Model):
         default=pyotp.random_base32,
     )
 
-    def generate_qr_code(self):
+    def generate_qr_code(self) -> str:
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
         qr.add_data(self.uri)
         qr.make(fit=True)
@@ -60,7 +60,7 @@ class Totp(db.Model):
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
     @property
-    def handler(self):
+    def handler(self) -> pyotp.TOTP:
         return pyotp.TOTP(
             self.secret,
             issuer=flask.current_app.config["APP_NAME"],
@@ -68,8 +68,8 @@ class Totp(db.Model):
         )
 
     @hybrid_property
-    def uri(self):
+    def uri(self) -> str:
         return self.handler.provisioning_uri()
 
-    def verify(self, user_otp):
+    def verify(self, user_otp) -> bool:
         return self.handler.verify(user_otp)

@@ -1,6 +1,7 @@
 import flask
 import flask_login
 import pyotp
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
@@ -19,7 +20,7 @@ __all__ = (
 
 
 @flask_login.login_required
-def delete_account():
+def delete_account() -> Response:
     """
     This view could get deleted in the future in favor of marking the user as pending
     for deletion instead of deleting them right away. This would be necessary if there
@@ -40,7 +41,7 @@ def delete_account():
 
 
 @flask_login.login_required
-def disable_totp():
+def disable_totp() -> Response:
     totp = flask_login.current_user.totp
     form = forms.TotpDisableForm()
     if form.validate_on_submit():
@@ -57,7 +58,7 @@ def disable_totp():
 
 
 @flask_login.login_required
-def disable_webauthn():
+def disable_webauthn() -> Response:
     _webauthn = flask_login.current_user.webauthn
     form = forms.WebAuthnDisableForm()
     if form.validate_on_submit():
@@ -73,7 +74,7 @@ def disable_webauthn():
 
 
 @flask_login.login_required
-def settings():
+def settings() -> str:
     return flask.render_template(
         "settings/settings.html",
         change_password_form=forms.ChangePasswordForm(),

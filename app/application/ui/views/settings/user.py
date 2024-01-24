@@ -5,6 +5,7 @@ import psycopg2
 import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import sqlalchemy.exc
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
@@ -24,7 +25,7 @@ __all__ = (
 
 
 @flask_login.login_required
-def change_password():
+def change_password() -> Response:
     form = forms.ChangePasswordForm()
     if form.validate_on_submit():
         password1 = form.password1.data
@@ -41,7 +42,7 @@ def change_password():
 
 
 @flask_login.login_required
-def change_username():
+def change_username() -> Response:
     form = forms.ChangeUsernameForm()
     if form.validate_on_submit():
         user = flask_login.current_user
@@ -61,7 +62,7 @@ def change_username():
 
 
 @flask_login.login_required
-def send_verify_email():
+def send_verify_email() -> Response:
     user = flask_login.current_user
     if user.is_verified:
         flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
@@ -77,7 +78,7 @@ def send_verify_email():
 
 @flask_login.login_required
 @validate_jwt_as_auth_token(require_tags=[AuthToken.VERIFY_EMAIL_TAG], error_redirect=".settings")
-def verify_email(token):
+def verify_email(token) -> Response:
     token.user.is_verified = True
     flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
     db.session.delete(token)

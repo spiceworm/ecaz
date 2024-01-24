@@ -1,12 +1,15 @@
+from typing import Union
+
 import flask
 import flask_admin
 from flask_admin.contrib.sqla import ModelView
 import flask_login
+from werkzeug.wrappers import Response
 
 
 class RestrictedIndexView(flask_admin.AdminIndexView):
     @flask_admin.expose("/")
-    def index(self):
+    def index(self) -> Union[str, Response]:
         """
         If any user attempts to access /admin when they are not authenticated as an admin
         User, redirect them to the login page.
@@ -15,7 +18,7 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
             return super().index()
         return flask.redirect(flask.url_for("ui_bp.login"))
 
-    def render(self, template, **kwargs):
+    def render(self, template, **kwargs) -> str:
         return super().render(
             template,
             BASE_URL=flask.g.config.BASE_URL,

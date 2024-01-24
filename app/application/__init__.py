@@ -6,7 +6,7 @@ import flask_login
 import flask_mailman
 
 
-def create_app():
+def create_app() -> flask.Flask:
     from application.admin import views as admin_views
     from application.api import api_bp
     from application.cli import cli_bp

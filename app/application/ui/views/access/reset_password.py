@@ -1,4 +1,7 @@
+from typing import Union
+
 import flask
+from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
@@ -15,7 +18,7 @@ __all__ = ("reset_password",)
 @validate_jwt_as_auth_token(
     require_tags=[AuthToken.RESET_PASSWORD_TAG], error_redirect=".forgot_password"
 )
-def reset_password(token):
+def reset_password(token) -> Union[str, Response]:
     form = forms.ResetPasswordForm()
     if form.validate_on_submit():
         password1 = form.password1.data
