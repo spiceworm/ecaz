@@ -6,6 +6,14 @@ from wtforms import (
 from wtforms.validators import DataRequired
 
 
+class ApiToken(FlaskForm):
+    name = StringField(
+        "name",
+        render_kw={"placeholder": "Name"},
+        validators=[DataRequired()],
+    )
+
+
 class Login(FlaskForm):
     password = PasswordField(
         "password",

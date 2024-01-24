@@ -10,20 +10,23 @@ from . import (
 from ..models import ApiToken, db, User
 
 
-@ui_bp.route("/generate_api_token")
+@ui_bp.route("/generate_api_token", methods=["POST"])
 @flask_login.login_required
 def generate_api_token():
     user = flask_login.current_user
-    token = ApiToken(
-        token=create_access_token(
-            expires_delta=False,
-            identity=user.username,
-        ),
-        user=user,
+    token_value = create_access_token(
+        expires_delta=False,
+        identity=user.username,
     )
-    db.session.add(token)
-    db.session.commit()
-
+    form = forms.ApiToken()
+    if form.validate_on_submit():
+        token = ApiToken(
+            name=form.name.data,
+            value=token_value,
+            user=user,
+        )
+        db.session.add(token)
+        db.session.commit()
     return flask.redirect(flask.url_for(".profile"))
 
 
@@ -57,7 +60,7 @@ def logout():
 @ui_bp.route("/profile", methods=["GET"])
 @flask_login.login_required
 def profile():
-    return flask.render_template("profile.html")
+    return flask.render_template("profile.html", form=forms.ApiToken())
 
 
 @ui_bp.route("/register", methods=["GET", "POST"])

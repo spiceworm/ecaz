@@ -22,13 +22,24 @@
 
     <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
         <div class="rpgui-container framed">
-            {% for obj in current_user.api_tokens %}
-                <div style="white-space: nowrap; text-overflow: ellipsis; overflow: scroll;">
-                    <input type="text" readonly value="{{ obj.token }}" id="token_{{ loop.index }}">
+            {% for api_token in current_user.api_tokens %}
+                <div style="display: flex; flex-direction: row; justify-content: right; align-items: center;">
+                    <p>{{ api_token.name }}</p>
+                    <div style="white-space: nowrap; text-overflow: ellipsis; overflow: scroll;">
+                        <input type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
+                    </div>
+                    <button class="rpgui-button" type="button" onclick="myFunction('token_{{ loop.index }}')">Copy</button>
                 </div>
-                <button class="rpgui-button" type="button" onclick="myFunction('token_{{ loop.index }}')">Copy</button>
             {% endfor %}
-            <a href="{{ url_for('.generate_api_token') }}">Generate API Token</a>
+
+            <form action="{{ url_for('.generate_api_token') }}" method="post">
+                {{ form.csrf_token }}
+
+                <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                    {{ form.name }}
+                    <button class="rpgui-button" type="submit">Generate API Token</button>
+                </div>
+            </form>
         </div>
     </div>
 {% endblock %}
