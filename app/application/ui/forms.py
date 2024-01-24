@@ -1,15 +1,23 @@
 from flask_wtf import FlaskForm
 from wtforms import (
+    IntegerField,
     PasswordField,
     StringField,
 )
 from wtforms.validators import DataRequired
 
 
-class ApiToken(FlaskForm):
-    name = StringField(
+class CreateApiToken(FlaskForm):
+    token_name = StringField(
         "name",
         render_kw={"placeholder": "Name"},
+        validators=[DataRequired()],
+    )
+
+
+class DeleteApiToken(FlaskForm):
+    id = IntegerField(
+        "id",
         validators=[DataRequired()],
     )
 

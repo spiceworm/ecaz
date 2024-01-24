@@ -5,7 +5,7 @@
     {{ super() }}
 
     <script>
-        function myFunction(token_id) {
+        function copyTokenToClipboard(token_id) {
             const copyText = document.getElementById(token_id);
             copyText.select();
             copyText.setSelectionRange(0, 99999); // For mobile devices
@@ -16,28 +16,32 @@
 
 
 {% block content %}
-    {% if current_user.is_authenticated %}
-        <h1>User: {{ current_user.username }}</h1>
-    {% endif %}
-
     <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
+
         <div class="rpgui-container framed">
+            <h1>{{ current_user.username }}</h1>
+
             {% for api_token in current_user.api_tokens %}
                 <div style="display: flex; flex-direction: row; justify-content: right; align-items: center;">
                     <p>{{ api_token.name }}</p>
                     <div style="white-space: nowrap; text-overflow: ellipsis; overflow: scroll;">
                         <input type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
                     </div>
-                    <button class="rpgui-button" type="button" onclick="myFunction('token_{{ loop.index }}')">Copy</button>
+                    <button class="rpgui-button" type="button" onclick="copyTokenToClipboard('token_{{ loop.index }}')">Copy</button>
+
+                    <form action="{{ url_for('.delete_api_token') }}" method="post">
+                        {{ delete_api_token_form.csrf_token }}
+                        <button class="rpgui-button" type="submit" name="id" value="{{ api_token.id }}">Delete</button>
+                    </form>
                 </div>
             {% endfor %}
 
-            <form action="{{ url_for('.generate_api_token') }}" method="post">
-                {{ form.csrf_token }}
+            <form action="{{ url_for('.create_api_token') }}" method="post">
+                {{ create_api_token_form.csrf_token }}
 
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                    {{ form.name }}
-                    <button class="rpgui-button" type="submit">Generate API Token</button>
+                    {{ create_api_token_form.token_name }}
+                    <button class="rpgui-button" type="submit">Create API Token</button>
                 </div>
             </form>
         </div>
