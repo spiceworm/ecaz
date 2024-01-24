@@ -101,7 +101,7 @@ def send_verify_email():
         email.send()
 
         flask.flash(messages.VERIFICATION_EMAIL_SENT, category="info")
-    return flask.redirect(flask.request.referrer)
+    return flask.redirect(flask.url_for(".settings"))
 
 
 @flask_login.login_required
@@ -119,12 +119,9 @@ def settings():
 @flask_login.login_required
 def verify_account(jwt):
     token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token and ApiToken.VERIFY_EMAIL_TAG in token.tags:
-        if token.is_expired:
-            flask.flash(messages.TOKEN_EXPIRED, category="error")
-        else:
-            token.user.is_verified = True
-            flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
+    if token and not token.is_expired and ApiToken.VERIFY_EMAIL_TAG in token.tags:
+        token.user.is_verified = True
+        flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
         db.session.delete(token)
         db.session.commit()
     else:
