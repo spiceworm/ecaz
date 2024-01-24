@@ -25,12 +25,6 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-lg-2 control-label" for="totp_code">2FA</label>
-                        <div class="col-lg-10">
-                            {{ form.totp_code(class_="form-control") }}
-                        </div>
-                    </div>
-                    <div class="form-group">
                         <div class="col-lg-10 col-lg-offset-2">
                             <button class="btn btn-default" onclick="window.location.href='{{ url_for(".forgot_password") }}'">
                                 Forgot Password
