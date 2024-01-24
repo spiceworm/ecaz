@@ -1,50 +1,24 @@
-<link href="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.css') }}" rel="stylesheet" type="text/css" >
-<script src="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.js') }}"></script>
+{% extends "base.html" %}
 
-<style>
-    body{
-        background-image: url("{{ url_for('.static', filename='pixel_art_desert_landscape.gif') }}");
-        background-size: cover;
-        height: 100vh;
-        padding:0;
-        margin:0;
-    }
-</style>
+{% block content %}
+    {{ super() }}
 
+    <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
+        <div class="rpgui-container framed">
+            <form action="/login" method="post">
+                {{ form.csrf_token }}
+                {{ form.username }}
+                {{ form.password }}
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="rpgui-content">
-            {% for message in messages %}
-                <div class="rpgui-container framed-golden-2">
-                    <p>{{ message }}</p>
+                <div style='text-align: center;'>
+                    <div style='display: inline-block; vertical-align: top;'>
+                        <button class="rpgui-button" type="submit" id="submit" name="submit">Submit</button>
+                    </div>
+                    <div style='display: inline-block; vertical-align: top;'>
+                        <button class="rpgui-button" type="submit" id="register" name="register">Register</button>
+                    </div>
                 </div>
-            {% endfor %}
+            </form>
         </div>
-    {% endif %}
-{% endwith %}
-
-
-<div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
-	<div class="rpgui-container framed">
-        <form action="/login" method="post">
-            {{ form.csrf_token }}
-            {{ form.username }}
-            {{ form.password }}
-
-            <div style='text-align: center;'>
-                <div style='display: inline-block; vertical-align: top;'>
-                    <button class="rpgui-button" type="submit" id="submit" name="submit">Submit</button>
-                </div>
-                <div style='display: inline-block; vertical-align: top;'>
-                    <button class="rpgui-button" type="submit" id="register" name="register">Register</button>
-                </div>
-            </div>
-
-
-        </form>
-	</div>
-</div>
-
-<script>
-</script>
+    </div>
+{% endblock %}

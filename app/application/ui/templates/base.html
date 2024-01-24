@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+    <head>
+        {% block head %}
+            <link href="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.css') }}" rel="stylesheet" type="text/css" >
+            <script src="{{ url_for('.static', filename='RPGUI-master/dist/rpgui.js') }}"></script>
+
+            <style>
+                body{
+                    background-image: url("{{ url_for('.static', filename='pixel_art_desert_landscape.gif') }}");
+                    background-size: cover;
+                    height: 100vh;
+                    padding:0;
+                    margin:0;
+                }
+            </style>
+
+            <title>{% block title %}{% endblock %}ECAZ</title>
+        {% endblock %}
+    </head>
+    <body>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="rpgui-content">
+                    {% for message in messages %}
+                        <div class="rpgui-container framed-golden-2">
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div id="footer">
+            {% block footer %}
+            {% endblock %}
+        </div>
+    </body>
+</html>
