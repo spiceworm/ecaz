@@ -2,6 +2,7 @@ from datetime import timedelta
 import time
 
 import flask_jwt_extended
+import humanize
 import jwt
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -131,7 +132,7 @@ class AuthToken(db.Model):
         db.session.commit()
         return token
 
-    @hybrid_property
+    @property
     def expires_in(self):
         try:
             claims = flask_jwt_extended.decode_token(self.value)
@@ -144,6 +145,16 @@ class AuthToken(db.Model):
                 return False
             else:
                 return timedelta(seconds=claims["exp"] - time.time())
+
+    @property
+    def humanized_expires_in(self):
+        match exp := self.expires_in:
+            case True:
+                return "Expired"
+            case False:
+                return "Never"
+            case _:
+                return humanize.naturaldelta(exp)
 
     @hybrid_property
     def is_expired(self):
