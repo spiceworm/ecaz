@@ -27,14 +27,6 @@ class User(db.Model, flask_login.UserMixin):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    deleted = sa.Column(
-        StringEncryptedType(
-            type_in=sa.Boolean,
-            key=get_encryption_key,
-            padding="zeroes",
-        ),
-        default=False,
-    )
     email = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
@@ -43,6 +35,30 @@ class User(db.Model, flask_login.UserMixin):
         unique=True,
     )
     is_admin = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding="zeroes",
+        ),
+        default=False,
+    )
+    is_banned = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding="zeroes",
+        ),
+        default=False,
+    )
+    is_deleted = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding="zeroes",
+        ),
+        default=False,
+    )
+    is_verified = sa.Column(
         StringEncryptedType(
             type_in=sa.Boolean,
             key=get_encryption_key,

@@ -16,7 +16,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).one_or_none()
         if user is not None:
             if user.password == form.password.data:
-                if user.deleted:
+                if user.is_deleted:
                     flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
                 else:
                     flask_login.login_user(user)

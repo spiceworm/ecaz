@@ -66,7 +66,7 @@ def delete_account():
     if form.validate_on_submit():
         # Setting this attribute for the future where a deletion queue exists and a job
         # that checks for all user accounts marked for deletion runs periodically.
-        flask_login.current_user.deleted = True
+        flask_login.current_user.is_deleted = True
 
         db.session.delete(flask_login.current_user)
         db.session.commit()

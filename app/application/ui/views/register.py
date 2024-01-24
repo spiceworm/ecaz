@@ -49,7 +49,7 @@ def register():
 @flask_login.login_required
 def send_verify_email():
     user = flask_login.current_user
-    if user.verified:
+    if user.is_verified:
         flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
     else:
         # Delete any old tokens when a user asks to be sent a verification email
@@ -75,7 +75,7 @@ def verify_account(jwt):
         if token.is_expired:
             flask.flash(messages.TOKEN_EXPIRED, category="error")
         else:
-            token.user.verified = True
+            token.user.is_verified = True
             flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
         db.session.delete(token)
         db.session.commit()
