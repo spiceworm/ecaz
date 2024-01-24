@@ -4,7 +4,6 @@ import flask_login
 import humanize
 import sqlalchemy as sa
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -134,7 +133,7 @@ class User(db.Model, flask_login.UserMixin):
     def humanized_created_at(self) -> str:
         return humanize.naturaltime(self.created_at)
 
-    @hybrid_property
+    @property
     def frontend_token(self) -> AuthToken:
         """
         Returns an `AuthToken` used by the frontend to communicate with the API.
@@ -147,6 +146,6 @@ class User(db.Model, flask_login.UserMixin):
             db.session.commit()
         return AuthToken.create_frontend_token(self)
 
-    @hybrid_property
+    @property
     def public_auth_tokens(self) -> List[AuthToken]:
         return [t for t in self.auth_tokens if AuthToken.HIDDEN_TAG not in t.tags]

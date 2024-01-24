@@ -5,7 +5,6 @@ from typing import (
 )
 
 import sqlalchemy as sa
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -90,11 +89,11 @@ class WebAuthn(db.Model):
         default=user_handle_default,
     )
 
-    @hybrid_property
+    @property
     def challenge(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._challenge)
 
-    @hybrid_property
+    @property
     def public_key(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._public_key)
 
@@ -102,7 +101,7 @@ class WebAuthn(db.Model):
     def public_key(self, key) -> None:
         self._public_key = webauthn.helpers.bytes_to_base64url(key)
 
-    @hybrid_property
+    @property
     def registrations(self) -> List[PublicKeyCredentialDescriptor]:
         retval = []
         if self._registrations:
@@ -119,6 +118,6 @@ class WebAuthn(db.Model):
                 obj["id"] = webauthn.helpers.bytes_to_base64url(obj["id"])
             self._registrations = json.dumps(registrations)
 
-    @hybrid_property
+    @property
     def user_handle(self) -> ByteString:
         return webauthn.helpers.base64url_to_bytes(self._user_handle)
