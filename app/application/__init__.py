@@ -1,7 +1,11 @@
+from http import HTTPStatus
+
 import decouple
 import flask
 import flask_admin
 import flask_jwt_extended
+import flask_limiter
+from flask_limiter.util import get_remote_address
 import flask_login
 import flask_mailman
 
@@ -16,18 +20,19 @@ def create_app() -> flask.Flask:
         migrate,
         User,
     )
+    from application.util import csv_to_list
     from application.ui import ui_bp
 
     class Config:
         APP_NAME = decouple.config("APP_NAME")
         BASE_URL = decouple.config("BASE_URL")
+        SECRET_KEY = decouple.config("SECRET_KEY")
 
         DEBUG = decouple.config("DEBUG", cast=bool, default=False)
-        FLASK_ADMIN_SWATCH = decouple.config("FLASK_ADMIN_SWATCH", default="cerulean")
-
         PROD = decouple.config("PROD", cast=bool, default=False)
-        SECRET_KEY = decouple.config("SECRET_KEY")
         TESTING = decouple.config("TESTING", cast=bool, default=False)
+
+        FLASK_ADMIN_SWATCH = decouple.config("FLASK_ADMIN_SWATCH", default="cerulean")
         WTF_CSRF_ENABLED = decouple.config("WTF_CSRF_ENABLED", cast=bool, default=True)
 
         MAIL_DEFAULT_SENDER = decouple.config("MAIL_DEFAULT_SENDER")
@@ -35,8 +40,8 @@ def create_app() -> flask.Flask:
         MAIL_PORT = decouple.config("MAIL_PORT", cast=int, default=587)
         MAIL_SERVER = decouple.config("MAIL_SERVER")
         MAIL_TIMEOUT = decouple.config("MAIL_TIMEOUT", cast=int, default=10)
-        MAIL_USE_TLS = MAIL_PORT == 587
         MAIL_USE_SSL = MAIL_PORT == 465
+        MAIL_USE_TLS = MAIL_PORT == 587
         MAIL_USERNAME = decouple.config("MAIL_USERNAME")
 
         POSTGRES_DB = decouple.config("POSTGRES_DB")
@@ -49,6 +54,9 @@ def create_app() -> flask.Flask:
             default="require",
         )
         POSTGRES_USER = decouple.config("POSTGRES_USER")
+
+        RATE_LIMIT = decouple.config("RATE_LIMITS", cast=csv_to_list, default="200/day,50/hour")
+        RATE_LIMIT_STORAGE_URI = decouple.config("RATE_LIMIT_STORAGE_URI", default="memory://")
 
         # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_DATABASE_URI = (
@@ -84,6 +92,14 @@ def create_app() -> flask.Flask:
     flask_jwt_extended.JWTManager(app)
     flask_mailman.Mail(app)
 
+    # TODO use separate redis container instead
+    rate_limiter = flask_limiter.Limiter(
+        app=app,
+        default_limits=config.RATE_LIMIT,
+        key_func=get_remote_address,
+        storage_uri=config.RATE_LIMIT_STORAGE_URI,
+    )
+
     login_manager = flask_login.LoginManager()
     login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
@@ -107,6 +123,7 @@ def create_app() -> flask.Flask:
         """No custom attributes will be available on `flask.g` unless
         they are set on the `flask.g` object here."""
         flask.g.config = config
+        flask.g.rate_limiter = rate_limiter
 
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -119,5 +136,12 @@ def create_app() -> flask.Flask:
         an object for a user that has already been authenticated,
         such as when someone reconnects to a "remember me" session"""
         return db.session.get(User, user_id)
+
+    @app.errorhandler(HTTPStatus.TOO_MANY_REQUESTS)
+    def ratelimit_handler(e):
+        return flask.make_response(
+            flask.jsonify(error="Rate limit exceeded"),
+            HTTPStatus.TOO_MANY_REQUESTS,
+        )
 
     return app

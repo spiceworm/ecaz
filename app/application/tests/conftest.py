@@ -89,6 +89,7 @@ def _cleanup_and_teardown():
 def _app():
     _a = create_app()
     _a.test_client_class = flask_login.FlaskLoginClient
+    _a.config["RATELIMIT_ENABLED"] = False
     with _a.app_context():
         yield _a
 
