@@ -15,6 +15,7 @@ def create_app():
         PROD = bool(int(os.getenv("PROD", "0")))
         TESTING = bool(int(os.getenv("TESTING", "1")))
         SECRET_KEY = os.environ["SECRET_KEY"]
+        WTF_CSRF_ENABLED = bool(int(os.getenv("WTF_CSRF_ENABLED", "1")))
 
         POSTGRES_DB = os.environ["POSTGRES_DB"]
         POSTGRES_HOST = os.environ["POSTGRES_HOST"]
@@ -37,6 +38,7 @@ def create_app():
                     "PROD",
                     "TESTING",
                     "SECRET_KEY",
+                    "WTF_CSRF_ENABLED",
                     "POSTGRES_DB",
                     "POSTGRES_HOST",
                     "POSTGRES_PASSWORD",

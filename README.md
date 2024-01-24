@@ -8,11 +8,9 @@ docker exec -it ecaz_xyz-app-1 flask shell
 # Deploy
 # Bump TAG in deploy.sh and run it
 ./deploy.sh
-```
 
-```bash
 # Run tests
-docker compose -f tests.yml up
+./test.sh
 ```
 
 ```python
