@@ -22,11 +22,20 @@
                 .then((data) => {return data})
         }
 
-        function postCommand() {
-            const commandInput = document.getElementById('commandInput').value.trim();
-            terminalApi(commandInput).then((data) => {
+        function executeCommand() {
+            let executeBtn = document.getElementById('executeBtn');
+            let commandInput = document.getElementById('commandInput');
+            const commandText = commandInput.value.trim()
+            commandInput.disabled = true;
+            executeBtn.disabled = true;
+            executeBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>Loading';
+
+            terminalApi(commandText).then((data) => {
                 document.getElementById('commandOutput').value = data["output"];
-                document.getElementById('commandInput').value = "";
+                commandInput.disabled = false;
+                commandInput.value = "";
+                executeBtn.disabled = false;
+                executeBtn.innerHTML = "Execute";
             })
             return false;
         }
@@ -50,14 +59,16 @@
                 <textarea class="form-control" id="commandOutput" rows="10" disabled></textarea>
             </div>
         </form>
-        <button class="btn btn-primary" form="cliForm" id="executeBtn" type="submit">Execute</button>
+        <button class="btn btn-primary" form="cliForm" id="executeBtn" type="submit">
+            Execute
+        </button>
         <button class="btn btn-primary" onclick="copyToClipboard('commandOutput')">Copy</button>
     </div>
 
     <script>
         document.getElementById("executeBtn").addEventListener("click", function (event) {
             event.preventDefault();
-            postCommand();
+            executeCommand();
         });
     </script>
 {% endblock %}

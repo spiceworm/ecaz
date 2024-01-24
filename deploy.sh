@@ -2,7 +2,7 @@
 
 set -e
 
-TAG=0.1.0
+TAG=0.1.1
 
 retry_flag=''
 
