@@ -1,4 +1,55 @@
 {% extends 'admin/master.html' %}
 
+{% block head %}
+    {{ super() }}
+
+    <script>
+        async function terminalApi(command) {
+            return await fetch(
+                '{{ BASE_URL }}/api/v1/terminal', {
+                    headers: {Authorization: "Bearer {{ current_user.frontend_token.value }}"},
+                    method: "POST",
+                    body: JSON.stringify({"command": command})
+                })
+                .then((response) => {return response.json()})
+                .then((data) => {return data})
+        }
+
+        function postCommand() {
+            const commandInput = document.getElementById('commandInput').value.trim();
+            terminalApi(commandInput).then((data) => {
+                document.getElementById('commandOutput').value = data["output"];
+                document.getElementById('commandInput').value = "";
+            })
+            return false;
+        }
+    </script>
+{% endblock %}
+
 {% block body %}
+    {{ super() }}
+
+    <div class="container pt-3 pb-3" style="background: #1d1d1d">
+        <form onsubmit>
+            <div class="mb-3">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">{{ current_user.username }}:~$</span>
+                    </div>
+                    <input type="text" class="form-control" id="commandInput" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <textarea class="form-control" id="commandOutput" rows="10" disabled></textarea>
+            </div>
+            <button class="btn btn-primary" id="executeBtn" type="submit">Execute</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("executeBtn").addEventListener("click", function (event) {
+            event.preventDefault();
+            postCommand();
+        });
+    </script>
 {% endblock %}

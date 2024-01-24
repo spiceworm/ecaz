@@ -1,3 +1,6 @@
+import shlex
+import subprocess
+
 import flask
 import flask_mailman
 import flask_restful
@@ -40,6 +43,23 @@ class StatusApi(flask_restful.Resource):
         return {"message": "ok"}
 
 
+class TerminalApi(flask_restful.Resource):
+    @jwt_required()
+    def post(self):
+        user = User.query.filter(User.email == get_jwt_identity()).one_or_none()
+        if user and user.is_admin:
+            data = flask_restful.request.get_json(force=True)
+            command = data.get("command", "")
+            command_parts = shlex.split(command)
+            try:
+                output = subprocess.check_output(command_parts).decode()
+            except Exception as e:
+                output = f"Exception: {e}"
+        else:
+            output = "Admin only"
+        return flask.jsonify(output=output)
+
+
 class UserApi(flask_restful.Resource):
     @jwt_required()
     def get(self):
@@ -49,4 +69,5 @@ class UserApi(flask_restful.Resource):
 api = flask_restful.Api(api_v1_bp)
 api.add_resource(EmailApi, "/email")
 api.add_resource(StatusApi, "/status")
+api.add_resource(TerminalApi, "/terminal")
 api.add_resource(UserApi, "/user")
