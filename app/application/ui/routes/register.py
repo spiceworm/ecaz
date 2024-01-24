@@ -28,7 +28,7 @@ def register():
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
-                flask.flash("Error: Email already taken")
+                flask.flash("Email already taken", category="error")
             else:
                 raise e
         else:

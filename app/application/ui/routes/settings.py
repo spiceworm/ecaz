@@ -23,9 +23,9 @@ def change_password():
             user.password_hash = flask.g.bcrypt.generate_password_hash(password1).decode("utf-8")
             db.session.add(user)
             db.session.commit()
-            flask.flash("Success: Passwords updated successfully")
+            flask.flash("Password updated", category="success")
         else:
-            flask.flash("Error: Passwords must match")
+            flask.flash("Passwords must match", category="error")
     return flask.redirect(flask.url_for(".settings"))
 
 

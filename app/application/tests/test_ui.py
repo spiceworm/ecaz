@@ -15,7 +15,7 @@ def test_change_password(ui_auth_post):
             "password2": "new-password",
         },
     )
-    assert "Passwords updated successfully" in resp1.data.decode()
+    assert "Password updated" in resp1.data.decode()
     resp2 = ui_auth_post(
         "/change_password",
         follow_redirects=True,
@@ -24,7 +24,7 @@ def test_change_password(ui_auth_post):
             "password2": "test-password",
         },
     )
-    assert "Passwords updated successfully" in resp2.data.decode()
+    assert "Password updated" in resp2.data.decode()
 
 
 def test_change_password_not_matching(ui_auth_post):
