@@ -1,4 +1,5 @@
 import flask
+from flask_jwt_extended import create_access_token
 import flask_login
 
 
@@ -6,20 +7,24 @@ from . import (
     forms,
     ui_bp,
 )
-from ..models import db, User
+from ..models import ApiToken, db, User
 
 
-@ui_bp.route("/logout", methods=["GET"])
+@ui_bp.route("/generate_api_token")
 @flask_login.login_required
-def logout():
-    flask_login.logout_user()
-    return flask.redirect(flask.url_for(".login"))
+def generate_api_token():
+    user = flask_login.current_user
+    token = ApiToken(
+        token=create_access_token(
+            expires_delta=False,
+            identity=user.username,
+        ),
+        user=user,
+    )
+    db.session.add(token)
+    db.session.commit()
 
-
-@ui_bp.route("/profile", methods=["GET"])
-@flask_login.login_required
-def profile():
-    return flask.render_template("profile.html")
+    return flask.redirect(flask.url_for(".profile"))
 
 
 @ui_bp.route("/", methods=["GET", "POST"])
@@ -40,6 +45,19 @@ def login():
             flask_login.login_user(user)
             return flask.redirect(flask.url_for(".profile"))
     return flask.render_template("login.html", form=form)
+
+
+@ui_bp.route("/logout", methods=["GET"])
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    return flask.redirect(flask.url_for(".login"))
+
+
+@ui_bp.route("/profile", methods=["GET"])
+@flask_login.login_required
+def profile():
+    return flask.render_template("profile.html")
 
 
 @ui_bp.route("/register", methods=["GET", "POST"])

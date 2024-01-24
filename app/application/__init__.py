@@ -4,6 +4,7 @@ from flask import (
     Flask,
     g,
 )
+from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 
 
@@ -43,6 +44,8 @@ def create_app():
 
     with app.app_context():
         g.config = config
+
+    jwt = JWTManager(app)
 
     login_manager = LoginManager()
     login_manager.login_view = "ui_bp.login"
