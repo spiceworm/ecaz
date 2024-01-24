@@ -9,7 +9,7 @@ from application.models import (
 
 def test_change_password(ui_auth_post):
     resp1 = ui_auth_post(
-        "/change_password",
+        "/settings/change_password",
         follow_redirects=True,
         data={
             "password1": "new-password",
@@ -18,7 +18,7 @@ def test_change_password(ui_auth_post):
     )
     assert "Password updated" in resp1.data.decode()
     resp2 = ui_auth_post(
-        "/change_password",
+        "/settings/change_password",
         follow_redirects=True,
         data={
             "password1": "test-password",
@@ -30,7 +30,7 @@ def test_change_password(ui_auth_post):
 
 def test_change_password_not_matching(ui_auth_post):
     resp = ui_auth_post(
-        "/change_password",
+        "/settings/change_password",
         follow_redirects=True,
         data={
             "password1": "new-password",
@@ -43,7 +43,7 @@ def test_change_password_not_matching(ui_auth_post):
 def test_create_api_token(ui_auth_post, user):
     token_name = "test-token-1"
     assert len(user.api_tokens) == 0
-    ui_auth_post("/create_api_token", data={"token_name": token_name})
+    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
     assert len(user.api_tokens) == 1
     assert user.api_tokens[0].name == token_name
 
@@ -51,9 +51,9 @@ def test_create_api_token(ui_auth_post, user):
 def test_delete_api_token(ui_auth_post, user):
     token_name = "test-token-1"
     assert len(user.api_tokens) == 0
-    ui_auth_post("/create_api_token", data={"token_name": token_name})
+    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
     assert len(user.api_tokens) == 1
-    ui_auth_post("/delete_api_token", data={"id": user.api_tokens[0].id})
+    ui_auth_post("/api_settings/delete_api_token", data={"id": user.api_tokens[0].id})
     assert len(user.api_tokens) == 0
 
 
