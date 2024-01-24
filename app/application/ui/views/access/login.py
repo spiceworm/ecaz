@@ -65,6 +65,8 @@ def totp_login(jwt):
         form = forms.TotpLoginForm()
         if form.validate_on_submit():
             if token.user.totp.verify(form.totp_code.data):
+                db.session.delete(token)
+                db.session.commit()
                 return _login(token.user)
             else:
                 flask.flash(messages.TOTP_CODE_INVALID, category="error")

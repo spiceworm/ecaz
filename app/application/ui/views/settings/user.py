@@ -65,18 +65,11 @@ def send_verify_email():
     if user.is_verified:
         flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
     else:
-        # Delete any old tokens when a user asks to be sent a verification email
-        AuthToken.query.filter(
-            AuthToken.name == AuthToken.VERIFY_EMAIL_TAG,
-            AuthToken.user == user,
-        ).delete()
-
         token = AuthToken.create_email_verification_token(user)
         url = flask.url_for(".verify_email", jwt=token.value, _external=True)
         email = flask_mailman.EmailMessage(subject="Verify your account", body=url, to=[user.email])
         email.content_subtype = "html"
         email.send()
-
         flask.flash(messages.VERIFICATION_EMAIL_SENT, category="info")
     return flask.redirect(flask.url_for(".settings"))
 
