@@ -35,6 +35,10 @@ class Login(FlaskForm):
     )
 
 
+class Logout(FlaskForm):
+    pass
+
+
 class Register(FlaskForm):
     password = PasswordField(
         "password",

@@ -3,4 +3,12 @@
 
 {% block content %}
     {{ super() }}
+
+    <div class="rpgui-container framed" style="position:absolute;top:0;right:0;">
+        <form action="{{ url_for('.logout') }}" method="post">
+            {{ logout_form.csrf_token }}
+
+            <button class="rpgui-button" type="submit" id="logout" name="logout">Logout</button>
+        </form>
+    </div>
 {% endblock %}

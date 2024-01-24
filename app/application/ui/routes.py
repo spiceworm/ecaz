@@ -64,10 +64,12 @@ def login():
     return flask.render_template("login.html", form=form)
 
 
-@ui_bp.route("/logout", methods=["GET"])
+@ui_bp.route("/logout", methods=["POST"])
 @flask_login.login_required
 def logout():
-    flask_login.logout_user()
+    form = forms.Logout()
+    if form.validate_on_submit():
+        flask_login.logout_user()
     return flask.redirect(flask.url_for(".login"))
 
 
@@ -78,6 +80,7 @@ def profile():
         "profile.html",
         create_api_token_form=forms.CreateApiToken(),
         delete_api_token_form=forms.DeleteApiToken(),
+        logout_form=forms.Logout(),
     )
 
 
