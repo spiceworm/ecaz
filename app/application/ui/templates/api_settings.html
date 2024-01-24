@@ -30,7 +30,7 @@
                     <legend>API Tokens</legend>
 
                     <ul class="list-group">
-                        {% for api_token in current_user.api_tokens %}
+                        {% for api_token in current_user.public_api_tokens %}
                             <li class="list-group-item">
                                 <form class="form-horizontal" action="{{ url_for('.delete_api_token') }}" method="post">
                                     {{ delete_api_token_form.csrf_token }}

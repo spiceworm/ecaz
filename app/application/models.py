@@ -1,6 +1,9 @@
+import flask_jwt_extended
 import flask_login
 import flask_migrate
 import flask_sqlalchemy
+import jwt
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import EmailType
 
 
@@ -22,3 +25,17 @@ class User(db.Model, flask_login.UserMixin):
     email = db.Column(EmailType, unique=True)
     is_admin = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String)
+    verified = db.Column(db.Boolean, default=False)
+
+    @hybrid_property
+    def public_api_tokens(self):
+        tokens = []
+        for token in self.api_tokens:
+            try:
+                claims = flask_jwt_extended.decode_token(token.value)
+            except jwt.ExpiredSignatureError:
+                pass
+            else:
+                if "hidden" not in claims.get("tags", []):
+                    tokens.append(token)
+        return tokens
