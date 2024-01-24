@@ -1,11 +1,6 @@
 from datetime import timedelta
-import os
-from typing import List
 
 import flask_jwt_extended
-import flask_login
-import flask_migrate
-import flask_sqlalchemy
 import jwt
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -16,13 +11,13 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy_utils import StringEncryptedType
 
+from . import (
+    db,
+    get_encryption_key,
+)
 
-db = flask_sqlalchemy.SQLAlchemy()
-migrate = flask_migrate.Migrate()
 
-
-def get_encryption_key():
-    return os.environ["SECRET_KEY"]
+__all__ = ("ApiToken",)
 
 
 class ApiToken(db.Model):
@@ -53,7 +48,7 @@ class ApiToken(db.Model):
     )
 
     @classmethod
-    def _create_token(cls, user, name, tags=None, expires_delta=None):
+    def create(cls, user, name, tags=None, expires_delta=None):
         token_value = flask_jwt_extended.create_access_token(
             additional_claims={"tags": tags or []},
             expires_delta=expires_delta,
@@ -67,7 +62,7 @@ class ApiToken(db.Model):
 
     @classmethod
     def create_email_verification_token(cls, user):
-        token = cls._create_token(
+        token = cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
             [cls.HIDDEN_TAG, cls.VERIFY_EMAIL_TAG],
@@ -79,7 +74,7 @@ class ApiToken(db.Model):
 
     @classmethod
     def create_reset_password_token(cls, user):
-        token = cls._create_token(
+        token = cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
             [cls.HIDDEN_TAG, cls.RESET_PASSWORD_TAG],
@@ -105,54 +100,3 @@ class ApiToken(db.Model):
             return []
         else:
             return claims.get("tags", [])
-
-
-class User(db.Model, flask_login.UserMixin):
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-    )
-    api_tokens: Mapped[List["ApiToken"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
-    deleted = sa.Column(
-        StringEncryptedType(
-            type_in=sa.Boolean,
-            key=get_encryption_key,
-            padding='zeroes',
-        ),
-        default=False,
-    )
-    email = sa.Column(
-        StringEncryptedType(
-            key=get_encryption_key,
-            padding='pkcs5',
-        ),
-        unique=True,
-    )
-    is_admin = sa.Column(
-        StringEncryptedType(
-            type_in=sa.Boolean,
-            key=get_encryption_key,
-            padding='zeroes',
-        ),
-        default=False,
-    )
-    password = sa.Column(
-        StringEncryptedType(
-            key=get_encryption_key,
-            padding='pkcs5',
-        ),
-    )
-    verified = sa.Column(
-        StringEncryptedType(
-            type_in=sa.Boolean,
-            key=get_encryption_key,
-            padding='zeroes',
-        ),
-        default=False,
-    )
-
-    @hybrid_property
-    def public_api_tokens(self):
-        return [t for t in self.api_tokens if "hidden" not in t.tags]
