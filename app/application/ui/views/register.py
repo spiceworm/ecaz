@@ -14,9 +14,7 @@ from ...models import (
 )
 
 
-__all__ = (
-    "register",
-)
+__all__ = ("register",)
 
 
 def register():

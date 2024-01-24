@@ -7,7 +7,7 @@ def test_email_endpoint(api_user):
             "body": "test-email",
             "to": ["user@test.com"],
             "is_html": True,
-        }
+        },
     )
     assert resp.json == {"status": True}
 
@@ -26,7 +26,7 @@ def test_email_endpoint_failure(api_user, mock_email_send):
             "body": "test-email",
             "to": ["user@test.com"],
             "is_html": True,
-        }
+        },
     )
     assert resp.json == {"status": False}
 

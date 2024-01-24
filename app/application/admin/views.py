@@ -5,7 +5,7 @@ import flask_login
 
 
 class RestrictedIndexView(flask_admin.AdminIndexView):
-    @flask_admin.expose('/')
+    @flask_admin.expose("/")
     def index(self):
         """
         If any user attempts to access /admin when they are not authenticated as an admin
@@ -13,7 +13,7 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
         """
         if flask_login.current_user.is_authenticated and flask_login.current_user.is_admin:
             return super().index()
-        return flask.redirect(flask.url_for('ui_bp.login'))
+        return flask.redirect(flask.url_for("ui_bp.login"))
 
 
 class ApiTokenModelView(ModelView):

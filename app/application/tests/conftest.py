@@ -93,12 +93,12 @@ def mock_email_send(monkeypatch):
         return return_value
 
     # Patch send to return `True` by default.
-    monkeypatch.setattr(flask_mailman.EmailMessage, 'send', patched_send)
+    monkeypatch.setattr(flask_mailman.EmailMessage, "send", patched_send)
 
     def patch_send(patch_func=patched_send):
         # This patch will not be applied unless we explicitly use the `mock_email_send`
         # fixture. Otherwise the default patch will be applied to all test cases.
-        monkeypatch.setattr(flask_mailman.EmailMessage, 'send', patch_func)
+        monkeypatch.setattr(flask_mailman.EmailMessage, "send", patch_func)
 
     # Return `patch_send` so we can change the return value of send to something
     # other than `True` if needed.
