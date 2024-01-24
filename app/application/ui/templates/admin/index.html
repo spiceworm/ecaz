@@ -4,6 +4,13 @@
     {{ super() }}
 
     <script>
+        function copyToClipboard(field_id) {
+            const copyText = document.getElementById(field_id);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(copyText.value);
+        }
+
         async function terminalApi(command) {
             return await fetch(
                 '{{ BASE_URL }}/api/v1/terminal', {
@@ -30,7 +37,7 @@
     {{ super() }}
 
     <div class="container pt-3 pb-3" style="background: #1d1d1d">
-        <form onsubmit>
+        <form id="cliForm">
             <div class="mb-3">
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -42,8 +49,9 @@
             <div class="mb-3">
                 <textarea class="form-control" id="commandOutput" rows="10" disabled></textarea>
             </div>
-            <button class="btn btn-primary" id="executeBtn" type="submit">Execute</button>
         </form>
+        <button class="btn btn-primary" form="cliForm" id="executeBtn" type="submit">Execute</button>
+        <button class="btn btn-primary" onclick="copyToClipboard('commandOutput')">Copy</button>
     </div>
 
     <script>
