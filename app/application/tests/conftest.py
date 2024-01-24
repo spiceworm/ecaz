@@ -80,11 +80,9 @@ class _ApiUser(_UiUser):
 
 @pytest.fixture(autouse=True)
 def _cleanup_and_teardown():
-    # Setup code
+    db.drop_all()
+    db.create_all()
     yield  # this is where the test runs
-    ApiToken.query.delete()
-    User.query.delete()
-    db.session.commit()
 
 
 @pytest.fixture(autouse=True)

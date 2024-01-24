@@ -1,6 +1,5 @@
 import flask
 import flask_login
-import flask_mailman
 import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import sqlalchemy.exc
@@ -8,7 +7,6 @@ import sqlalchemy.exc
 from .. import forms
 from ...constants import messages
 from ...models import (
-    ApiToken,
     db,
     User,
 )
@@ -23,13 +21,13 @@ def register():
 
     form = forms.RegisterForm()
     if form.validate_on_submit():
-        user = User(
-            email=form.email.data,
-            password=form.password.data,
-            username=form.email.data,
-        )
-        db.session.add(user)
         try:
+            user = User(
+                email=form.email.data,
+                password=form.password.data,
+                username=form.email.data,
+            )
+            db.session.add(user)
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):

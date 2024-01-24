@@ -46,9 +46,9 @@ def change_username():
     form = forms.ChangeUsernameForm()
     if form.validate_on_submit():
         user = flask_login.current_user
-        user.username = form.username.data
-        db.session.add(user)
         try:
+            user.username = form.username.data
+            db.session.add(user)
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
