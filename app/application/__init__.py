@@ -1,26 +1,17 @@
 import os
 
-import flask
+import flask_admin
 from flask import (
     Flask,
     g,
 )
-import flask_admin
-from flask_admin.contrib.sqla import ModelView
 import flask_jwt_extended
 import flask_login
 import flask_mailman
 
 
-class AdminModelView(ModelView):
-    def is_accessible(self):
-        return flask_login.current_user.is_authenticated and flask_login.current_user.is_admin
-
-    def inaccessible_callback(self, name, **kwargs):
-        return flask.redirect(flask.url_for("ui_bp.login", next=flask.request.url))
-
-
 def create_app():
+    from .admin import views as admin_views
     from .api import api_bp
     from .cli import cli_bp
     from .ui import ui_bp
@@ -94,14 +85,14 @@ def create_app():
     login_manager.login_view = "ui_bp.login"
     login_manager.init_app(app)
 
+    admin = flask_admin.Admin(app, template_mode="bootstrap3")
+    admin.add_view(admin_views.ApiTokenModelView(ApiToken, db.session))
+    admin.add_view(admin_views.UserModelView(User, db.session))
+
     db.init_app(app)
     migrate.init_app(app, db)
     with app.app_context():
         db.create_all()
-
-    admin = flask_admin.Admin(app, name="ecaz_xyz", template_mode="bootstrap3")
-    admin.add_view(AdminModelView(ApiToken, db.session))
-    admin.add_view(AdminModelView(User, db.session))
 
     @app.before_request
     def define_globals():
