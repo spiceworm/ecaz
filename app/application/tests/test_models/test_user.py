@@ -23,6 +23,21 @@ def test_defaults(user, attr_name, exp_value):
     assert getattr(u, attr_name) == exp_value
 
 
+def test_frontend_tokens(user):
+    """
+    Test that each call to `User.frontend_token` returns a new `ApiToken` instance
+    with the `ApiToken.FRONTEND_TAG`.
+    """
+    u = user()
+    t1 = u.frontend_token
+    t1_value = t1.value
+    assert ApiToken.FRONTEND_TAG in t1.tags
+    t2 = u.frontend_token
+    t2_value = t2.value
+    assert ApiToken.FRONTEND_TAG in t1.tags
+    assert t1_value != t2_value
+
+
 def test_public_api_tokens(api_token, user):
     """
     Test `User.api_tokens` attribute excludes `ApiToken`s that have the

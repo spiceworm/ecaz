@@ -1,3 +1,5 @@
+import flask
+
 from application.constants import messages
 from application.models import User
 
@@ -22,6 +24,16 @@ def test_create_admin_using_invalid_email(cli_runner):
         args=["cli", "create-admin", "--email", "not-an-email", "--password", "the-password"]
     )
     assert messages.INVALID_EMAIL_ADDRESS in result.output
+
+
+def test_get_config(cli_runner):
+    """
+    Verify `flask cli get-config returns at least 1 configured variable.
+    """
+    result = cli_runner.invoke(
+        args=["cli", "get-config"]
+    )
+    assert f"APP_NAME={flask.current_app.config['APP_NAME']}" in result.output
 
 
 def test_mark_admin(cli_runner, user):
