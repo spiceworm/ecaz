@@ -21,8 +21,8 @@ def test_delete_api_token(ui_auth_post, user):
     assert len(user.api_tokens) == 0
 
 
-def test_login(app, user):
-    resp = app.test_client().post(
+def test_login(client, user):
+    resp = client.post(
         "/login",
         follow_redirects=True,
         data={"username": user.username, "password": "test-password"},
@@ -31,8 +31,8 @@ def test_login(app, user):
     assert resp.request.path == "/profile"
 
 
-def test_bad_login(app):
-    resp = app.test_client().post(
+def test_bad_login(client):
+    resp = client.post(
         "/login",
         follow_redirects=True,
         data={"username": "invalid-username", "password": "invalid-password"},
@@ -52,8 +52,8 @@ def test_profile(ui_auth_get):
     assert resp.request.path == "/profile"
 
 
-def test_register(app):
-    resp = app.test_client().post(
+def test_register(client):
+    resp = client.post(
         "/register",
         follow_redirects=True,
         data={"username": "u", "password": "p"},
@@ -66,9 +66,7 @@ def test_register(app):
     db.session.commit()
 
 
-def test_register_duplicate_username(app):
-    client = app.test_client()
-
+def test_register_duplicate_username(client):
     client.post(
         "/register",
         follow_redirects=True,

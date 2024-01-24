@@ -22,6 +22,11 @@ def app():
 
 
 @pytest.fixture()
+def client(app):
+    yield app.test_client()
+
+
+@pytest.fixture()
 def user(app):
     bcrypt = Bcrypt(app)
     password_hash = bcrypt.generate_password_hash("test-password").decode("utf-8")
