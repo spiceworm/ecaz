@@ -8,8 +8,9 @@ from application.models import (
 )
 
 
-def test_change_password(ui_auth_post):
-    resp1 = ui_auth_post(
+def test_change_password(ui_user):
+    user = ui_user()
+    resp1 = user.post(
         "/settings/change_password",
         follow_redirects=True,
         data={
@@ -17,8 +18,8 @@ def test_change_password(ui_auth_post):
             "password2": "new-password",
         },
     )
-    assert "Password updated" in resp1.data.decode()
-    resp2 = ui_auth_post(
+    assert messages.PASSWORD_UPDATE_SUCCESS in resp1.data.decode()
+    resp2 = user.post(
         "/settings/change_password",
         follow_redirects=True,
         data={
@@ -29,8 +30,8 @@ def test_change_password(ui_auth_post):
     assert messages.PASSWORD_UPDATE_SUCCESS in resp2.data.decode()
 
 
-def test_change_password_not_matching(ui_auth_post):
-    resp = ui_auth_post(
+def test_change_password_not_matching(ui_user):
+    resp = ui_user().post(
         "/settings/change_password",
         follow_redirects=True,
         data={
@@ -41,46 +42,58 @@ def test_change_password_not_matching(ui_auth_post):
     assert messages.PASSWORD_UPDATE_MATCH_ERROR in resp.data.decode()
 
 
-def test_create_api_token(ui_auth_post, user):
+def test_change_username(ui_user):
+    resp1 = ui_user().post(
+        "/settings/change_username",
+        follow_redirects=True,
+        data={"username": "new-username"},
+    )
+    assert messages.USERNAME_UPDATE_SUCCESS in resp1.data.decode()
+
+
+def test_create_api_token(ui_user):
+    user = ui_user()
     token_name = "test-token-1"
     assert len(user.api_tokens) == 0
-    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
+    user.post("/api_settings/create_api_token", data={"token_name": token_name})
     assert len(user.api_tokens) == 1
     assert user.api_tokens[0].name == token_name
 
 
-def test_delete_account(ui_auth_post, user):
-    user_email = user.email
-    resp = ui_auth_post("/settings/delete_account", follow_redirects=True)
+def test_delete_account(ui_user):
+    user = ui_user()
+    resp = user.post("/settings/delete_account", follow_redirects=True)
     assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
-    assert User.query.filter_by(email=user_email).one_or_none() is None
+    assert User.query.filter_by(email=user.email).one_or_none() is None
     assert len(resp.history) == 1
     assert resp.request.path == "/"
 
 
-def test_delete_account_cascades(ui_auth_post, user):
-    user_email = user.email
+def test_delete_account_cascades(ui_user):
+    user = ui_user()
     token_name = "test-token"
-    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
-    ui_auth_post("/settings/delete_account")
-    assert User.query.filter_by(email=user_email).one_or_none() is None
+    user.post("/api_settings/create_api_token", data={"token_name": token_name})
+    user.post("/settings/delete_account")
+    assert User.query.filter_by(email=user.email).one_or_none() is None
     assert ApiToken.query.filter_by(name=token_name).one_or_none() is None
 
 
-def test_delete_api_token(ui_auth_post, user):
+def test_delete_api_token(ui_user):
+    user = ui_user()
     token_name = "test-token-1"
     assert len(user.api_tokens) == 0
-    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
+    user.post("/api_settings/create_api_token", data={"token_name": token_name})
     assert len(user.api_tokens) == 1
-    ui_auth_post("/api_settings/delete_api_token", data={"id": user.api_tokens[0].id})
+    user.post("/api_settings/delete_api_token", data={"id": user.api_tokens[0].id})
     assert len(user.api_tokens) == 0
 
 
-def test_login(client, user):
-    resp = client.post(
+def test_login(ui_user):
+    user = ui_user()
+    resp = user.post(
         "/login",
         follow_redirects=True,
-        data={"email": user.email, "password": "test-password"},
+        data={"email": user.email, "password": user.password},
     )
     assert len(resp.history) == 1
     assert resp.request.path == "/profile"
@@ -96,21 +109,23 @@ def test_bad_login(client):
     assert resp.request.path == "/login"
 
 
-def test_login_with_next_url_param(client, user):
+def test_login_with_next_url_param(client, ui_user):
+    user = ui_user()
     resp = client.post(
         "/login?next=%2Fapi_settings",
         follow_redirects=True,
-        data={"email": user.email, "password": "test-password"},
+        data={"email": user.email, "password": user.password},
     )
     assert len(resp.history) == 1
     assert resp.request.path == "/api_settings"
 
 
-def test_login_with_bad_next_url_param(client, user):
+def test_login_with_bad_next_url_param(client, ui_user):
+    user = ui_user()
     resp = client.post(
         "/login?next=%2Fdoes_not_exist",
         follow_redirects=True,
-        data={"email": user.email, "password": "test-password"},
+        data={"email": user.email, "password": user.password},
     )
     assert len(resp.history) == 1
     assert resp.status_code == int(HTTPStatus.NOT_FOUND)
@@ -125,15 +140,15 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     assert resp.request.args["next"] == "/api_settings"
 
 
-def test_logout(ui_auth_post):
-    resp = ui_auth_post("/logout", follow_redirects=True)
+def test_logout(ui_user):
+    resp = ui_user().post("/logout", follow_redirects=True)
     assert len(resp.history) == 1
     print(resp.request.path)
     assert resp.request.path == "/"
 
 
-def test_profile(ui_auth_get):
-    resp = ui_auth_get("/profile")
+def test_profile(ui_user):
+    resp = ui_user().get("/profile")
     assert resp.request.path == "/profile"
 
 
@@ -141,9 +156,9 @@ def test_register(client):
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "password123"},
+        data={"email": "user@test.com", "password": "password123"},
     )
-    user = User.query.filter_by(email="u@test.com")
+    user = User.query.filter_by(email="user@test.com")
     assert user
     assert len(resp.history) == 1
     assert resp.request.path == "/profile"
@@ -155,17 +170,17 @@ def test_register_duplicate_email(client):
     client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "password123"},
+        data={"email": "user@test.com", "password": "password123"},
     )
     client.post("/logout")
 
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "password456"},
+        data={"email": "user@test.com", "password": "password456"},
     )
     assert messages.DUPLICATE_EMAIL_ERROR in resp.data.decode()
     db.session.rollback()
 
-    User.query.filter_by(email="u@test.com").delete()
+    User.query.filter_by(email="user@test.com").delete()
     db.session.commit()
