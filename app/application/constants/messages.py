@@ -1,3 +1,5 @@
+DELETE_ACCOUNT_SUCCESS = "Account deleted"
+DELETE_ACCOUNT_PENDING = "Account is scheduled for deletion"
 DUPLICATE_EMAIL_ERROR = "Email already taken"
 INVALID_LOGIN_ERROR = "Invalid login credentials"
 PASSWORD_UPDATE_MATCH_ERROR = "Passwords must match"

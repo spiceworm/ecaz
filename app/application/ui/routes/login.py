@@ -20,17 +20,20 @@ def login():
                 form.password.data,
             )
             if is_correct_password:
-                flask_login.login_user(user)
-                next_page = flask.request.args.get("next")
-
-                # If the user was trying to access a login protected page but were not logged in.
-                # Prevent open redirection vulnerability.
-                if next_page and util.url_has_allowed_host_and_scheme(
-                    next_page, flask.request.host
-                ):
-                    return flask.redirect(next_page)
+                if user.deleted:
+                    flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
                 else:
-                    return flask.redirect(flask.url_for(".profile"))
+                    flask_login.login_user(user)
+                    next_page = flask.request.args.get("next")
 
-        flask.flash(messages.INVALID_LOGIN_ERROR, category="error")
+                    # If the user was trying to access a login protected page but were not logged in.
+                    # Prevent open redirection vulnerability.
+                    if next_page and util.url_has_allowed_host_and_scheme(
+                        next_page, flask.request.host
+                    ):
+                        return flask.redirect(next_page)
+                    else:
+                        return flask.redirect(flask.url_for(".profile"))
+        else:
+            flask.flash(messages.INVALID_LOGIN_ERROR, category="error")
     return flask.render_template("login.html", form=form)

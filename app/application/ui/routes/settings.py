@@ -9,6 +9,7 @@ from ...models import db
 
 __all__ = (
     "change_password",
+    "delete_account",
     "settings",
 )
 
@@ -31,9 +32,31 @@ def change_password():
 
 
 @flask_login.login_required
+def delete_account():
+    """
+    This view could get deleted in the future in favor of marking the user as pending
+    for deletion instead of deleting them right away. This would be necessary if there
+    were many objects related the user object that also required deletion which could
+    cause the client's request to timeout while each object was deleted.
+    """
+    form = forms.DeleteAccount()
+    if form.validate_on_submit():
+        # Setting this attribute for the future where a deletion queue exists and a job
+        # that checks for all user accounts marked for deletion runs periodically.
+        flask_login.current_user.deleted = True
+
+        db.session.delete(flask_login.current_user)
+        db.session.commit()
+        flask_login.logout_user()
+        flask.flash(messages.DELETE_ACCOUNT_SUCCESS, category="success")
+    return flask.redirect(flask.url_for(".login"))
+
+
+@flask_login.login_required
 def settings():
     return flask.render_template(
         "settings.html",
         change_password_form=forms.ChangePassword(),
+        delete_account_form=forms.DeleteAccount(),
         logout_form=forms.Logout(),
     )

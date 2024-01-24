@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from application.constants import messages
 from application.models import (
+    ApiToken,
     db,
     User,
 )
@@ -46,6 +47,24 @@ def test_create_api_token(ui_auth_post, user):
     ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
     assert len(user.api_tokens) == 1
     assert user.api_tokens[0].name == token_name
+
+
+def test_delete_account(ui_auth_post, user):
+    user_email = user.email
+    resp = ui_auth_post("/settings/delete_account", follow_redirects=True)
+    assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
+    assert User.query.filter_by(email=user_email).one_or_none() is None
+    assert len(resp.history) == 1
+    assert resp.request.path == "/"
+
+
+def test_delete_account_cascades(ui_auth_post, user):
+    user_email = user.email
+    token_name = "test-token"
+    ui_auth_post("/api_settings/create_api_token", data={"token_name": token_name})
+    ui_auth_post("/settings/delete_account")
+    assert User.query.filter_by(email=user_email).one_or_none() is None
+    assert ApiToken.query.filter_by(name=token_name).one_or_none() is None
 
 
 def test_delete_api_token(ui_auth_post, user):
@@ -110,7 +129,7 @@ def test_logout(ui_auth_post):
     resp = ui_auth_post("/logout", follow_redirects=True)
     assert len(resp.history) == 1
     print(resp.request.path)
-    assert resp.request.path in ("/", "/login")
+    assert resp.request.path == "/"
 
 
 def test_profile(ui_auth_get):

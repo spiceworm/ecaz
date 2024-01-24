@@ -27,3 +27,4 @@ ui_bp.add_url_rule("/register", view_func=routes.register, methods=["GET", "POST
 
 ui_bp.add_url_rule("/settings", view_func=routes.settings, methods=["GET"])
 ui_bp.add_url_rule("/settings/change_password", view_func=routes.change_password, methods=["POST"])
+ui_bp.add_url_rule("/settings/delete_account", view_func=routes.delete_account, methods=["POST"])

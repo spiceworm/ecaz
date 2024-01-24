@@ -42,6 +42,10 @@ class DeleteApiToken(FlaskForm):
     )
 
 
+class DeleteAccount(FlaskForm):
+    pass
+
+
 class Login(FlaskForm):
     email = EmailField(
         "email",
