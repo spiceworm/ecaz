@@ -100,7 +100,7 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     resp = client.post(
         "/login?next=%2Fapi_settings",
         follow_redirects=True,
-        data={"email": "invalid@test.com", "password": "invalid"},
+        data={"email": "invalid@test.com", "password": "invalid123"},
     )
     assert resp.request.args["next"] == "/api_settings"
 
@@ -121,7 +121,7 @@ def test_register(client):
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "p"},
+        data={"email": "u@test.com", "password": "password123"},
     )
     user = User.query.filter_by(email="u@test.com")
     assert user
@@ -135,14 +135,14 @@ def test_register_duplicate_email(client):
     client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "p"},
+        data={"email": "u@test.com", "password": "password123"},
     )
     client.post("/logout")
 
     resp = client.post(
         "/register",
         follow_redirects=True,
-        data={"email": "u@test.com", "password": "p"},
+        data={"email": "u@test.com", "password": "password456"},
     )
     assert "Email already taken" in resp.data.decode()
     db.session.rollback()
