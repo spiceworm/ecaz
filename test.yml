@@ -20,6 +20,7 @@ services:
       POSTGRES_SSLMODE: "disable"
       POSTGRES_USER: "postgres"
       SECRET_KEY: "1234"
+      RATE_LIMIT_ENABLED: "0"
       WTF_CSRF_ENABLED: "0"
     entrypoint: "tox ${TOX_ARGS:-}"
 

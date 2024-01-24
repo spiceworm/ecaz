@@ -56,6 +56,7 @@ def create_app() -> flask.Flask:
         POSTGRES_USER = decouple.config("POSTGRES_USER")
 
         RATE_LIMIT = decouple.config("RATE_LIMITS", cast=csv_to_list, default="200/day,50/hour")
+        RATE_LIMIT_ENABLED = decouple.config("RATE_LIMIT_ENABLED", cast=bool, default=True)
         RATE_LIMIT_STORAGE_URI = decouple.config("RATE_LIMIT_STORAGE_URI", default="memory://")
 
         # Magic flask-sqlalchemy environment variable
@@ -96,6 +97,7 @@ def create_app() -> flask.Flask:
     rate_limiter = flask_limiter.Limiter(
         app=app,
         default_limits=config.RATE_LIMIT,
+        enabled=config.RATE_LIMIT_ENABLED,
         key_func=get_remote_address,
         storage_uri=config.RATE_LIMIT_STORAGE_URI,
     )
