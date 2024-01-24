@@ -82,7 +82,6 @@ def test_setup_with_valid_webauthn_device(ui_user):
         data={"credential_creation_options": json.dumps(credential_creation_options)},
         follow_redirects=True,
     )
-    # print(resp.data.decode())
     assert user.webauthn.enabled
     assert messages.WEBAUTHN_SETUP_VERIFICATION_SUCCESS in resp.data.decode()
     assert len(resp.history) == 1

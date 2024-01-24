@@ -1,4 +1,5 @@
 import functools
+from typing import List
 
 import flask
 import flask_login
@@ -8,9 +9,14 @@ from application.models import AuthToken
 
 
 __all__ = (
+    "csv_to_list",
     "require_unauthenticated",
     "validate_jwt_as_auth_token",
 )
+
+
+def csv_to_list(csv: str, delimiter: str = ",") -> List[str]:
+    return [s.strip() for s in csv.split(delimiter)]
 
 
 def require_unauthenticated(if_authenticated_redirect_to):
