@@ -11,16 +11,16 @@ def get_latest_tag():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "-p", "--push",
+        "-p",
+        "--push",
         action="store_true",
         help="Push the last image without building.",
     )
     parser.add_argument(
-        "-t", "--tag",
+        "-t",
+        "--tag",
         default=get_latest_tag(),
         help="Tag the newly built image before pushing. Tag HEAD with TAG if not in git history.",
     )
@@ -36,9 +36,11 @@ def main(args):
         subprocess.check_call(["docker", "push", image_url], **sp_kwargs)
     else:
         subprocess.check_call(["docker", "compose", "build", "--no-cache"], **sp_kwargs)
-        subprocess.check_call(["docker", "tag", f"{registry_url}/app:latest", image_url], **sp_kwargs)
+        subprocess.check_call(
+            ["docker", "tag", f"{registry_url}/app:latest", image_url], **sp_kwargs
+        )
         subprocess.check_call(["docker", "push", image_url], **sp_kwargs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(parse_args())

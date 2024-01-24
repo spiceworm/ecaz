@@ -5,13 +5,10 @@ from wtforms import (
 )
 
 
-__all__ = (
-    "WebauthnLoginForm",
-)
+__all__ = ("WebauthnLoginForm",)
 
 
 class WebauthnLoginForm(flask_wtf.FlaskForm):
     credential_authentication_options = HiddenField(
-        "credential_authentication_options",
-        validators=[validators.DataRequired()]
+        "credential_authentication_options", validators=[validators.DataRequired()]
     )

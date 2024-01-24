@@ -28,7 +28,7 @@ class utcnow(sa.sql.expression.FunctionElement):
     inherit_cache = True
 
 
-@compiles(utcnow, 'postgresql')
+@compiles(utcnow, "postgresql")
 def pg_utcnow(element, compiler, **kw):
     return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
@@ -121,10 +121,12 @@ class User(db.Model, flask_login.UserMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        db.session.add_all([
-            Totp(user=self),
-            WebAuthn(user=self),
-        ])
+        db.session.add_all(
+            [
+                Totp(user=self),
+                WebAuthn(user=self),
+            ]
+        )
         db.session.commit()
 
     @hybrid_property

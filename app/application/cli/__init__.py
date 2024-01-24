@@ -57,7 +57,7 @@ def get_config():
     Show config for current running app.
     """
     for k, v in sorted(flask.current_app.config.items()):
-        click.echo(f'{k}={v}')
+        click.echo(f"{k}={v}")
 
 
 @cli_bp.cli.command("mark-admin")

@@ -5,13 +5,8 @@ from wtforms import (
 )
 
 
-__all__ = (
-    "TotpLoginForm",
-)
+__all__ = ("TotpLoginForm",)
 
 
 class TotpLoginForm(flask_wtf.FlaskForm):
-    totp_code = StringField(
-        "totp_code",
-        validators=[validators.DataRequired()]
-    )
+    totp_code = StringField("totp_code", validators=[validators.DataRequired()])

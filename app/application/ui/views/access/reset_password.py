@@ -12,7 +12,9 @@ from application.util import process_jwt_auth_token
 __all__ = ("reset_password",)
 
 
-@process_jwt_auth_token(require_tags=[AuthToken.RESET_PASSWORD_TAG], error_redirect=".forgot_password")
+@process_jwt_auth_token(
+    require_tags=[AuthToken.RESET_PASSWORD_TAG], error_redirect=".forgot_password"
+)
 def reset_password(token):
     form = forms.ResetPasswordForm()
     if form.validate_on_submit():

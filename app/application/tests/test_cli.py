@@ -30,9 +30,7 @@ def test_get_config(cli_runner):
     """
     Verify `flask cli get-config returns at least 1 configured variable.
     """
-    result = cli_runner.invoke(
-        args=["cli", "get-config"]
-    )
+    result = cli_runner.invoke(args=["cli", "get-config"])
     assert f"APP_NAME={flask.current_app.config['APP_NAME']}" in result.output
 
 

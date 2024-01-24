@@ -8,9 +8,7 @@ from application.models import db
 from application.ui import forms
 
 
-__all__ = (
-    "setup_webauthn",
-)
+__all__ = ("setup_webauthn",)
 
 
 @flask_login.login_required
@@ -33,10 +31,12 @@ def setup_webauthn():
             flask.flash(messages.WEBAUTHN_SETUP_VERIFICATION_ERROR + f": {e}", category="error")
         else:
             registrations = user.webauthn.registrations
-            registrations.append({
-                "id": registration.credential_id,
-                "type": registration.credential_type.value,
-            })
+            registrations.append(
+                {
+                    "id": registration.credential_id,
+                    "type": registration.credential_type.value,
+                }
+            )
             user.webauthn.registrations = registrations
             user.webauthn.public_key = registration.credential_public_key
             user.webauthn.enabled = True
