@@ -11,6 +11,7 @@ from sqlalchemy.orm import (
 from sqlalchemy_utils import StringEncryptedType
 
 from . import (
+    ApiToken,
     db,
     get_encryption_key,
 )
@@ -91,5 +92,18 @@ class User(db.Model, flask_login.UserMixin):
     )
 
     @hybrid_property
+    def frontend_token(self):
+        """
+        Returns an `ApiToken` used by the frontend to communicate with the API.
+        Returns a new `ApiToken` instance each time the property is accessed.
+        """
+        for token in self.api_tokens:
+            if ApiToken.FRONTEND_TAG in token.tags:
+                db.session.delete(token)
+        else:
+            db.session.commit()
+        return ApiToken.create_frontend_token(self)
+
+    @hybrid_property
     def public_api_tokens(self):
-        return [t for t in self.api_tokens if "hidden" not in t.tags]
+        return [t for t in self.api_tokens if ApiToken.HIDDEN_TAG not in t.tags]

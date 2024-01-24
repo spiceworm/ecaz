@@ -22,6 +22,7 @@ __all__ = ("ApiToken",)
 
 
 class ApiToken(db.Model):
+    FRONTEND_TAG = "frontend"
     HIDDEN_TAG = "hidden"
     RESET_PASSWORD_TAG = "reset-password"
     VERIFY_EMAIL_TAG = "verify-email"
@@ -53,7 +54,7 @@ class ApiToken(db.Model):
     )
 
     @classmethod
-    def create(cls, user, name, tags=None, expires_delta=None):
+    def create(cls, user, name, tags=None, expires_delta=False):
         token_value = flask_jwt_extended.create_access_token(
             additional_claims={"tags": tags or []},
             expires_delta=expires_delta,
@@ -66,7 +67,7 @@ class ApiToken(db.Model):
         )
 
     @classmethod
-    def create_email_verification_token(cls, user, expires_delta=None):
+    def create_email_verification_token(cls, user, expires_delta=False):
         token = cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
@@ -78,7 +79,22 @@ class ApiToken(db.Model):
         return token
 
     @classmethod
-    def create_reset_password_token(cls, user, expires_delta=None):
+    def create_frontend_token(cls, user, expires_delta=False):
+        """
+        Creates an `ApiToken` used for the frontend to authenticate to the API.
+        """
+        token = cls.create(
+            user,
+            cls.FRONTEND_TAG,
+            [cls.HIDDEN_TAG, cls.FRONTEND_TAG],
+            expires_delta,
+        )
+        db.session.add(token)
+        db.session.commit()
+        return token
+
+    @classmethod
+    def create_reset_password_token(cls, user, expires_delta=False):
         token = cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
