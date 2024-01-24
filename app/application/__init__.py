@@ -1,6 +1,4 @@
-from logging.config import dictConfig
 import os
-import sqlite3
 
 from flask import (
     Flask,
@@ -33,26 +31,6 @@ class Config:
 config = Config()
 
 
-dictConfig(
-    {
-        "version": 1,
-        "formatters": {
-            "default": {
-                "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
-            }
-        },
-        "handlers": {
-            "wsgi": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://flask.logging.wsgi_errors_stream",
-                "formatter": "default",
-            }
-        },
-        "root": {"level": "INFO" if config.PROD else "DEBUG", "handlers": ["wsgi"]},
-    }
-)
-
-
 def create_app():
     app = Flask(
         __name__,
@@ -60,11 +38,11 @@ def create_app():
         template_folder=None,
     )
 
-    with app.app_context():
-        g.config = config
-
     app.config.from_object(config)
     app.logger.debug(config.json())
+
+    with app.app_context():
+        g.config = config
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -83,9 +61,9 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        """ Callback function that tells flask-login how to reload
+        """Callback function that tells flask-login how to reload
         an object for a user that has already been authenticated,
-        such as when someone reconnects to a "remember me" session """
+        such as when someone reconnects to a "remember me" session"""
         return User.query.get(user_id)
 
     with app.app_context():
