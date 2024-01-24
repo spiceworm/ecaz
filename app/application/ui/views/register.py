@@ -37,6 +37,7 @@ def register():
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
+                db.session.rollback()
                 flask.flash(messages.DUPLICATE_EMAIL_ERROR, category="error")
             else:
                 raise e
