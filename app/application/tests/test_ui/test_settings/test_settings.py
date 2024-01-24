@@ -95,15 +95,15 @@ def test_delete_account(ui_user):
     assert resp.request.path == "/"
 
 
-def test_delete_account_cascades(auth_token, ui_user):
+def test_delete_account_cascades(ui_user):
     """
     Verify delete account form submission on settings page deletes all `AuthToken`
     associated with the user.
     """
     user = ui_user()
-    t1 = auth_token(user=user, name="t1")
-    t2 = auth_token(user=user, name="t2")
-    t3 = auth_token(user=user, name="t3")
+    t1 = AuthToken.create(user=user, name="t1")
+    t2 = AuthToken.create(user=user, name="t2")
+    t3 = AuthToken.create(user=user, name="t3")
     assert len(user.auth_tokens) == 3
     user.post("/settings/account/delete")
     assert User.query.filter_by(email=user.email).one_or_none() is None

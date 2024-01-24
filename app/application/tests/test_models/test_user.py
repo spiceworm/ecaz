@@ -38,20 +38,18 @@ def test_frontend_tokens(user):
     assert t1_value != t2_value
 
 
-def test_public_auth_tokens(auth_token, user):
+def test_public_auth_tokens(user):
     """
     Test `User.auth_tokens` attribute excludes `AuthToken`s that have the
     `AuthToken.HIDDEN_TAG` in its claims.
     """
     u = user()
-    auth_token(name="t1", user=u, tags=[AuthToken.HIDDEN_TAG])
-    auth_token(name="t2", user=u, tags=[AuthToken.HIDDEN_TAG])
-    auth_token(name="t3", user=u, tags=[AuthToken.HIDDEN_TAG])
-    db.session.commit()
+    AuthToken.create(name="t1", user=u, tags=[AuthToken.HIDDEN_TAG])
+    AuthToken.create(name="t2", user=u, tags=[AuthToken.HIDDEN_TAG])
+    AuthToken.create(name="t3", user=u, tags=[AuthToken.HIDDEN_TAG])
     assert u.public_auth_tokens == []
 
-    t4 = auth_token(name="t4", user=u)
-    t5 = auth_token(name="t5", user=u)
-    t6 = auth_token(name="t6", user=u)
-    db.session.commit()
+    t4 = AuthToken.create(name="t4", user=u)
+    t5 = AuthToken.create(name="t5", user=u)
+    t6 = AuthToken.create(name="t6", user=u)
     assert u.public_auth_tokens == [t4, t5, t6]
