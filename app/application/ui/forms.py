@@ -7,6 +7,19 @@ from wtforms import (
 from wtforms.validators import DataRequired
 
 
+class ChangePassword(FlaskForm):
+    password1 = PasswordField(
+        "password1",
+        render_kw={"placeholder": "New Password"},
+        validators=[DataRequired()],
+    )
+    password2 = PasswordField(
+        "password2",
+        render_kw={"placeholder": "Repeat Password"},
+        validators=[DataRequired()],
+    )
+
+
 class CreateApiToken(FlaskForm):
     token_name = StringField(
         "name",

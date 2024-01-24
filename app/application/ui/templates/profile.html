@@ -19,10 +19,20 @@
     {{ super() }}
 
     <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
-
         <div class="rpgui-container framed">
-            <h1>{{ current_user.username }}</h1>
+            <h1>{{ current_user.username }}'s Profile</h1>
+            <hr>
 
+            <p>Change Password</p>
+            <form action="{{ url_for('.change_password') }}" method="post">
+                {{ change_password_form.csrf_token }}
+                {{ change_password_form.password1 }}
+                {{ change_password_form.password2 }}
+                <button class="rpgui-button" type="submit">Submit</button>
+            </form>
+            <hr>
+
+            <p>API Tokens</p>
             {% for api_token in current_user.api_tokens %}
                 <div style="display: flex; flex-direction: row; justify-content: right; align-items: center;">
                     <p>{{ api_token.name }}</p>
@@ -37,10 +47,8 @@
                     </form>
                 </div>
             {% endfor %}
-
             <form action="{{ url_for('.create_api_token') }}" method="post">
                 {{ create_api_token_form.csrf_token }}
-
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                     {{ create_api_token_form.token_name }}
                     <button class="rpgui-button" type="submit">Create API Token</button>
