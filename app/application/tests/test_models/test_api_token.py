@@ -5,6 +5,9 @@ from application.models import ApiToken
 
 
 def test_create(user):
+    """
+    Verify attributes of ApiToken instance.
+    """
     name = "token"
     u = user()
     token = ApiToken.create(name=name, user=u)
@@ -14,6 +17,9 @@ def test_create(user):
 
 
 def test_create_email_verification_token(user):
+    """
+    Verify attributes of ApiToken instance used for email verification.
+    """
     u = user()
     token = ApiToken.create_email_verification_token(u)
     assert token.user is u
@@ -22,6 +28,9 @@ def test_create_email_verification_token(user):
 
 
 def test_create_reset_password_token(user):
+    """
+    Verify attributes of ApiToken instance used for password resets.
+    """
     u = user()
     token = ApiToken.create_reset_password_token(u)
     assert token.user is u
@@ -30,6 +39,9 @@ def test_create_reset_password_token(user):
 
 
 def test_is_expired(user):
+    """
+    Verify `ApiToken.is_expired` attribute behavior.
+    """
     u = user()
     token1 = ApiToken.create(name="t1", user=u, expires_delta=timedelta(microseconds=1))
     token2 = ApiToken.create(name="t2", user=u, expires_delta=timedelta(days=1))
@@ -39,6 +51,9 @@ def test_is_expired(user):
 
 
 def test_tags_when_token_expired(user):
+    """
+    Verify `ApiToken.tags` attribute behavior when token is expired.
+    """
     token1 = ApiToken.create(
         name="t1",
         user=user(),

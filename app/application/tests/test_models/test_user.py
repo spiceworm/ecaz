@@ -16,11 +16,18 @@ from application.models import (
     ),
 )
 def test_defaults(user, attr_name, exp_value):
+    """
+    Test `User` instance default attribute values.
+    """
     u = user()
     assert getattr(u, attr_name) == exp_value
 
 
 def test_public_api_tokens(api_token, user):
+    """
+    Test `User.api_tokens` attribute excludes `ApiToken`s that have the
+    `ApiToken.HIDDEN_TAG` in its claims.
+    """
     u = user()
     api_token(name="t1", user=u, tags=[ApiToken.HIDDEN_TAG])
     api_token(name="t2", user=u, tags=[ApiToken.HIDDEN_TAG])

@@ -1,10 +1,17 @@
 from datetime import timedelta
 
 from application.constants import messages
-from application.models import ApiToken
+from application.models import (
+    ApiToken,
+    User,
+)
 
 
 def test_change_password(ui_user):
+    """
+    Verify behavior for submitting the form to change the password on the
+    settings page.
+    """
     user = ui_user()
     password = "new-password"
     resp1 = user.post(
@@ -20,6 +27,10 @@ def test_change_password(ui_user):
 
 
 def test_change_password_not_matching(ui_user):
+    """
+    Verify behavior for submitting the form to change the password on the
+    settings page when the password fields do not match.
+    """
     user = ui_user()
     old_password = user.password
     resp = user.post(
@@ -35,6 +46,10 @@ def test_change_password_not_matching(ui_user):
 
 
 def test_change_username(ui_user):
+    """
+    Verify behavior for submitting the form to change the username on the
+    settings page.
+    """
     user = ui_user()
     new_username = "new-username"
     assert user.username != new_username
@@ -48,6 +63,11 @@ def test_change_username(ui_user):
 
 
 def test_change_username_to_duplicate(ui_user):
+    """
+    Verify behavior for submitting the form to change the username on the
+    settings page when the username a user is trying to change to is already
+    in use by another user.
+    """
     duplicate_username = "username"
     ui_user(email="user1@test.com", password="password1", username=duplicate_username)
 
@@ -62,7 +82,43 @@ def test_change_username_to_duplicate(ui_user):
     assert messages.DUPLICATE_USERNAME_ERROR in resp.data.decode()
 
 
+def test_delete_account(ui_user):
+    """
+    Verify delete account form submission on settings page shows the correct notification
+    and deletes the user.
+    """
+    user = ui_user()
+    resp = user.post("/settings/delete_account", follow_redirects=True)
+    assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
+    assert User.query.filter_by(email=user.email).one_or_none() is None
+    assert len(resp.history) == 1
+    assert resp.request.path == "/"
+
+
+def test_delete_account_cascades(api_token, ui_user):
+    """
+    Verify delete account form submission on settings page deletes all `ApiTokens`
+    associated with the user.
+    """
+    user = ui_user()
+    t1 = api_token(user=user, name="t1")
+    t2 = api_token(user=user, name="t2")
+    t3 = api_token(user=user, name="t3")
+    assert len(user.api_tokens) == 3
+    user.post("/settings/delete_account")
+    assert User.query.filter_by(email=user.email).one_or_none() is None
+    assert ApiToken.query.filter_by(name=t1.name).one_or_none() is None
+    assert ApiToken.query.filter_by(name=t2.name).one_or_none() is None
+    assert ApiToken.query.filter_by(name=t3.name).one_or_none() is None
+
+
 def test_send_verify_email(ui_user):
+    """
+    Verify that when a user clicks the verify button next to their email address
+    on the settings page that it creates an `ApiToken` instance with the
+    `ApiToken.VERIFY_EMAIL_TAG` and shows a notification telling the user that
+    a verification email has been sent.
+    """
     user = ui_user()
     assert len(user.api_tokens) == 0
     resp = user.post(
@@ -77,6 +133,10 @@ def test_send_verify_email(ui_user):
 
 
 def test_send_verify_email_if_already_verified(ui_user):
+    """
+    Verify that if a user tries to send a POST to /settings/verify, and they have
+    already verified their email, that the appropriate notification is shown.
+    """
     resp = ui_user(is_verified=True).post(
         "/settings/verify",
         follow_redirects=True,
@@ -85,6 +145,10 @@ def test_send_verify_email_if_already_verified(ui_user):
 
 
 def test_verify_account(ui_user):
+    """
+    Test happy happy path for when a user clicks the unique link emailed to them
+    to verify their email address.
+    """
     user = ui_user()
     assert not user.is_verified
     token = ApiToken.create_email_verification_token(user)
@@ -97,6 +161,11 @@ def test_verify_account(ui_user):
 
 
 def test_verify_account_using_expired_token(ui_user):
+    """
+    Verify that the correct error message is shown if the user clicks the link
+    emailed to them to verify their email address but the token in the link
+    has expired.
+    """
     user = ui_user()
     token = ApiToken.create(
         user,

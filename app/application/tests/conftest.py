@@ -17,7 +17,7 @@ DEFAULT_EMAIL = "default-email@test.com"
 DEFAULT_PASSWORD = "default-password"
 
 
-class UiUser:
+class _UiUser:
     def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
         _user = User(
             email=email,
@@ -57,7 +57,7 @@ class UiUser:
         return self._client.put(*args, **kwargs)
 
 
-class ApiUser(UiUser):
+class _ApiUser(_UiUser):
     def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
         super().__init__(app, email=email, password=password, **kwargs)
 
@@ -79,12 +79,45 @@ class ApiUser(UiUser):
 
 
 @pytest.fixture(autouse=True)
-def cleanup_and_teardown():
+def _cleanup_and_teardown():
     # Setup code
     yield  # this is where the test runs
     ApiToken.query.delete()
     User.query.delete()
     db.session.commit()
+
+
+@pytest.fixture(autouse=True)
+def _app():
+    _a = create_app()
+    _a.test_client_class = flask_login.FlaskLoginClient
+    with _a.app_context():
+        yield _a
+
+
+@pytest.fixture
+def api_token(_app):
+    def func(*args, **kwargs):
+        _token = ApiToken.create(*args, **kwargs)
+        db.session.add(_token)
+        db.session.commit()
+        return _token
+    return func
+
+
+@pytest.fixture()
+def api_user(_app):
+    return functools.partial(_ApiUser, _app)
+
+
+@pytest.fixture
+def cli_runner(_app):
+    return _app.test_cli_runner()
+
+
+@pytest.fixture()
+def client(_app):
+    return _app.test_client()
 
 
 @pytest.fixture(autouse=True)
@@ -105,42 +138,13 @@ def mock_email_send(monkeypatch):
     return patch_send
 
 
-@pytest.fixture(autouse=True)
-def app():
-    _app = create_app()
-    _app.test_client_class = flask_login.FlaskLoginClient
-    with _app.app_context():
-        yield _app
-
-
-@pytest.fixture
-def api_token(app):
-    def func(*args, **kwargs):
-        _token = ApiToken.create(*args, **kwargs)
-        db.session.add(_token)
-        db.session.commit()
-        return _token
-
-    return func
-
-
 @pytest.fixture()
-def api_user(app):
-    return functools.partial(ApiUser, app)
+def ui_user(_app):
+    return functools.partial(_UiUser, _app)
 
 
 @pytest.fixture
-def cli_runner(app):
-    return app.test_cli_runner()
-
-
-@pytest.fixture()
-def ui_user(app):
-    return functools.partial(UiUser, app)
-
-
-@pytest.fixture
-def user(app):
+def user():
     def func(email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
         _user = User(
             email=email,
@@ -150,10 +154,4 @@ def user(app):
         db.session.add(_user)
         db.session.commit()
         return _user
-
     return func
-
-
-@pytest.fixture()
-def client(app):
-    return app.test_client()
