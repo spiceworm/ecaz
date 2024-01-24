@@ -9,7 +9,8 @@ from flask_jwt_extended import (
     jwt_required,
 )
 
-from ...models import User
+from application.constants import messages
+from application.models import User
 
 
 api_v1_bp = flask.Blueprint(
@@ -54,10 +55,10 @@ class TerminalApi(flask_restful.Resource):
             try:
                 output = subprocess.check_output(command_parts).decode()
             except Exception as e:
-                output = f"Exception: {e}"
+                output = str(e)
         else:
-            output = "Admin only"
-        return flask.jsonify(output=output)
+            output = messages.RESTRICTED_TO_ADMIN
+        return flask.jsonify(output=output.strip())
 
 
 class UserApi(flask_restful.Resource):
