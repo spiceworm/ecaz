@@ -12,4 +12,5 @@ Flask-WTF==1.2.1
 gunicorn==21.2.0
 ipython
 psycopg2-binary==2.9.9  # sqlalchemy does not support psycopg[binary,pool] yet
+python-decouple==3.8
 sqlalchemy-utils==0.41.1
