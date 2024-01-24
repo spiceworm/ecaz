@@ -1,4 +1,6 @@
+from datetime import timedelta
 from http import HTTPStatus
+import  time
 
 from application.constants import messages
 from application.models import (
@@ -109,6 +111,25 @@ def test_bad_login(client):
     assert resp.request.path == "/login"
 
 
+def test_forgot_password_when_authenticated(ui_user):
+    resp = ui_user().get(
+        "/forgot_password",
+        follow_redirects=True,
+    )
+    assert len(resp.history) == 1
+    assert resp.request.path == "/profile"
+
+
+def test_forgot_password_when_unauthenticated(client, user):
+    u = user("user@test.com", "old-password")
+    resp = client.post(
+        "/forgot_password",
+        follow_redirects=True,
+        data={"email": u.email},
+    )
+    assert messages.PASSWORD_RESET_EMAIL_SENT in resp.data.decode()
+
+
 def test_login_with_next_url_param(client, ui_user):
     user = ui_user()
     resp = client.post(
@@ -143,13 +164,69 @@ def test_bad_login_with_next_url_preserves_next_params(client):
 def test_logout(ui_user):
     resp = ui_user().post("/logout", follow_redirects=True)
     assert len(resp.history) == 1
-    print(resp.request.path)
     assert resp.request.path == "/"
 
 
 def test_profile(ui_user):
     resp = ui_user().get("/profile")
     assert resp.request.path == "/profile"
+
+
+def test_reset_password_using_expired_token(client, user):
+    token = ApiToken.create(
+        user(),
+        ApiToken.RESET_PASSWORD_TAG,
+        [ApiToken.HIDDEN_TAG, ApiToken.RESET_PASSWORD_TAG],
+        expires_delta=timedelta(microseconds=1),
+    )
+    time.sleep(0.0000011)
+    resp = client.get(
+        f"/reset_password/{token.value}",
+        follow_redirects=True,
+    )
+    assert messages.INVALID_TOKEN in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/forgot_password"
+
+
+def test_reset_password_using_valid_email_link(client, user):
+    token = ApiToken.create_reset_password_token(user())
+    resp = client.get(f"/reset_password/{token.value}")
+    assert resp.request.path == f"/reset_password/{token.value}"
+
+
+def test_reset_password_using_invalid_email_link(client, user):
+    token = ApiToken.create(user(), "not-password-reset-token")
+    resp = client.get(
+        f"/reset_password/{token.value}",
+        follow_redirects=True,
+    )
+    assert messages.INVALID_TOKEN in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/forgot_password"
+
+
+def test_reset_password_submit_new_password(client, user):
+    token = ApiToken.create_reset_password_token(user())
+    resp = client.post(
+        f"/reset_password/{token.value}",
+        follow_redirects=True,
+        data={"password1": "new-password", "password2": "new-password"},
+    )
+    assert messages.PASSWORD_UPDATE_SUCCESS in resp.data.decode()
+    assert len(resp.history) == 1
+    assert resp.request.path == "/"
+
+
+def test_reset_password_submit_non_matching_passwords(client, user):
+    token = ApiToken.create_reset_password_token(user())
+    resp = client.post(
+        f"/reset_password/{token.value}",
+        follow_redirects=True,
+        data={"password1": "new-password", "password2": "does-not-match"},
+    )
+    assert messages.PASSWORD_UPDATE_MATCH_ERROR in resp.data.decode()
+    assert resp.request.path == f"/reset_password/{token.value}"
 
 
 def test_register(client):
@@ -162,8 +239,6 @@ def test_register(client):
     assert user
     assert len(resp.history) == 1
     assert resp.request.path == "/profile"
-    user.delete()
-    db.session.commit()
 
 
 def test_register_duplicate_email(client):
@@ -181,6 +256,3 @@ def test_register_duplicate_email(client):
     )
     assert messages.DUPLICATE_EMAIL_ERROR in resp.data.decode()
     db.session.rollback()
-
-    User.query.filter_by(email="user@test.com").delete()
-    db.session.commit()

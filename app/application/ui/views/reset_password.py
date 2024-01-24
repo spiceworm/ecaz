@@ -14,14 +14,8 @@ def reset_password(jwt):
     form = forms.ResetPasswordForm()
     token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
 
-    if not token or ApiToken.RESET_PASSWORD_TAG not in token.tags:
+    if not token or ApiToken.RESET_PASSWORD_TAG not in token.tags or token.is_expired:
         flask.flash(messages.INVALID_TOKEN, category="error")
-        return flask.redirect(flask.url_for(".forgot_password"))
-
-    if token.is_expired:
-        db.session.delete(token)
-        db.session.commit()
-        flask.flash(messages.TOKEN_EXPIRED, category="error")
         return flask.redirect(flask.url_for(".forgot_password"))
 
     if form.validate_on_submit():
