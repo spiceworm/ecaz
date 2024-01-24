@@ -1,18 +1,4 @@
-{% extends "authenticated_base.html" %}
-
-
-{% block head %}
-    {{ super() }}
-
-    <script>
-        function copyTokenToClipboard(token_id) {
-            const copyText = document.getElementById(token_id);
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); // For mobile devices
-            navigator.clipboard.writeText(copyText.value);
-        }
-    </script>
-{% endblock %}
+{% extends "bases/authenticated_base.html" %}
 
 
 {% block content %}
@@ -21,39 +7,7 @@
     <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
         <div class="rpgui-container framed">
             <h1>{{ current_user.username }}'s Profile</h1>
-            <hr>
-
-            <p>Change Password</p>
-            <form action="{{ url_for('.change_password') }}" method="post">
-                {{ change_password_form.csrf_token }}
-                {{ change_password_form.password1 }}
-                {{ change_password_form.password2 }}
-                <button class="rpgui-button" type="submit">Submit</button>
-            </form>
-            <hr>
-
-            <p>API Tokens</p>
-            {% for api_token in current_user.api_tokens %}
-                <div style="display: flex; flex-direction: row; justify-content: right; align-items: center;">
-                    <p>{{ api_token.name }}</p>
-                    <div style="white-space: nowrap; text-overflow: ellipsis; overflow: scroll;">
-                        <input type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
-                    </div>
-                    <button class="rpgui-button" type="button" onclick="copyTokenToClipboard('token_{{ loop.index }}')">Copy</button>
-
-                    <form action="{{ url_for('.delete_api_token') }}" method="post">
-                        {{ delete_api_token_form.csrf_token }}
-                        <button class="rpgui-button" type="submit" name="id" value="{{ api_token.id }}">Delete</button>
-                    </form>
-                </div>
-            {% endfor %}
-            <form action="{{ url_for('.create_api_token') }}" method="post">
-                {{ create_api_token_form.csrf_token }}
-                <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                    {{ create_api_token_form.token_name }}
-                    <button class="rpgui-button" type="submit">Create API Token</button>
-                </div>
-            </form>
+            <iframe src="https://giphy.com/embed/6sxhKR7xVtboY" width="356" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/metalocalypse-dethklok-nathan-explosion-6sxhKR7xVtboY">via GIPHY</a></p>
         </div>
     </div>
 {% endblock %}
