@@ -60,24 +60,7 @@ def create_app():
         }
 
         def json(self):
-            return {
-                attr: getattr(self, attr)
-                for attr in (
-                    "DEBUG",
-                    "FLASK_ADMIN_SWATCH",
-                    "PROD",
-                    "SECRET_KEY",
-                    "TESTING",
-                    "WTF_CSRF_ENABLED",
-                    "POSTGRES_DB",
-                    "POSTGRES_HOST",
-                    "POSTGRES_PASSWORD",
-                    "POSTGRES_PORT",
-                    "POSTGRES_SSL",
-                    "POSTGRES_USER",
-                    "SQLALCHEMY_DATABASE_URI",
-                )
-            }
+            return {attr: getattr(self, attr) for attr in dir(self) if attr.isupper()}
 
     app = Flask(
         __name__,
