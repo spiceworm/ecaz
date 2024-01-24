@@ -93,6 +93,6 @@ def create_app():
         """Callback function that tells flask-login how to reload
         an object for a user that has already been authenticated,
         such as when someone reconnects to a "remember me" session"""
-        return User.query.get(user_id)
+        return db.session.get(User, user_id)
 
     return app
