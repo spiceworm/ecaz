@@ -1,6 +1,8 @@
 {% extends "bases/base.html" %}
-
+{% from "macros.html" import messages %}
 
 {% block content %}
     {{ super() }}
+
+    {{ messages() }}
 {% endblock %}

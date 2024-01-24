@@ -31,5 +31,5 @@ def login():
                 else:
                     return flask.redirect(flask.url_for(".profile"))
 
-        flask.flash("Invalid login credentials")
+        flask.flash("Error: Invalid login credentials")
     return flask.render_template("login.html", form=form)

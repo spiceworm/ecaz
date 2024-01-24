@@ -18,30 +18,62 @@
 {% block content %}
     {{ super() }}
 
-    <div class="rpgui-content" style="display:flex;justify-content:center;align-items:center;">
-        <div class="rpgui-container framed">
-            <h1>API Keys</h1>
-            {% for api_token in current_user.api_tokens %}
-                <div style="display: flex; flex-direction: row; justify-content: right; align-items: center;">
-                    <p>{{ api_token.name }}</p>
-                    <div style="white-space: nowrap; text-overflow: ellipsis; overflow: scroll;">
-                        <input type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
-                    </div>
-                    <button class="rpgui-button" type="button" onclick="copyTokenToClipboard('token_{{ loop.index }}')">Copy</button>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">API Settings</h3>
+            </div>
 
-                    <form action="{{ url_for('.delete_api_token') }}" method="post">
-                        {{ delete_api_token_form.csrf_token }}
-                        <button class="rpgui-button" type="submit" name="id" value="{{ api_token.id }}">Delete</button>
-                    </form>
-                </div>
-            {% endfor %}
-            <form action="{{ url_for('.create_api_token') }}" method="post">
-                {{ create_api_token_form.csrf_token }}
-                <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                    {{ create_api_token_form.token_name }}
-                    <button class="rpgui-button" type="submit">Create API Token</button>
-                </div>
-            </form>
+            <div class="panel-body">
+                <fieldset>
+                    <legend>API Tokens</legend>
+
+                    <ul class="list-group">
+                        {% for api_token in current_user.api_tokens %}
+                            <li class="list-group-item">
+                                <form class="form-horizontal" action="{{ url_for('.delete_api_token') }}" method="post">
+                                    {{ delete_api_token_form.csrf_token }}
+
+                                    <div class="form-group">
+                                        <div class="col-lg-1">
+                                            <label class="control-label" for="token_{{ loop.index }}">{{ api_token.name }}</label>
+                                        </div>
+                                        <div class="col-lg-8">
+                                            <input class="form-control" type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <button class="btn btn-default" onclick="copyTokenToClipboard('token_{{ loop.index }}')">Copy</button>
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <button class="btn btn-default" type="submit" name="id" value="{{ api_token.id }}">Delete</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                        {% endfor %}
+
+                        <li class="list-group-item">
+                            <form class="form-horizontal" action="{{ url_for('.create_api_token') }}" method="post">
+                                {{ create_api_token_form.csrf_token }}
+
+                                <div class="form-group">
+                                    <div class="col-lg-1">
+                                        <label class="control-label" for="token_name">Name</label>
+                                    </div>
+                                    <div class="col-lg-8">
+                                        {{ create_api_token_form.token_name(class_="form-control") }}
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <button class="btn btn-primary" type="submit" id="submit" name="submit">Create API Token</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+                </fieldset>
+            </div>
         </div>
     </div>
+    <div class="col-lg-3"></div>
 {% endblock %}

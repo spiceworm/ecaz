@@ -28,7 +28,7 @@ def register():
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
-                flask.flash("Username already taken")
+                flask.flash("Error: Username already taken")
             else:
                 raise e
         else:

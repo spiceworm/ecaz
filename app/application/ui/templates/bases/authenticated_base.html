@@ -1,23 +1,34 @@
 {% extends "bases/base.html" %}
+{% from "macros.html" import messages %}
 
 
 {% block content %}
     {{ super() }}
 
-    <div class="rpgui-container framed" style="position:absolute;top:0;right:0;">
-        {% if current_user.is_admin %}
-            <button class="rpgui-button" onclick="window.location.href='{{ url_for("admin.index") }}'">Admin</button>
-        {% endif %}
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{{ url_for('.login') }}">ECAZ</a>
+            </div>
+            <form action="{{ url_for('.logout') }}" method="post">
+                {{ logout_form.csrf_token }}
 
-        <button class="rpgui-button" onclick="window.location.href='{{ url_for(".profile") }}'">Profile</button>
+                <div id="navbar">
+                    <ul class="nav navbar-nav navbar-right">
+                        {% if current_user.is_admin %}
+                            <li>
+                                <a href="{{ url_for('admin.index') }}">Admin</a>
+                            </li>
+                        {% endif %}
+                        <li><a href="{{ url_for('.profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('.settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('.api_settings') }}">API Settings</a></li>
+                        <li><a id="logout" href="" onclick="this.closest('form').submit(); return false;">Logout</a></li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+    </nav>
 
-        <button class="rpgui-button" onclick="window.location.href='{{ url_for(".settings") }}'">Settings</button>
-
-        <button class="rpgui-button" onclick="window.location.href='{{ url_for(".api_settings") }}'">API Settings</button>
-
-        <form action="{{ url_for('.logout') }}" method="post">
-            {{ logout_form.csrf_token }}
-            <button class="rpgui-button" type="submit" id="logout" name="logout">Logout</button>
-        </form>
-    </div>
+    {{ messages() }}
 {% endblock %}

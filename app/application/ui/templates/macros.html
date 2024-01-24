@@ -1,0 +1,24 @@
+{% macro messages() %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="row">
+                {% for message in messages %}
+                    {% if "Success" in message %}
+                        {% set alert_class="alert-success" %}
+                    {% elif "Error" in message %}
+                        {% set alert_class="alert-danger" %}
+                    {% else %}
+                        {% set alert_class="alert-info" %}
+                    {% endif %}
+                    <div class="col-lg-4"></div>
+                    <div class="col-lg-4">
+                        <div class="alert alert-dismissible {{ alert_class }}">
+                            {{ message }}
+                        </div>
+                    </div>
+                    <div class="col-lg-4"></div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+{% endmacro %}

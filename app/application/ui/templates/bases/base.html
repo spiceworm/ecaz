@@ -2,8 +2,7 @@
 <html>
     <head>
         {% block head %}
-            <script src=" https://cdn.jsdelivr.net/npm/rpgui@1.0.3/rpgui.min.js "></script>
-            <link href=" https://cdn.jsdelivr.net/npm/rpgui@1.0.3/rpgui.min.css " rel="stylesheet">
+            <link href=" https://brobin.github.io/hacker-bootstrap/css/hacker.css " rel="stylesheet">
 
             <style>
                 body{
@@ -19,18 +18,6 @@
         {% endblock %}
     </head>
     <body>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="rpgui-content">
-                    {% for message in messages %}
-                        <div class="rpgui-container framed-golden-2">
-                            <p>{{ message }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
         <div id="content">
             {% block content %}
             {% endblock %}
