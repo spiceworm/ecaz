@@ -8,10 +8,11 @@ RUN apt-get update \
         postgresql-client-common \
         postgresql-client-15 \
         supervisor \
+        tox \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /tmp/
+COPY ./app/requirements.txt /tmp/
 RUN pip install --upgrade pip \
     && pip install -r /tmp/requirements.txt
 

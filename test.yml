@@ -1,7 +1,6 @@
 version: "3.8"
 services:
   app:
-    image: registry.digitalocean.com/ecaz-xyz/app
     build:
       context: .
     environment: &env
@@ -15,10 +14,7 @@ services:
       POSTGRES_SSL: "0"
       POSTGRES_USER: "postgres"
       SECRET_KEY: "1234"
-    ports:
-      - "80:8080"
-    volumes:
-      - ./app:/app
+    entrypoint: "tox"
 
   db:
     image: postgres:15.5-bookworm

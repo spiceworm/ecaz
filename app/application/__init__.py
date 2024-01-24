@@ -9,53 +9,51 @@ from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 
 
-class Config:
-    DEBUG = bool(int(os.getenv("DEBUG", "0")))
-    PROD = bool(int(os.getenv("PROD", "0")))
-    TESTING = bool(int(os.getenv("TESTING", "0")))
-    SECRET_KEY = os.environ["SECRET_KEY"]
-
-    POSTGRES_DB = os.environ["POSTGRES_DB"]
-    POSTGRES_HOST = os.environ["POSTGRES_HOST"]
-    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
-    POSTGRES_SSL = bool(int(os.getenv("POSTGRES_SSL", "1")))
-    POSTGRES_USER = os.environ["POSTGRES_USER"]
-
-    # Magic environment variable looked for by sqlalchemy
-    SQLALCHEMY_DATABASE_URI = (
-        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-        f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    ) + ("?sslmode=require" if POSTGRES_SSL else "")
-
-    def json(self):
-        return {
-            attr: getattr(self, attr)
-            for attr in (
-                "POSTGRES_DB",
-                "POSTGRES_HOST",
-                "POSTGRES_PASSWORD",
-                "POSTGRES_PORT",
-                "POSTGRES_USER",
-                "DEBUG",
-                "PROD",
-                "SECRET_KEY",
-                "SQLALCHEMY_DATABASE_URI",
-                "TESTING",
-            )
-        }
-
-
-config = Config()
-
-
 def create_app():
+    class Config:
+        DEBUG = bool(int(os.getenv("DEBUG", "1")))
+        PROD = bool(int(os.getenv("PROD", "0")))
+        TESTING = bool(int(os.getenv("TESTING", "1")))
+        SECRET_KEY = os.environ["SECRET_KEY"]
+
+        POSTGRES_DB = os.environ["POSTGRES_DB"]
+        POSTGRES_HOST = os.environ["POSTGRES_HOST"]
+        POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+        POSTGRES_PORT = os.environ["POSTGRES_PORT"]
+        POSTGRES_SSL = bool(int(os.getenv("POSTGRES_SSL", "1")))
+        POSTGRES_USER = os.environ["POSTGRES_USER"]
+
+        # Magic environment variable looked for by sqlalchemy
+        SQLALCHEMY_DATABASE_URI = (
+            f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+            f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+        ) + ("?sslmode=require" if POSTGRES_SSL else "")
+
+        def json(self):
+            return {
+                attr: getattr(self, attr)
+                for attr in (
+                    "DEBUG",
+                    "PROD",
+                    "TESTING",
+                    "SECRET_KEY",
+                    "POSTGRES_DB",
+                    "POSTGRES_HOST",
+                    "POSTGRES_PASSWORD",
+                    "POSTGRES_PORT",
+                    "POSTGRES_SSL",
+                    "POSTGRES_USER",
+                    "SQLALCHEMY_DATABASE_URI",
+                )
+            }
+
     app = Flask(
         __name__,
         static_folder=None,
         template_folder=None,
     )
 
+    config = Config()
     app.config.from_object(config)
     app.logger.debug(config.json())
 
