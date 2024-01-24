@@ -10,6 +10,6 @@ services:
       DEBUG: "1"
       PROD: "0"
       TESTING: "1"
-      SECRET_KEY: "b8274e6f2307f58604f94211663c763c837462ab909822ef08547bdcb8f92651"
+      SECRET_KEY: "${SECRET_KEY}"
     volumes:
       - ./app:/app
