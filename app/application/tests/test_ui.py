@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from application.constants import messages
 from application.models import (
     db,
     User,
@@ -24,7 +25,7 @@ def test_change_password(ui_auth_post):
             "password2": "test-password",
         },
     )
-    assert "Password updated" in resp2.data.decode()
+    assert messages.PASSWORD_UPDATE_SUCCESS in resp2.data.decode()
 
 
 def test_change_password_not_matching(ui_auth_post):
@@ -36,7 +37,7 @@ def test_change_password_not_matching(ui_auth_post):
             "password2": "this-does-not-match",
         },
     )
-    assert "Passwords must match" in resp.data.decode()
+    assert messages.PASSWORD_UPDATE_MATCH_ERROR in resp.data.decode()
 
 
 def test_create_api_token(ui_auth_post, user):
@@ -144,7 +145,7 @@ def test_register_duplicate_email(client):
         follow_redirects=True,
         data={"email": "u@test.com", "password": "password456"},
     )
-    assert "Email already taken" in resp.data.decode()
+    assert messages.DUPLICATE_EMAIL_ERROR in resp.data.decode()
     db.session.rollback()
 
     User.query.filter_by(email="u@test.com").delete()

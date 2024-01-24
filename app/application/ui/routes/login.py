@@ -3,6 +3,7 @@ import flask_login
 
 from .. import forms
 from ... import util
+from ...constants import messages
 from ...models import User
 
 
@@ -31,5 +32,5 @@ def login():
                 else:
                     return flask.redirect(flask.url_for(".profile"))
 
-        flask.flash("Invalid login credentials", category="error")
+        flask.flash(messages.INVALID_LOGIN_ERROR, category="error")
     return flask.render_template("login.html", form=form)

@@ -3,6 +3,7 @@ import flask_login
 
 
 from .. import forms
+from ...constants import messages
 from ...models import db
 
 
@@ -23,9 +24,9 @@ def change_password():
             user.password_hash = flask.g.bcrypt.generate_password_hash(password1).decode("utf-8")
             db.session.add(user)
             db.session.commit()
-            flask.flash("Password updated", category="success")
+            flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")
         else:
-            flask.flash("Passwords must match", category="error")
+            flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
     return flask.redirect(flask.url_for(".settings"))
 
 

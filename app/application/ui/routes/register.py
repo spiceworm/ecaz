@@ -6,6 +6,7 @@ import sqlalchemy.exc
 
 
 from .. import forms
+from ...constants import messages
 from ...models import (
     db,
     User,
@@ -28,7 +29,7 @@ def register():
             db.session.commit()
         except sqlalchemy.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.lookup(UNIQUE_VIOLATION)):
-                flask.flash("Email already taken", category="error")
+                flask.flash(messages.DUPLICATE_EMAIL_ERROR, category="error")
             else:
                 raise e
         else:
