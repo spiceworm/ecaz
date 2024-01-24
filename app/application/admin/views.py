@@ -19,4 +19,4 @@ class ApiTokenModelView(AdminModelView):
 class UserModelView(AdminModelView):
     can_create = False
     can_edit = False
-    column_exclude_list = ['password']
+    column_exclude_list = ["password"]

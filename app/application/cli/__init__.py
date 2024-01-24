@@ -24,9 +24,9 @@ def validate_email(ctx, param, value):
     return value
 
 
-@cli_bp.cli.command('create-admin')
+@cli_bp.cli.command("create-admin")
 @click.option(
-    '--email',
+    "--email",
     callback=validate_email,
     prompt="Email",
     type=click.UNPROCESSED,
@@ -50,9 +50,9 @@ def create_admin(email, password):
     db.session.commit()
 
 
-@cli_bp.cli.command('mark-admin')
+@cli_bp.cli.command("mark-admin")
 @click.option(
-    '--email',
+    "--email",
     callback=validate_email,
     prompt="Email",
     type=click.UNPROCESSED,

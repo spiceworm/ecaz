@@ -31,7 +31,7 @@ class ApiToken(db.Model):
     name = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
-            padding='pkcs5',
+            padding="pkcs5",
         ),
     )
     user: Mapped["User"] = relationship(
@@ -43,7 +43,7 @@ class ApiToken(db.Model):
     value = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
-            padding='pkcs5',
+            padding="pkcs5",
         ),
     )
 

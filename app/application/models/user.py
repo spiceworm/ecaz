@@ -31,14 +31,14 @@ class User(db.Model, flask_login.UserMixin):
         StringEncryptedType(
             type_in=sa.Boolean,
             key=get_encryption_key,
-            padding='zeroes',
+            padding="zeroes",
         ),
         default=False,
     )
     email = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
-            padding='pkcs5',
+            padding="pkcs5",
         ),
         unique=True,
     )
@@ -46,21 +46,21 @@ class User(db.Model, flask_login.UserMixin):
         StringEncryptedType(
             type_in=sa.Boolean,
             key=get_encryption_key,
-            padding='zeroes',
+            padding="zeroes",
         ),
         default=False,
     )
     password = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
-            padding='pkcs5',
+            padding="pkcs5",
         ),
     )
     verified = sa.Column(
         StringEncryptedType(
             type_in=sa.Boolean,
             key=get_encryption_key,
-            padding='zeroes',
+            padding="zeroes",
         ),
         default=False,
     )
