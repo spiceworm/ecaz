@@ -17,6 +17,14 @@ class ApiToken(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     value = db.Column(db.String)
 
+    @hybrid_property
+    def is_expired(self):
+        try:
+            flask_jwt_extended.decode_token(self.value)
+        except jwt.ExpiredSignatureError:
+            return True
+        return False
+
 
 class User(db.Model, flask_login.UserMixin):
     id = db.Column(db.Integer, primary_key=True)
