@@ -5,6 +5,7 @@ services:
     build:
       context: .
     environment: &env
+      BASE_URL: "http://127.0.0.1"
       DEBUG: "1"
       PROD: "0"
       TESTING: "1"

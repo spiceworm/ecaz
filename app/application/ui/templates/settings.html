@@ -12,6 +12,27 @@
             </div>
 
             <div class="panel-body">
+                <fieldset>
+                    <legend>User</legend>
+                        <form class="form-horizontal" action="{{ url_for('.send_verify_email') }}" method="post">
+                            {{ email_form.csrf_token }}
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="email">Email</label>
+                                <div class="col-lg-7">
+                                    {{ email_form.email(class_="form-control", value=current_user.email) }}
+                                </div>
+                                <div class="col-lg-3">
+                                    {% if current_user.verified %}
+                                        <p>VERIFIED</p>
+                                    {% else %}
+                                        <button class="btn btn-primary" type="submit">Verify</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </form>
+                </fieldset>
+
                 <form class="form-horizontal" action="{{ url_for('.change_password') }}" method="post">
                     {{ change_password_form.csrf_token }}
 

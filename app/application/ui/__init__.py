@@ -28,6 +28,8 @@ ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
 ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
 
 ui_bp.add_url_rule("/register", view_func=views.register, methods=["GET", "POST"])
+ui_bp.add_url_rule("/register/verify", view_func=views.send_verify_email, methods=["POST"])
+ui_bp.add_url_rule("/register/verify/<jwt>", view_func=views.verify_account, methods=["GET"])
 
 ui_bp.add_url_rule("/settings", view_func=views.settings, methods=["GET"])
 ui_bp.add_url_rule("/settings/change_password", view_func=views.change_password, methods=["POST"])

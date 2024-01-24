@@ -32,6 +32,8 @@ def create_app():
     )
 
     class Config:
+        BASE_URL = os.environ["BASE_URL"]
+
         DEBUG = bool(int(os.getenv("DEBUG", "1")))
         FLASK_ADMIN_SWATCH = os.getenv("FLASK_ADMIN_SWATCH", "cerulean")
         PROD = bool(int(os.getenv("PROD", "0")))

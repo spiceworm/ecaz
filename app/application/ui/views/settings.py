@@ -58,5 +58,6 @@ def settings():
         "settings.html",
         change_password_form=forms.ChangePasswordForm(),
         delete_account_form=forms.DeleteAccountForm(),
+        email_form=forms.EmailForm(),
         logout_form=forms.LogoutForm(),
     )
