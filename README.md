@@ -1,6 +1,4 @@
 ```bash
-cd ~/hdd1_cloud/programming/python/ecaz_xyz
-
 # Run locally
 docker compose up --build
 

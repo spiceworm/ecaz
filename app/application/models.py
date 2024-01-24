@@ -10,7 +10,7 @@ db = flask_sqlalchemy.SQLAlchemy()
 class ApiToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.Unicode)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 # TODO: move this to a separate forms.py file
@@ -23,4 +23,4 @@ class User(db.Model, flask_login.UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Unicode)
     password = db.Column(db.Unicode)
-    api_tokens = db.relationship('ApiToken', backref='user')
+    api_tokens = db.relationship("ApiToken", backref="user")
