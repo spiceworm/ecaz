@@ -97,7 +97,7 @@
                           b.status = 0;
                           score++;
                           if(score == brickRowCount*brickColumnCount) {
-                            alert("YOU WIN, CONGRATS!");
+                            // Player won the game
                             document.location.reload();
                           }
                         }
@@ -170,7 +170,7 @@
                     else {
                       lives--;
                       if(!lives) {
-                        alert("GAME OVER");
+                        // Player lost the game
                         document.location.reload();
                       }
                       else {
