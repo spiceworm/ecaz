@@ -7,7 +7,7 @@ import pytest
 
 from application import create_app
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
     User,
 )
@@ -62,7 +62,7 @@ class _ApiUser(_UiUser):
         super().__init__(app, email=email, password=password, **kwargs)
 
         self._client = app.test_client()
-        self._token = ApiToken(
+        self._token = AuthToken(
             name="test-token",
             value=create_access_token(
                 expires_delta=False,
@@ -94,9 +94,9 @@ def _app():
 
 
 @pytest.fixture
-def api_token(_app):
+def auth_token(_app):
     def func(*args, **kwargs):
-        _token = ApiToken.create(*args, **kwargs)
+        _token = AuthToken.create(*args, **kwargs)
         db.session.add(_token)
         db.session.commit()
         return _token

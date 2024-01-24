@@ -28,41 +28,41 @@
     <div class="col-lg-6">
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <h3 class="panel-title">API Settings</h3>
+                <h3 class="panel-title">Auth Token Settings</h3>
             </div>
 
             <div class="panel-body">
                 <fieldset>
-                    <legend>API Tokens</legend>
+                    <legend>Auth Tokens</legend>
 
                     <ul class="list-group">
-                        {% for api_token in current_user.public_api_tokens %}
+                        {% for token in current_user.public_auth_tokens %}
                             <li class="list-group-item">
-                                <form class="form-horizontal" action="{{ url_for('.delete_api_token') }}" method="post">
-                                    {{ delete_api_token_form.csrf_token }}
+                                <form class="form-horizontal" action="{{ url_for('.delete_auth_token') }}" method="post">
+                                    {{ delete_auth_token_form.csrf_token }}
 
                                     <div class="form-group">
                                         <div class="col-lg-5">
                                             <label class="control-label" for="token_{{ loop.index }}">
-                                                {% if api_token.expires_in == True %}
+                                                {% if token.expires_in == True %}
                                                     {% set expires_in="Expired" %}
-                                                {% elif api_token.expires_in == False %}
+                                                {% elif token.expires_in == False %}
                                                     {% set expires_in="Never" %}
                                                 {% else %}
-                                                    {% set expires_in=api_token.expires_in %}
+                                                    {% set expires_in=token.expires_in %}
                                                 {% endif %}
 
-                                                {{ api_token.name }} (Exp: {{ expires_in }})
+                                                {{ token.name }} (Exp: {{ expires_in }})
                                             </label>
                                         </div>
                                         <div class="col-lg-4">
-                                            <input class="form-control" type="text" readonly value="{{ api_token.value }}" id="token_{{ loop.index }}">
+                                            <input class="form-control" type="text" readonly value="{{ token.value }}" id="token_{{ loop.index }}">
                                         </div>
                                         <div class="col-lg-1">
                                             <button class="btn btn-default" onclick="copyTokenToClipboard('token_{{ loop.index }}')">Copy</button>
                                         </div>
                                         <div class="col-lg-1">
-                                            <button class="btn btn-default" type="submit" name="id" value="{{ api_token.id }}">Delete</button>
+                                            <button class="btn btn-default" type="submit" name="id" value="{{ token.id }}">Delete</button>
                                         </div>
                                     </div>
                                 </form>
@@ -70,8 +70,8 @@
                         {% endfor %}
 
                         <li class="list-group-item">
-                            <form class="form-horizontal" action="{{ url_for('.create_api_token') }}" method="post">
-                                {{ create_api_token_form.csrf_token }}
+                            <form class="form-horizontal" action="{{ url_for('.create_auth_token') }}" method="post">
+                                {{ create_auth_token_form.csrf_token }}
 
                                 <div class="form-group">
                                     <div class="row">
@@ -79,7 +79,7 @@
                                             <label class="control-label" for="token_name">Name</label>
                                         </div>
                                         <div class="col-lg-10">
-                                            {{ create_api_token_form.token_name(class_="form-control") }}
+                                            {{ create_auth_token_form.token_name(class_="form-control") }}
                                         </div>
                                     </div>
 
@@ -88,16 +88,16 @@
                                             <label class="control-label" for="expires_toggle">Expires</label>
                                         </div>
                                         <div class="col-lg-4">
-                                            {{ create_api_token_form.expires_number(class_="form-control") }}
+                                            {{ create_auth_token_form.expires_number(class_="form-control") }}
                                         </div>
                                         <div class="col-lg-6">
-                                            {{ create_api_token_form.expires_unit(class_="form-control", onchange="toggle_expires_number()") }}
+                                            {{ create_auth_token_form.expires_unit(class_="form-control", onchange="toggle_expires_number()") }}
                                         </div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-lg-offset-2">
-                                            <button class="btn btn-primary" type="submit" id="submit" name="submit">Create API Token</button>
+                                            <button class="btn btn-primary" type="submit" id="submit" name="submit">Create Token</button>
                                         </div>
                                     </div>
                                 </div>

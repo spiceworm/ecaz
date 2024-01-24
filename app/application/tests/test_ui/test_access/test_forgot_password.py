@@ -1,5 +1,5 @@
 from application.constants import messages
-from application.models import ApiToken
+from application.models import AuthToken
 
 
 def test_forgot_password_when_authenticated(ui_user):
@@ -18,15 +18,15 @@ def test_forgot_password_when_authenticated(ui_user):
 def test_forgot_password_when_unauthenticated(client, user):
     """
     Verify an unauthenticated user navigating to /forgot_password can submit the
-    form and generate an ApiToken used for password resets.
+    form and generate an AuthToken used for password resets.
     """
     u = user("user@test.com", "old-password")
-    assert len(u.api_tokens) == 0
+    assert len(u.auth_tokens) == 0
     resp = client.post(
         "/forgot_password",
         follow_redirects=True,
         data={"email": u.email},
     )
-    assert len(u.api_tokens) == 1
-    assert u.api_tokens[0].tags == [ApiToken.HIDDEN_TAG, ApiToken.RESET_PASSWORD_TAG]
+    assert len(u.auth_tokens) == 1
+    assert u.auth_tokens[0].tags == [AuthToken.HIDDEN_TAG, AuthToken.RESET_PASSWORD_TAG]
     assert messages.PASSWORD_RESET_EMAIL_SENT in resp.data.decode()

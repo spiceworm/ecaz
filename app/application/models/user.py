@@ -12,7 +12,7 @@ from sqlalchemy.orm import (
 from sqlalchemy_utils import StringEncryptedType
 
 from application.models import (
-    ApiToken,
+    AuthToken,
     db,
     get_encryption_key,
     Totp,
@@ -43,7 +43,7 @@ class User(db.Model, flask_login.UserMixin):
         nullable=False,
         primary_key=True,
     )
-    api_tokens: Mapped[List["ApiToken"]] = relationship(
+    auth_tokens: Mapped[List["AuthToken"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -130,16 +130,16 @@ class User(db.Model, flask_login.UserMixin):
     @hybrid_property
     def frontend_token(self):
         """
-        Returns an `ApiToken` used by the frontend to communicate with the API.
-        Returns a new `ApiToken` instance each time the property is accessed.
+        Returns an `AuthToken` used by the frontend to communicate with the API.
+        Returns a new `AuthToken` instance each time the property is accessed.
         """
-        for token in self.api_tokens:
-            if ApiToken.FRONTEND_TAG in token.tags:
+        for token in self.auth_tokens:
+            if AuthToken.FRONTEND_TAG in token.tags:
                 db.session.delete(token)
         else:
             db.session.commit()
-        return ApiToken.create_frontend_token(self)
+        return AuthToken.create_frontend_token(self)
 
     @hybrid_property
-    def public_api_tokens(self):
-        return [t for t in self.api_tokens if ApiToken.HIDDEN_TAG not in t.tags]
+    def public_auth_tokens(self):
+        return [t for t in self.auth_tokens if AuthToken.HIDDEN_TAG not in t.tags]

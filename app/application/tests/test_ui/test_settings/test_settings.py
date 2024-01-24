@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from application.constants import messages
 from application.models import (
-    ApiToken,
+    AuthToken,
     User,
 )
 
@@ -95,21 +95,21 @@ def test_delete_account(ui_user):
     assert resp.request.path == "/"
 
 
-def test_delete_account_cascades(api_token, ui_user):
+def test_delete_account_cascades(auth_token, ui_user):
     """
-    Verify delete account form submission on settings page deletes all `ApiTokens`
+    Verify delete account form submission on settings page deletes all `AuthToken`
     associated with the user.
     """
     user = ui_user()
-    t1 = api_token(user=user, name="t1")
-    t2 = api_token(user=user, name="t2")
-    t3 = api_token(user=user, name="t3")
-    assert len(user.api_tokens) == 3
+    t1 = auth_token(user=user, name="t1")
+    t2 = auth_token(user=user, name="t2")
+    t3 = auth_token(user=user, name="t3")
+    assert len(user.auth_tokens) == 3
     user.post("/settings/account/delete")
     assert User.query.filter_by(email=user.email).one_or_none() is None
-    assert ApiToken.query.filter_by(name=t1.name).one_or_none() is None
-    assert ApiToken.query.filter_by(name=t2.name).one_or_none() is None
-    assert ApiToken.query.filter_by(name=t3.name).one_or_none() is None
+    assert AuthToken.query.filter_by(name=t1.name).one_or_none() is None
+    assert AuthToken.query.filter_by(name=t2.name).one_or_none() is None
+    assert AuthToken.query.filter_by(name=t3.name).one_or_none() is None
 
 
 def test_disable_totp_when_disabled(ui_user):
@@ -177,12 +177,12 @@ def test_disable_webauthn_when_enabled(ui_user):
 def test_send_verify_email(ui_user):
     """
     Verify that when a user clicks the verify button next to their email address
-    on the settings page that it creates an `ApiToken` instance with the
-    `ApiToken.VERIFY_EMAIL_TAG` and shows a notification telling the user that
+    on the settings page that it creates an `AuthToken` instance with the
+    `AuthToken.VERIFY_EMAIL_TAG` and shows a notification telling the user that
     a verification email has been sent.
     """
     user = ui_user()
-    assert len(user.api_tokens) == 0
+    assert len(user.auth_tokens) == 0
     resp = user.post(
         "/settings/user/email/verify",
         follow_redirects=True,
@@ -190,8 +190,8 @@ def test_send_verify_email(ui_user):
     assert len(resp.history) == 1
     assert resp.request.path == "/settings"
     assert messages.VERIFICATION_EMAIL_SENT in resp.data.decode()
-    assert len(user.api_tokens) == 1
-    assert user.api_tokens[0].tags == [ApiToken.HIDDEN_TAG, ApiToken.VERIFY_EMAIL_TAG]
+    assert len(user.auth_tokens) == 1
+    assert user.auth_tokens[0].tags == [AuthToken.HIDDEN_TAG, AuthToken.VERIFY_EMAIL_TAG]
 
 
 def test_send_verify_email_if_already_verified(ui_user):
@@ -213,7 +213,7 @@ def test_verify_email(ui_user):
     """
     user = ui_user()
     assert not user.is_verified
-    token = ApiToken.create_email_verification_token(user)
+    token = AuthToken.create_email_verification_token(user)
     resp = user.get(
         f"/settings/user/email/verify/{token.value}",
         follow_redirects=True,
@@ -229,7 +229,7 @@ def test_verify_email_using_expired_token(ui_user):
     has expired.
     """
     user = ui_user()
-    token = ApiToken.create_email_verification_token(
+    token = AuthToken.create_email_verification_token(
         user,
         timedelta(microseconds=1),
     )

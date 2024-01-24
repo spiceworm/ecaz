@@ -24,9 +24,9 @@ ui_bp.add_url_rule("/reset_password/<jwt>", view_func=views.reset_password, meth
 ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
 
 ui_bp.add_url_rule("/settings", view_func=views.settings, methods=["GET"])
-ui_bp.add_url_rule("/settings/api", view_func=views.api_settings, methods=["GET"])
-ui_bp.add_url_rule("/settings/api/token/create", view_func=views.create_api_token, methods=["POST"])
-ui_bp.add_url_rule("/settings/api/token/delete", view_func=views.delete_api_token, methods=["POST"])
+ui_bp.add_url_rule("/settings/auth_token", view_func=views.auth_token_settings, methods=["GET"])
+ui_bp.add_url_rule("/settings/auth_token/create", view_func=views.create_auth_token, methods=["POST"])
+ui_bp.add_url_rule("/settings/auth_token/delete", view_func=views.delete_auth_token, methods=["POST"])
 ui_bp.add_url_rule("/settings/user/email/verify", view_func=views.send_verify_email, methods=["POST"])
 ui_bp.add_url_rule("/settings/user/email/verify/<jwt>", view_func=views.verify_email, methods=["GET"])
 ui_bp.add_url_rule("/settings/user/password", view_func=views.change_password, methods=["POST"])

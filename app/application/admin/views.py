@@ -23,7 +23,7 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
         )
 
 
-class ApiTokenModelView(ModelView):
+class AuthTokenModelView(ModelView):
     can_create = False
     can_edit = False
 
