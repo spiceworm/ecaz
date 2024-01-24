@@ -31,15 +31,12 @@ def main(args):
     registry_url = f"registry.digitalocean.com/ecaz-xyz"
     image_url = f"{registry_url}/app:{args.tag}"
 
-    sp_kwargs = {}
     if args.push:
-        subprocess.check_call(["docker", "push", image_url], **sp_kwargs)
+        subprocess.check_call(["docker", "push", image_url])
     else:
-        subprocess.check_call(["docker", "compose", "build", "--no-cache"], **sp_kwargs)
-        subprocess.check_call(
-            ["docker", "tag", f"{registry_url}/app:latest", image_url], **sp_kwargs
-        )
-        subprocess.check_call(["docker", "push", image_url], **sp_kwargs)
+        subprocess.check_call(["docker", "compose", "build", "--no-cache"])
+        subprocess.check_call(["docker", "tag", f"{registry_url}/app:latest", image_url])
+        subprocess.check_call(["docker", "push", image_url])
 
 
 if __name__ == "__main__":
