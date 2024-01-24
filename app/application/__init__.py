@@ -9,22 +9,38 @@ from flask_login import LoginManager
 
 
 class Config:
-    DB_PATH = os.environ["DB_PATH"]
     DEBUG = bool(int(os.getenv("DEBUG", "0")))
     PROD = bool(int(os.getenv("PROD", "0")))
     TESTING = bool(int(os.getenv("TESTING", "0")))
     SECRET_KEY = os.environ["SECRET_KEY"]
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"
+
+    POSTGRES_DB = os.environ["POSTGRES_DB"]
+    POSTGRES_HOST = os.environ["POSTGRES_HOST"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
+    POSTGRES_SSL = bool(int(os.getenv("POSTGRES_SSL", "1")))
+    POSTGRES_USER = os.environ["POSTGRES_USER"]
+
+    # Magic environment variable looked for by sqlalchemy
+    SQLALCHEMY_DATABASE_URI = (
+        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+        f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    ) + ("?sslmode=require" if POSTGRES_SSL else "")
 
     def json(self):
         return {
             attr: getattr(self, attr)
             for attr in (
-                "DB_PATH",
+                "POSTGRES_DB",
+                "POSTGRES_HOST",
+                "POSTGRES_PASSWORD",
+                "POSTGRES_PORT",
+                "POSTGRES_USER",
                 "DEBUG",
                 "PROD",
-                "TESTING",
+                "SECRET_KEY",
                 "SQLALCHEMY_DATABASE_URI",
+                "TESTING",
             )
         }
 

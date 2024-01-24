@@ -6,10 +6,19 @@ services:
       service: app
     build:
       context: .
+      dockerfile: Dockerfile
     environment:
       DEBUG: "1"
       PROD: "0"
       TESTING: "1"
-      SECRET_KEY: "${SECRET_KEY}"
+      POSTGRES_DB: "postgres"
+      POSTGRES_PORT: "5432"
+      POSTGRES_SSL: "0"
+      POSTGRES_USER: "postgres"
     volumes:
       - ./app:/app
+
+  db:
+    extends:
+      file: base.yml
+      service: db

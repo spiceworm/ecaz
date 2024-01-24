@@ -5,4 +5,5 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.1
 gunicorn==21.2.0
 ipython
+psycopg2-binary==2.9.9  # sqlalchemy does not support psycopg[binary,pool] yet
 PyJWT==2.8.0
