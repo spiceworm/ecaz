@@ -4,6 +4,7 @@ from flask import (
     Flask,
     g,
 )
+from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 
@@ -58,9 +59,7 @@ def create_app():
     app.config.from_object(config)
     app.logger.debug(config.json())
 
-    with app.app_context():
-        g.config = config
-
+    bcrypt = Bcrypt(app)
     jwt = JWTManager(app)
 
     login_manager = LoginManager()
@@ -79,14 +78,19 @@ def create_app():
 
     db.init_app(app)
 
+    with app.app_context():
+        db.create_all()
+
+    @app.before_request
+    def define_globals():
+        g.config = config
+        g.bcrypt = bcrypt
+
     @login_manager.user_loader
     def load_user(user_id):
         """Callback function that tells flask-login how to reload
         an object for a user that has already been authenticated,
         such as when someone reconnects to a "remember me" session"""
         return User.query.get(user_id)
-
-    with app.app_context():
-        db.create_all()
 
     return app

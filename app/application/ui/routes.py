@@ -52,11 +52,13 @@ def login():
 
     form = forms.Login()
     if form.validate_on_submit():
-        user = User.query.filter_by(
-            password=form.password.data,
-            username=form.username.data,
-        ).first()
-        if user is None:
+        user = User.query.filter_by(username=form.username.data).first()
+        is_correct_password = flask.g.bcrypt.check_password_hash(
+            user.password_hash,
+            form.password.data,
+        )
+
+        if not is_correct_password:
             flask.flash("Invalid login credentials")
         else:
             flask_login.login_user(user)
@@ -91,9 +93,10 @@ def register():
 
     form = forms.Register()
     if form.validate_on_submit():
+        password_hash = flask.g.bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(
             username=form.username.data,
-            password=form.password.data,
+            password_hash=password_hash,
         )
         db.session.add(user)
         db.session.commit()

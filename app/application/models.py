@@ -15,5 +15,5 @@ class ApiToken(db.Model):
 class User(db.Model, flask_login.UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Unicode)
-    password = db.Column(db.Unicode)
+    password_hash = db.Column(db.String)
     api_tokens = db.relationship("ApiToken", backref="user")
