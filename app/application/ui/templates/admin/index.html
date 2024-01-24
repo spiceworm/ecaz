@@ -39,6 +39,13 @@
             })
             return false;
         }
+
+        window.addEventListener("load", () => {
+            document.getElementById("executeBtn").addEventListener("click", (event) => {
+                event.preventDefault();
+                executeCommand();
+            });
+        });
     </script>
 {% endblock %}
 
@@ -64,11 +71,4 @@
         </button>
         <button class="btn btn-primary" onclick="copyToClipboard('commandOutput')">Copy</button>
     </div>
-
-    <script>
-        document.getElementById("executeBtn").addEventListener("click", function (event) {
-            event.preventDefault();
-            executeCommand();
-        });
-    </script>
 {% endblock %}

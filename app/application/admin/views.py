@@ -16,7 +16,6 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
         return flask.redirect(flask.url_for("ui_bp.login"))
 
     def render(self, template, **kwargs):
-        flask.g.config.BASE_URL
         return super().render(
             template,
             BASE_URL=flask.g.config.BASE_URL,
