@@ -1,4 +1,5 @@
 from application.constants import messages
+from application.models import db
 
 
 def test_change_password(ui_user):
@@ -42,3 +43,14 @@ def test_change_username(ui_user):
         data={"username": "new-username"},
     )
     assert messages.USERNAME_UPDATE_SUCCESS in resp1.data.decode()
+
+
+def test_change_username_to_duplicate(ui_user):
+    username = "username"
+    ui_user(email="user1@test.com", password="password1", username=username)
+    resp = ui_user(email="user2@test.com", password="password2").post(
+        "/settings/change_username",
+        follow_redirects=True,
+        data={"username": username},
+    )
+    assert messages.DUPLICATE_USERNAME_ERROR in resp.data.decode()
