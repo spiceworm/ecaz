@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 import flask
-from flask_jwt_extended import create_access_token
 import flask_login
 from flask_mailman import EmailMessage
 
@@ -9,7 +6,6 @@ from .. import forms
 from ...constants import messages
 from ...models import (
     ApiToken,
-    db,
     User,
 )
 
@@ -24,33 +20,19 @@ def forgot_password():
     form = forms.ForgotPasswordForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).one_or_none()
-        if user is not None:
-            token_name = "forgot-password"
-
+        if user:
             # Delete any old tokens from prior password reset requests
             ApiToken.query.filter(
-                ApiToken.name == token_name,
+                ApiToken.name == ApiToken.RESET_PASSWORD_TAG,
                 ApiToken.user == user,
             ).delete()
 
-            token_value = create_access_token(
-                additional_claims={"tags": ["hidden"]},
-                expires_delta=timedelta(hours=24),
-                identity=user.email,
-            )
-            api_token = ApiToken(
-                name=token_name,
-                value=token_value,
-                user=user,
-            )
-            db.session.add(api_token)
-            db.session.commit()
-
-            url = flask.url_for(".reset_password", jwt=token_value, _external=True)
+            token = ApiToken.create_reset_password_token(user)
+            url = flask.url_for(".reset_password", jwt=token.value, _external=True)
             msg = EmailMessage(subject="Reset Password", body=url, to=[user.email])
             msg.content_subtype = "html"
             msg.send()
 
-        msg = messages.PASSWORD_RESET_EMAIL_SENT.format(email=user.email)
+        msg = messages.PASSWORD_RESET_EMAIL_SENT
         flask.flash(msg, category="info")
     return flask.render_template("forgot_password.html", form=form)

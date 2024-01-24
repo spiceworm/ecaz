@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 import flask
-from flask_jwt_extended import create_access_token
 import flask_login
 from flask_mailman import EmailMessage
 import psycopg2.errors
@@ -55,48 +52,33 @@ def send_verify_email():
     if user.verified:
         flask.flash(messages.ACCOUNT_ALREADY_VERIFIED, category="info")
     else:
-        token_name = "verify-email"
-
         # Delete any old tokens when a user asks to be sent a verification email
         ApiToken.query.filter(
-            ApiToken.name == token_name,
+            ApiToken.name == ApiToken.VERIFY_EMAIL_TAG,
             ApiToken.user == user,
         ).delete()
 
-        token_value = create_access_token(
-            additional_claims={"tags": ["hidden"]},
-            expires_delta=timedelta(hours=24),
-            identity=user.email,
-        )
-        api_token = ApiToken(
-            name=token_name,
-            value=token_value,
-            user=user,
-        )
-        db.session.add(api_token)
-        db.session.commit()
-
-        url = flask.url_for(".verify_account", jwt=token_value, _external=True)
+        token = ApiToken.create_email_verification_token(user)
+        url = flask.url_for(".verify_account", jwt=token.value, _external=True)
         email = EmailMessage(subject="Verify your account", body=url, to=[user.email])
         email.content_subtype = "html"
         email.send()
 
-        msg = messages.VERIFICATION_EMAIL_SENT.format(email=user.email)
-        flask.flash(msg, category="info")
+        flask.flash(messages.VERIFICATION_EMAIL_SENT, category="info")
     return flask.redirect(flask.request.referrer)
 
 
 @flask_login.login_required
 def verify_account(jwt):
     token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
-    if token:
+    if token and ApiToken.VERIFY_EMAIL_TAG in token.tags:
         if token.is_expired:
-            flask.flash(messages.ACCOUNT_VERIFICATION_TOKEN_EXPIRED, category="error")
+            flask.flash(messages.TOKEN_EXPIRED, category="error")
         else:
             token.user.verified = True
             flask.flash(messages.ACCOUNT_VERIFIED_SUCCESS, category="success")
         db.session.delete(token)
         db.session.commit()
     else:
-        flask.flash(messages.INVALID_ACCOUNT_VERIFICATION_TOKEN, category="error")
+        flask.flash(messages.INVALID_TOKEN, category="error")
     return flask.redirect(flask.url_for(".settings"))

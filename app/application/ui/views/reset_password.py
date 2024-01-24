@@ -12,18 +12,30 @@ __all__ = ("reset_password",)
 
 def reset_password(jwt):
     form = forms.ResetPasswordForm()
-    if form.validate_on_submit():
-        token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
+    token = ApiToken.query.filter(ApiToken.value == jwt).one_or_none()
 
+    if not token or ApiToken.RESET_PASSWORD_TAG not in token.tags:
+        flask.flash(messages.INVALID_TOKEN, category="error")
+        return flask.redirect(flask.url_for(".forgot_password"))
+
+    if token.is_expired:
+        db.session.delete(token)
+        db.session.commit()
+        flask.flash(messages.TOKEN_EXPIRED, category="error")
+        return flask.redirect(flask.url_for(".forgot_password"))
+
+    if form.validate_on_submit():
         password1 = form.password1.data
         password2 = form.password2.data
-        if password1 == password2:
+        if password1 != password2:
+            flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
+        else:
             user = token.user
             user.password_hash = flask.g.bcrypt.generate_password_hash(password1).decode("utf-8")
             db.session.add(user)
+            db.session.delete(token)
             db.session.commit()
             flask.flash(messages.PASSWORD_UPDATE_SUCCESS, category="success")
             return flask.redirect(flask.url_for(".login"))
-        else:
-            flask.flash(messages.PASSWORD_UPDATE_MATCH_ERROR, category="error")
+
     return flask.render_template("reset_password.html", form=form, jwt=jwt)
