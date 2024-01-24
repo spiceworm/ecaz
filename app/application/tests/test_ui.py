@@ -13,7 +13,7 @@ def test_change_password(ui_auth_post):
         data={
             "password1": "new-password",
             "password2": "new-password",
-        }
+        },
     )
     assert "Passwords updated successfully" in resp1.data.decode()
     resp2 = ui_auth_post(
@@ -22,7 +22,7 @@ def test_change_password(ui_auth_post):
         data={
             "password1": "test-password",
             "password2": "test-password",
-        }
+        },
     )
     assert "Passwords updated successfully" in resp2.data.decode()
 
@@ -34,7 +34,7 @@ def test_change_password_not_matching(ui_auth_post):
         data={
             "password1": "new-password",
             "password2": "this-does-not-match",
-        }
+        },
     )
     assert "Passwords must match" in resp.data.decode()
 

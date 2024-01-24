@@ -20,11 +20,13 @@ def login():
             )
             if is_correct_password:
                 flask_login.login_user(user)
-                next_page = flask.request.args.get('next')
+                next_page = flask.request.args.get("next")
 
                 # If the user was trying to access a login protected page but were not logged in.
                 # Prevent open redirection vulnerability.
-                if next_page and util.url_has_allowed_host_and_scheme(next_page, flask.request.host):
+                if next_page and util.url_has_allowed_host_and_scheme(
+                    next_page, flask.request.host
+                ):
                     return flask.redirect(next_page)
                 else:
                     return flask.redirect(flask.url_for(".profile"))

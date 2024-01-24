@@ -14,7 +14,7 @@ ui_bp = Blueprint(
 ui_bp.add_url_rule("/", view_func=routes.login, methods=["GET", "POST"])
 ui_bp.add_url_rule("/api_settings", view_func=routes.api_settings, methods=["GET"])
 ui_bp.add_url_rule("/change_password", view_func=routes.change_password, methods=["POST"])
-ui_bp.add_url_rule("/create_api_token", view_func=routes.create_api_token,  methods=["POST"])
+ui_bp.add_url_rule("/create_api_token", view_func=routes.create_api_token, methods=["POST"])
 ui_bp.add_url_rule("/delete_api_token", view_func=routes.delete_api_token, methods=["POST"])
 ui_bp.add_url_rule("/login", view_func=routes.login, methods=["GET", "POST"])
 ui_bp.add_url_rule("/logout", view_func=routes.logout, methods=["POST"])

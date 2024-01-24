@@ -28,5 +28,5 @@ class UserApi(flask_restful.Resource):
 
 
 api = flask_restful.Api(api_v1_bp)
-api.add_resource(StatusApi, '/status')
-api.add_resource(UserApi, '/user')
+api.add_resource(StatusApi, "/status")
+api.add_resource(UserApi, "/user")
