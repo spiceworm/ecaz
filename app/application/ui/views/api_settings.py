@@ -1,5 +1,5 @@
 import flask
-from flask_jwt_extended import create_access_token
+import flask_jwt_extended
 import flask_login
 
 
@@ -32,7 +32,7 @@ def create_api_token():
     user = flask_login.current_user
     form = forms.CreateApiTokenForm()
     if form.validate_on_submit():
-        token_value = create_access_token(
+        token_value = flask_jwt_extended.create_access_token(
             expires_delta=False,
             identity=user.email,
         )

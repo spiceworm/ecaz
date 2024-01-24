@@ -1,6 +1,6 @@
 import flask
 import flask_login
-from flask_mailman import EmailMessage
+import flask_mailman
 import psycopg2.errors
 from psycopg2.errorcodes import UNIQUE_VIOLATION
 import sqlalchemy.exc
@@ -59,7 +59,7 @@ def send_verify_email():
 
         token = ApiToken.create_email_verification_token(user)
         url = flask.url_for(".verify_account", jwt=token.value, _external=True)
-        email = EmailMessage(subject="Verify your account", body=url, to=[user.email])
+        email = flask_mailman.EmailMessage(subject="Verify your account", body=url, to=[user.email])
         email.content_subtype = "html"
         email.send()
 

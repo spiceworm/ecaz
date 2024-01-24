@@ -1,7 +1,7 @@
 import functools
 
 from flask_jwt_extended import create_access_token
-from flask_login import FlaskLoginClient
+import flask_login
 import pytest
 
 from application import create_app
@@ -15,7 +15,7 @@ from application.models import (
 @pytest.fixture()
 def app():
     _app = create_app()
-    _app.test_client_class = FlaskLoginClient
+    _app.test_client_class = flask_login.FlaskLoginClient
     with _app.app_context():
         yield _app
 

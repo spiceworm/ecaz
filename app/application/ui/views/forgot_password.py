@@ -1,6 +1,6 @@
 import flask
 import flask_login
-from flask_mailman import EmailMessage
+import flask_mailman
 
 from .. import forms
 from ...constants import messages
@@ -29,7 +29,7 @@ def forgot_password():
 
             token = ApiToken.create_reset_password_token(user)
             url = flask.url_for(".reset_password", jwt=token.value, _external=True)
-            msg = EmailMessage(subject="Reset Password", body=url, to=[user.email])
+            msg = flask_mailman.EmailMessage(subject="Reset Password", body=url, to=[user.email])
             msg.content_subtype = "html"
             msg.send()
 

@@ -1,8 +1,8 @@
-from flask import Blueprint
+import flask
 
 from .v1.routes import api_v1_bp
 
-api_bp = Blueprint(
+api_bp = flask.Blueprint(
     "api_bp",
     __name__,
     url_prefix="/api",

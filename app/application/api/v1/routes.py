@@ -1,8 +1,5 @@
-from flask import (
-    Blueprint,
-    jsonify,
-)
-from flask_mailman import EmailMessage
+import flask
+import flask_mailman
 import flask_restful
 from flask_jwt_extended import (
     get_jwt_identity,
@@ -12,7 +9,7 @@ from flask_jwt_extended import (
 from ...models import User
 
 
-api_v1_bp = Blueprint(
+api_v1_bp = flask.Blueprint(
     "api_v1_bp",
     __name__,
     url_prefix="/v1",
@@ -25,7 +22,7 @@ class EmailApi(flask_restful.Resource):
         user = User.query.filter(User.email == get_jwt_identity()).one_or_none()
         if user and user.is_admin:
             args = flask_restful.request.get_json(force=True)
-            msg = EmailMessage(
+            msg = flask_mailman.EmailMessage(
                 subject=args["subject"],
                 body=args["body"],
                 to=args["to"],
@@ -46,7 +43,7 @@ class StatusApi(flask_restful.Resource):
 class UserApi(flask_restful.Resource):
     @jwt_required()
     def get(self):
-        return jsonify(logged_in_as=get_jwt_identity())
+        return flask.jsonify(logged_in_as=get_jwt_identity())
 
 
 api = flask_restful.Api(api_v1_bp)

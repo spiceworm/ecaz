@@ -1,6 +1,8 @@
-from flask_wtf import FlaskForm
-from wtforms import PasswordField
-from wtforms import validators
+import flask_wtf
+from wtforms import (
+    PasswordField,
+    validators,
+)
 from wtforms.fields import EmailField
 
 
@@ -11,7 +13,7 @@ __all__ = (
 )
 
 
-class ChangePasswordForm(FlaskForm):
+class ChangePasswordForm(flask_wtf.FlaskForm):
     password1 = PasswordField(
         "password1",
         render_kw={"placeholder": "New Password"},
@@ -30,11 +32,11 @@ class ChangePasswordForm(FlaskForm):
     )
 
 
-class DeleteAccountForm(FlaskForm):
+class DeleteAccountForm(flask_wtf.FlaskForm):
     pass
 
 
-class EmailForm(FlaskForm):
+class EmailForm(flask_wtf.FlaskForm):
     email = EmailField(
         "email",
         render_kw={"readonly": True},

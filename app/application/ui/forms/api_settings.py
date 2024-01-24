@@ -1,9 +1,9 @@
-from flask_wtf import FlaskForm
+import flask_wtf
 from wtforms import (
     IntegerField,
     StringField,
+    validators,
 )
-from wtforms import validators
 
 
 __all__ = (
@@ -12,7 +12,7 @@ __all__ = (
 )
 
 
-class CreateApiTokenForm(FlaskForm):
+class CreateApiTokenForm(flask_wtf.FlaskForm):
     token_name = StringField(
         "name",
         render_kw={"placeholder": "Name"},
@@ -20,7 +20,7 @@ class CreateApiTokenForm(FlaskForm):
     )
 
 
-class DeleteApiTokenForm(FlaskForm):
+class DeleteApiTokenForm(flask_wtf.FlaskForm):
     id = IntegerField(
         "id",
         validators=[validators.DataRequired()],

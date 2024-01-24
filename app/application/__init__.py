@@ -1,10 +1,7 @@
 import os
 
+import flask
 import flask_admin
-from flask import (
-    Flask,
-    g,
-)
 import flask_jwt_extended
 import flask_login
 import flask_mailman
@@ -65,7 +62,7 @@ def create_app():
         def json(self):
             return {attr: getattr(self, attr) for attr in dir(self) if attr.isupper()}
 
-    app = Flask(
+    app = flask.Flask(
         __name__,
         static_folder=None,
         template_folder=None,
@@ -98,7 +95,7 @@ def create_app():
     def define_globals():
         """No custom attributes will be available on `flask.g` unless
         they are set on the `flask.g` object here."""
-        g.config = config
+        flask.g.config = config
 
     @login_manager.user_loader
     def load_user(user_id):

@@ -1,9 +1,9 @@
-from flask import Blueprint
+import flask
 
 from . import views
 
 
-ui_bp = Blueprint(
+ui_bp = flask.Blueprint(
     "ui_bp",
     __name__,
     template_folder="templates",

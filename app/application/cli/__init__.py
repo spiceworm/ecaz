@@ -1,7 +1,7 @@
 import re
 
 import click
-from flask import Blueprint
+import flask
 
 from ..models import (
     db,
@@ -9,7 +9,7 @@ from ..models import (
 )
 
 
-cli_bp = Blueprint(
+cli_bp = flask.Blueprint(
     "cli",
     __name__,
 )
