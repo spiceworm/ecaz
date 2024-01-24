@@ -19,8 +19,14 @@ from . import (
 __all__ = ("User",)
 
 
+def default_username(ctx):
+    """Make `User.username` default to the value of `User.email`"""
+    return ctx.get_current_parameters()["email"]
+
+
 class User(db.Model, flask_login.UserMixin):
     id: Mapped[int] = mapped_column(
+        nullable=False,
         primary_key=True,
     )
     api_tokens: Mapped[List["ApiToken"]] = relationship(
@@ -32,6 +38,7 @@ class User(db.Model, flask_login.UserMixin):
             key=get_encryption_key,
             padding="pkcs5",
         ),
+        nullable=False,
         unique=True,
     )
     is_admin = sa.Column(
@@ -71,12 +78,15 @@ class User(db.Model, flask_login.UserMixin):
             key=get_encryption_key,
             padding="pkcs5",
         ),
+        nullable=False,
     )
     username = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
             padding="pkcs5",
         ),
+        default=default_username,
+        nullable=False,
         unique=True,
     )
 

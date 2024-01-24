@@ -26,6 +26,7 @@ class ApiToken(db.Model):
     VERIFY_EMAIL_TAG = "verify-email"
 
     id: Mapped[int] = mapped_column(
+        nullable=False,
         primary_key=True,
     )
     name = sa.Column(
@@ -33,18 +34,21 @@ class ApiToken(db.Model):
             key=get_encryption_key,
             padding="pkcs5",
         ),
+        nullable=False,
     )
     user: Mapped["User"] = relationship(
         back_populates="api_tokens",
     )
     user_id: Mapped[int] = mapped_column(
         sa.ForeignKey("user.id"),
+        nullable=False,
     )
     value = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
             padding="pkcs5",
         ),
+        nullable=False,
     )
 
     @classmethod
