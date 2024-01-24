@@ -22,6 +22,7 @@ class AdminModelView(ModelView):
 
 def create_app():
     from .api import api_bp
+    from .cli import cli_bp
     from .ui import ui_bp
     from .models import (
         ApiToken,
@@ -79,6 +80,7 @@ def create_app():
         template_folder=None,
     )
     app.register_blueprint(api_bp)
+    app.register_blueprint(cli_bp)
     app.register_blueprint(ui_bp)
 
     config = Config()
