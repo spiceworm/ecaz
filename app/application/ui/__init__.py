@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from . import routes
+from . import views
 
 
 ui_bp = Blueprint(
@@ -11,20 +11,24 @@ ui_bp = Blueprint(
     static_url_path="/static",
 )
 
-ui_bp.add_url_rule("/", view_func=routes.login, methods=["GET", "POST"])
+ui_bp.add_url_rule("/", view_func=views.login, methods=["GET", "POST"])
 
-ui_bp.add_url_rule("/api_settings", view_func=routes.api_settings, methods=["GET"])
-ui_bp.add_url_rule("/api_settings/create_api_token", view_func=routes.create_api_token, methods=["POST"])
-ui_bp.add_url_rule("/api_settings/delete_api_token", view_func=routes.delete_api_token, methods=["POST"])
+ui_bp.add_url_rule("/api_settings", view_func=views.api_settings, methods=["GET"])
+ui_bp.add_url_rule(
+    "/api_settings/create_api_token", view_func=views.create_api_token, methods=["POST"]
+)
+ui_bp.add_url_rule(
+    "/api_settings/delete_api_token", view_func=views.delete_api_token, methods=["POST"]
+)
 
-ui_bp.add_url_rule("/login", view_func=routes.login, methods=["GET", "POST"])
+ui_bp.add_url_rule("/login", view_func=views.login, methods=["GET", "POST"])
 
-ui_bp.add_url_rule("/logout", view_func=routes.logout, methods=["POST"])
+ui_bp.add_url_rule("/logout", view_func=views.logout, methods=["POST"])
 
-ui_bp.add_url_rule("/profile", view_func=routes.profile, methods=["GET"])
+ui_bp.add_url_rule("/profile", view_func=views.profile, methods=["GET"])
 
-ui_bp.add_url_rule("/register", view_func=routes.register, methods=["GET", "POST"])
+ui_bp.add_url_rule("/register", view_func=views.register, methods=["GET", "POST"])
 
-ui_bp.add_url_rule("/settings", view_func=routes.settings, methods=["GET"])
-ui_bp.add_url_rule("/settings/change_password", view_func=routes.change_password, methods=["POST"])
-ui_bp.add_url_rule("/settings/delete_account", view_func=routes.delete_account, methods=["POST"])
+ui_bp.add_url_rule("/settings", view_func=views.settings, methods=["GET"])
+ui_bp.add_url_rule("/settings/change_password", view_func=views.change_password, methods=["POST"])
+ui_bp.add_url_rule("/settings/delete_account", view_func=views.delete_account, methods=["POST"])
