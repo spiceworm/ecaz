@@ -7,7 +7,7 @@ from application.models import (
     User,
 )
 from application.ui import forms
-from application.util import require_unauthenticated
+from application.util.decorators import require_unauthenticated
 
 
 __all__ = ("forgot_password",)

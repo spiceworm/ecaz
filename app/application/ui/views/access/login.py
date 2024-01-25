@@ -14,7 +14,7 @@ from application.models import (
 )
 from application.third_party.util import url_has_allowed_host_and_scheme
 from application.ui import forms
-from application.util import (
+from application.util.decorators import (
     require_unauthenticated,
     validate_jwt_as_auth_token,
 )

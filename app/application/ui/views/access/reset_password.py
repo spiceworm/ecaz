@@ -9,7 +9,7 @@ from application.models import (
     db,
 )
 from application.ui import forms
-from application.util import validate_jwt_as_auth_token
+from application.util.decorators import validate_jwt_as_auth_token
 
 
 __all__ = ("reset_password",)
