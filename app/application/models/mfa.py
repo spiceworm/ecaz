@@ -1,15 +1,21 @@
+import base64
+import io
 import json
 from typing import (
     ByteString,
     List,
 )
 
+import flask
+import pyotp
+import qrcode
 import sqlalchemy as sa
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
 )
+
 from sqlalchemy_utils import StringEncryptedType
 import webauthn
 from webauthn.helpers.structs import (
@@ -23,7 +29,11 @@ from application.models import (
 )
 
 
-__all__ = ("WebAuthn",)
+__all__ = (
+    "MFA",
+    "Totp",
+    "WebAuthn",
+)
 
 
 def challenge_default() -> str:
@@ -32,6 +42,93 @@ def challenge_default() -> str:
 
 def user_handle_default() -> str:
     return webauthn.helpers.bytes_to_base64url(webauthn.helpers.generate_user_handle())
+
+
+class MFA(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    totp: Mapped[List["Totp"]] = relationship(
+        back_populates="mfa",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    user: Mapped["User"] = relationship(
+        back_populates="mfa",
+    )
+    user_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("user.id"),
+        nullable=False,
+    )
+    webauthn: Mapped[List["WebAuthn"]] = relationship(
+        back_populates="mfa",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        db.session.add_all(
+            [
+                Totp(mfa=self),
+                WebAuthn(mfa=self),
+            ]
+        )
+        db.session.commit()
+
+
+class Totp(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    enabled = sa.Column(
+        StringEncryptedType(
+            type_in=sa.Boolean,
+            key=get_encryption_key,
+            padding="zeroes",
+        ),
+        default=False,
+    )
+    mfa: Mapped["MFA"] = relationship(
+        back_populates="totp",
+    )
+    mfa_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("mfa.id"),
+        nullable=False,
+    )
+    secret = sa.Column(
+        StringEncryptedType(
+            key=get_encryption_key,
+            padding="pkcs5",
+        ),
+        default=pyotp.random_base32,
+    )
+
+    def generate_qr_code(self) -> str:
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(self.uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = io.BytesIO()
+        img.save(buffered)
+        return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    @property
+    def handler(self) -> pyotp.TOTP:
+        return pyotp.TOTP(
+            self.secret,
+            issuer=flask.current_app.config["APP_NAME"],
+            name=self.mfa.user.username,
+        )
+
+    @property
+    def uri(self) -> str:
+        return self.handler.provisioning_uri()
+
+    def verify(self, user_otp) -> bool:
+        return self.handler.verify(user_otp)
 
 
 class WebAuthn(db.Model):
@@ -74,11 +171,11 @@ class WebAuthn(db.Model):
             padding="pkcs5",
         ),
     )
-    user: Mapped["User"] = relationship(
+    mfa: Mapped["MFA"] = relationship(
         back_populates="webauthn",
     )
-    user_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("user.id"),
+    mfa_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("mfa.id"),
         nullable=False,
     )
     _user_handle = sa.Column(

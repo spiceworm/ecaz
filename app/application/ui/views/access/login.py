@@ -47,11 +47,11 @@ def login() -> Union[str, Response]:
         if user and user.password == form.password.data:
             if user.is_deleted:
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
-            elif user.webauthn.enabled:
+            elif user.mfa.webauthn.enabled:
                 # WebAuthn MFA supersedes Totp MFA
                 webauthn_token = AuthToken.create_mfa_webauthn_token(user)
                 return flask.redirect(flask.url_for(".webauthn_login", jwt=webauthn_token.value))
-            elif user.totp.enabled:
+            elif user.mfa.totp.enabled:
                 totp_token = AuthToken.create_mfa_totp_token(user)
                 return flask.redirect(flask.url_for(".totp_login", jwt=totp_token.value))
             else:
@@ -66,7 +66,7 @@ def login() -> Union[str, Response]:
 def totp_login(token) -> Union[str, Response]:
     form = forms.TotpLoginForm()
     if form.validate_on_submit():
-        if token.user.totp.verify(form.totp_code.data):
+        if token.user.mfa.totp.verify(form.totp_code.data):
             db.session.delete(token)
             db.session.commit()
             return _login(token.user)
@@ -82,8 +82,8 @@ def webauthn_login(token) -> Union[str, Response]:
     authentication_options = webauthn.options_to_json(
         webauthn.generate_authentication_options(
             rp_id=flask.g.config.APP_NAME,
-            challenge=user.webauthn.challenge,
-            allow_credentials=user.webauthn.registrations,
+            challenge=user.mfa.webauthn.challenge,
+            allow_credentials=user.mfa.webauthn.registrations,
         )
     )
 
@@ -92,17 +92,17 @@ def webauthn_login(token) -> Union[str, Response]:
         try:
             authentication = webauthn.verify_authentication_response(
                 credential=form.credential_authentication_options.data,
-                expected_challenge=user.webauthn.challenge,
+                expected_challenge=user.mfa.webauthn.challenge,
                 expected_rp_id=flask.g.config.APP_NAME,
                 expected_origin=flask.g.config.BASE_URL,
-                credential_public_key=user.webauthn.public_key,
-                credential_current_sign_count=user.webauthn.credential_sign_count,
+                credential_public_key=user.mfa.webauthn.public_key,
+                credential_current_sign_count=user.mfa.webauthn.credential_sign_count,
             )
         except InvalidAuthenticationResponse as e:
             flask.flash(messages.WEBAUTHN_AUTHENTICATION_ERROR + f": {e}", category="error")
             return flask.redirect(flask.url_for(".login"))
         else:
-            user.webauthn.credential_sign_count = authentication.new_sign_count
+            user.mfa.webauthn.credential_sign_count = authentication.new_sign_count
             db.session.delete(token)
             db.session.add(user)
             db.session.commit()

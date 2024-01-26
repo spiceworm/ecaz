@@ -1,11 +1,11 @@
 import flask
 import flask_login
-import pyotp
 from werkzeug.wrappers import Response
 
 from application.constants import messages
 from application.models import (
     db,
+    Totp,
     WebAuthn,
 )
 from application.ui import forms
@@ -42,14 +42,14 @@ def delete_account() -> Response:
 
 @flask_login.login_required
 def disable_totp() -> Response:
-    totp = flask_login.current_user.totp
+    user = flask_login.current_user
+    totp = user.mfa.totp
     form = forms.TotpDisableForm()
     if form.validate_on_submit():
         if totp.enabled:
-            totp.enabled = False
-            # Reset secret so it is different if the user re-enables totp mfa
-            totp.secret = pyotp.random_base32()
-            db.session.add(totp)
+            # Reset Totp instance associated with current user
+            db.session.delete(totp)
+            db.session.add(Totp(mfa=user.mfa))
             db.session.commit()
             flask.flash(messages.TOTP_NOW_DISABLED)
         else:
@@ -59,13 +59,14 @@ def disable_totp() -> Response:
 
 @flask_login.login_required
 def disable_webauthn() -> Response:
-    _webauthn = flask_login.current_user.webauthn
+    user = flask_login.current_user
+    _webauthn = user.mfa.webauthn
     form = forms.WebAuthnDisableForm()
     if form.validate_on_submit():
         if _webauthn.enabled:
             # Reset WebAuthn instance associated with current user
             db.session.delete(_webauthn)
-            db.session.add(WebAuthn(user=flask_login.current_user))
+            db.session.add(WebAuthn(mfa=user.mfa))
             db.session.commit()
             flask.flash(messages.WEBAUTHN_NOW_DISABLED)
         else:

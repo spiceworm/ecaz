@@ -61,13 +61,13 @@
 
                 <fieldset>
                     <legend>Security</legend>
-                    {% if current_user.totp.enabled %}
+                    {% if current_user.mfa.totp.enabled %}
                         <form class="form-horizontal" action="{{ url_for('.disable_totp') }}" method="post">
                             {{ totp_disable_form.csrf_token }}
                             <div class="form-group">
                                 <label class="col-lg-2 control-label" for="totpDisable">Totp</label>
                                 <div class="col-lg-10">
-                                    {% if current_user.webauthn.enabled %}
+                                    {% if current_user.mfa.webauthn.enabled %}
                                         <span class="d-inline-block" tabindex="0" data-toggle="tooltip" title="WebAuthn will be used even though Totp is enabled">
                                             <button class="btn btn-danger" id="totpDisable">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
@@ -98,7 +98,7 @@
                         </div>
                     {% endif %}
 
-                    {% if current_user.webauthn.enabled %}
+                    {% if current_user.mfa.webauthn.enabled %}
                         <form class="form-horizontal" action="{{ url_for('.disable_webauthn') }}" method="post">
                             {{ webauthn_disable_form.csrf_token }}
                             <div class="form-group">

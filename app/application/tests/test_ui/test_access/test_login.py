@@ -116,7 +116,7 @@ def test_login_with_totp_mfa_enabled(client, user):
     redirects the user to their profile.
     """
     u = user()
-    u.totp.enabled = True
+    u.mfa.totp.enabled = True
     resp1 = client.post(
         "/login",
         follow_redirects=True,
@@ -132,7 +132,7 @@ def test_login_with_totp_mfa_enabled(client, user):
     resp2 = client.post(
         totp_login_url,
         follow_redirects=True,
-        data={"totp_code": u.totp.handler.now()},
+        data={"totp_code": u.mfa.totp.handler.now()},
     )
     assert len(resp2.history) == 1
     assert resp2.request.path == "/profile"
@@ -145,7 +145,7 @@ def test_login_with_invalid_totp_code(client, user):
     displays the correct error message.
     """
     u = user()
-    u.totp.enabled = True
+    u.mfa.totp.enabled = True
     resp1 = client.post(
         "/login",
         follow_redirects=True,
@@ -161,7 +161,7 @@ def test_login_with_invalid_totp_code(client, user):
     resp2 = client.post(
         totp_login_url,
         follow_redirects=True,
-        data={"totp_code": int(u.totp.handler.now()) + 1},
+        data={"totp_code": int(u.mfa.totp.handler.now()) + 1},
     )
     assert messages.TOTP_CODE_INVALID in resp2.data.decode()
     assert len(resp2.history) == 0
@@ -175,7 +175,7 @@ def test_access_mfa_login_page_if_already_authenticated(ui_user, mfa_type):
     redirects them to their profile.
     """
     user = ui_user()
-    getattr(user, mfa_type).enabled = True
+    getattr(user.mfa, mfa_type).enabled = True
     token = getattr(AuthToken, f"create_mfa_{mfa_type}_token")(user)
     resp = user.get(
         f"/login/mfa/{mfa_type}/{token.value}",
@@ -192,7 +192,7 @@ def test_access_mfa_login_page_with_invalid_jwt_in_url(client, user, mfa_type):
     the MFA action being attempted redirects the user to the login page.
     """
     u = user()
-    getattr(u, mfa_type).enabled = True
+    getattr(u.mfa, mfa_type).enabled = True
     token = AuthToken.create_email_verification_token(u)
     resp = client.get(
         f"/login/mfa/{mfa_type}/{token.value}",

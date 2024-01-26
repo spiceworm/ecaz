@@ -12,7 +12,7 @@
                 <fieldset>
                     <legend>Complete MFA Setup</legend>
                     <div class="text-center">
-                        <img src="data:image/png;base64, {{ current_user.totp.generate_qr_code() }}" style="width:200px;height:200px"/>
+                        <img src="data:image/png;base64, {{ current_user.mfa.totp.generate_qr_code() }}" style="width:200px;height:200px"/>
                     </div>
                     <div class="form-group">
                         <label class="col-lg-2 control-label" for="setup_secret">Setup Secret</label>

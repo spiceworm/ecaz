@@ -133,7 +133,7 @@ def test_disable_totp_when_enabled(ui_user):
     TOTP MFA.
     """
     user = ui_user()
-    user.totp.enabled = True
+    user.mfa.totp.enabled = True
     resp = user.post(
         "/settings/mfa/totp/disable",
         follow_redirects=True,
@@ -164,11 +164,12 @@ def test_disable_webauthn_when_enabled(ui_user):
     WebAuthn MFA.
     """
     user = ui_user()
-    user.webauthn.enabled = True
+    user.mfa.webauthn.enabled = True
     resp = user.post(
         "/settings/mfa/webauthn/disable",
         follow_redirects=True,
     )
+    print(resp.data.decode())
     assert messages.WEBAUTHN_NOW_DISABLED in resp.data.decode()
     assert len(resp.history) == 1
     assert resp.request.path == "/settings"

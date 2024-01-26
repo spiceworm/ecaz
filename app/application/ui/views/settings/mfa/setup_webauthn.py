@@ -17,7 +17,7 @@ __all__ = ("setup_webauthn",)
 @flask_login.login_required
 def setup_webauthn() -> Union[str, Response]:
     user = flask_login.current_user
-    if user.webauthn.enabled:
+    if user.mfa.webauthn.enabled:
         flask.flash(messages.WEBAUTHN_ALREADY_ENABLED, category="error")
         return flask.redirect(flask.url_for(".settings"))
 
@@ -26,23 +26,23 @@ def setup_webauthn() -> Union[str, Response]:
         try:
             registration = webauthn.verify_registration_response(
                 credential=form.credential_creation_options.data,
-                expected_challenge=user.webauthn.challenge,
+                expected_challenge=user.mfa.webauthn.challenge,
                 expected_origin=flask.g.config.BASE_URL,
                 expected_rp_id=flask.g.config.APP_NAME,
             )
         except InvalidRegistrationResponse as e:
             flask.flash(messages.WEBAUTHN_SETUP_VERIFICATION_ERROR + f": {e}", category="error")
         else:
-            registrations = user.webauthn.registrations
+            registrations = user.mfa.webauthn.registrations
             registrations.append(
                 {
                     "id": registration.credential_id,
                     "type": registration.credential_type.value,
                 }
             )
-            user.webauthn.registrations = registrations
-            user.webauthn.public_key = registration.credential_public_key
-            user.webauthn.enabled = True
+            user.mfa.webauthn.registrations = registrations
+            user.mfa.webauthn.public_key = registration.credential_public_key
+            user.mfa.webauthn.enabled = True
             db.session.add(user)
             db.session.commit()
             flask.flash(messages.WEBAUTHN_SETUP_VERIFICATION_SUCCESS)
@@ -50,12 +50,12 @@ def setup_webauthn() -> Union[str, Response]:
 
     registration_options = webauthn.options_to_json(
         webauthn.generate_registration_options(
-            challenge=user.webauthn.challenge,
-            exclude_credentials=user.webauthn.registrations,
+            challenge=user.mfa.webauthn.challenge,
+            exclude_credentials=user.mfa.webauthn.registrations,
             rp_id=flask.g.config.APP_NAME,
             rp_name=flask.g.config.APP_NAME,
             user_name=user.email,
-            user_id=user.webauthn.user_handle,
+            user_id=user.mfa.webauthn.user_handle,
         )
     )
 

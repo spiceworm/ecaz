@@ -15,9 +15,8 @@ from application.models import (
     db,
     Discussion,
     get_encryption_key,
-    Totp,
+    MFA,
     utcnow,
-    WebAuthn,
 )
 
 
@@ -88,17 +87,17 @@ class User(db.Model, flask_login.UserMixin):
         ),
         default=False,
     )
+    mfa: Mapped[List["MFA"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
     password = sa.Column(
         StringEncryptedType(
             key=get_encryption_key,
             padding="pkcs5",
         ),
         nullable=False,
-    )
-    totp: Mapped[List["Totp"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-        uselist=False,
     )
     username = sa.Column(
         StringEncryptedType(
@@ -109,19 +108,13 @@ class User(db.Model, flask_login.UserMixin):
         nullable=False,
         unique=True,
     )
-    webauthn: Mapped[List["WebAuthn"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         db.session.add_all(
             [
                 Discussion(user=self),
-                Totp(user=self),
-                WebAuthn(user=self),
+                MFA(user=self),
             ]
         )
         db.session.commit()

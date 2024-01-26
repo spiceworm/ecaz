@@ -25,8 +25,7 @@ def pg_utcnow(element, compiler, **kw) -> str:
 
 from .auth_token import *
 from .discussion import *
-from .totp import *
-from .webauthn import *
+from .mfa import *
 from .user import *
 
 
