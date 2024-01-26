@@ -4,5 +4,18 @@
 {% block content %}
     {{ super() }}
 
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{{ url_for('.login') }}">ECAZ</a>
+            </div>
+
+            <div id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{{ url_for('.login') }}">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     {{ messages() }}
 {% endblock %}
