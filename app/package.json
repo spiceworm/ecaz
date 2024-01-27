@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@github/webauthn-json": "^2.1.1"
+    "@github/webauthn-json": "^2.1.1",
+    "bootstrap-icons": "^1.11.3"
   }
 }

@@ -1,0 +1,26 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li class="active"><a href="{{ url_for('.view_topics') }}">topics</a></li>
+                <li><a href="{{ url_for('.create_topic') }}">[ new topic ]</a></li>
+            </ul>
+
+            <div class="well">
+                {% for topic in topics %}
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('.view_topic', topic=topic.name) }}">{{ topic.name }} | {{ topic.description }}</a>
+                            <span class="badge">{{ topic.threads | length }}</span>
+                        </li>
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

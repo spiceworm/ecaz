@@ -1,0 +1,43 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('.view_topics') }}">topic</a></li>
+                <li class="active">create</li>
+            </ul>
+
+            <div class="well">
+                <form class="form-horizontal" action="{{ url_for('.create_topic') }}" method="post">
+                    {{ form.csrf_token }}
+
+                    <fieldset>
+                        <legend>Create Topic</legend>
+                        <div class="form-group">
+                            <label for="name" class="col-lg-2 control-label">Name</label>
+                            <div class="col-lg-10">
+                                {{ form.name(class_="form-control") }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description" class="col-lg-2 control-label">Description</label>
+                            <div class="col-lg-10">
+                                {{ form.description(class_="form-control") }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="submit" class="col-lg-2 control-label"></label>
+                            <div class="col-lg-10">
+                                <button class="btn btn-primary" type="submit">Submit</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

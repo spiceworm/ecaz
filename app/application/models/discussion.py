@@ -3,11 +3,16 @@ from datetime import (
     datetime,
     timezone,
 )
+import functools
+import secrets
 from typing import (
     List,
     Union,
 )
 
+import humanize
+import markdown
+import slugify
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
@@ -30,6 +35,12 @@ __all__ = (
     "Thread",
     "Topic",
 )
+
+
+def default_thread_slug(ctx) -> str:
+    """Make `Thread.slug` default to a slug of `Thread.title`"""
+    title = ctx.get_current_parameters()["title"]
+    return slugify.slugify(title)
 
 
 # Association table for`discussion.subscriptions` <-> `topic.subscribers`
@@ -64,7 +75,56 @@ topic_moderators = db.Table(
 )
 
 
-class Ban(db.Model):
+class BodyMixin:
+    body = sa.Column(
+        sa.String,
+        nullable=False,
+    )
+
+    @property
+    def markdown_body(self) -> str:
+        return markdown.markdown(self.body)
+
+
+class CreatedAtMixin:
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=utcnow(),
+    )
+
+    @property
+    def humanized_created_at(self) -> str:
+        return humanize.naturaltime(self.created_at)
+
+
+class UniqueIdMixin:
+    unique_id = sa.Column(
+        sa.String,
+        nullable=False,
+        default=functools.partial(secrets.token_urlsafe, 16),
+        index=True,
+        unique=True,
+    )
+
+
+class VotingMixin:
+    UPVOTE = 1
+    DOWNVOTE = -1
+
+    def _create_vote(self, discussion: Discussion, value: int) -> Union[CommentVote, None]:
+        raise NotImplementedError
+
+    def downvote(self, discussion: Discussion) -> Union[CommentVote, ThreadVote]:
+        self.delete_vote(discussion)
+        return self._create_vote(discussion, self.DOWNVOTE)
+
+    def upvote(self, discussion: Discussion) -> Union[CommentVote, ThreadVote]:
+        self.delete_vote(discussion)
+        return self._create_vote(discussion, self.UPVOTE)
+
+
+class Ban(db.Model, CreatedAtMixin):
     """Object used to represent the action of banning a `User.discussion` from a `Topic`"""
 
     id: Mapped[int] = mapped_column(
@@ -78,12 +138,9 @@ class Ban(db.Model):
         sa.ForeignKey("topic.id"),
         nullable=False,
     )
-    created_at = db.Column(
-        db.DateTime(timezone=True),
-        nullable=False,
-        default=utcnow(),
+    created_by: Mapped["Discussion"] = relationship(
+        viewonly=True,
     )
-    created_by: Mapped["Discussion"] = relationship()
     discussion: Mapped["Discussion"] = relationship(
         back_populates="bans",
     )
@@ -116,16 +173,12 @@ class Ban(db.Model):
         )
 
 
-class Comment(db.Model):
+class Comment(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
     """Represents a single comment that could be a top level comment or a response to a parent comment"""
 
     id: Mapped[int] = mapped_column(
         nullable=False,
         primary_key=True,
-    )
-    body = sa.Column(
-        sa.String,
-        nullable=False,
     )
     discussion: Mapped["Discussion"] = relationship(
         back_populates="comments",
@@ -157,12 +210,66 @@ class Comment(db.Model):
         sa.ForeignKey("thread.id"),
         nullable=False,
     )
+    votes: Mapped[List["CommentVote"]] = relationship(
+        back_populates="comment",
+        cascade="all, delete-orphan",
+    )
 
-    def create_comment(self, *args, **kwargs) -> Comment:
-        c = Comment(*args, discussion=self.discussion, parent=self, thread=self.thread, **kwargs)
+    def create_comment(self, body: str, discussion: Discussion, **kwargs) -> Comment:
+        c = Comment(body=body, discussion=discussion, parent=self, thread=self.thread, **kwargs)
         db.session.add(c)
         db.session.commit()
         return c
+
+    def _create_vote(self, discussion: Discussion, value: int) -> Union[CommentVote, None]:
+        # Do not allow multiple votes from the same user
+        if not set(discussion.comment_votes).intersection(self.votes):
+            vote = CommentVote(comment=self, discussion=discussion, value=value)
+            db.session.add(vote)
+            db.session.commit()
+            return vote
+
+    def delete_vote(self, discussion: Discussion) -> None:
+        if votes := set(discussion.comment_votes).intersection(self.votes):
+            vote = votes.pop()
+            db.session.delete(vote)
+            db.session.commit()
+
+    def is_downvoted_by(self, discussion: Discussion) -> bool:
+        if votes := set(discussion.comment_votes).intersection(self.votes):
+            vote = votes.pop()
+            return vote.value == self.DOWNVOTE
+        return False
+
+    def is_upvoted_by(self, discussion: Discussion) -> bool:
+        if votes := set(discussion.comment_votes).intersection(self.votes):
+            vote = votes.pop()
+            return vote.value == self.UPVOTE
+        return False
+
+
+class CommentVote(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    comment: Mapped["Comment"] = relationship(
+        back_populates="votes",
+    )
+    comment_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("comment.id"),
+        nullable=False,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="comment_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
 
 
 class Discussion(db.Model):
@@ -209,32 +316,36 @@ class Discussion(db.Model):
         sa.ForeignKey("user.id"),
         nullable=False,
     )
-
-    def create_thread(self, *args, **kwargs) -> Thread:
-        t = Thread(*args, discussion=self, **kwargs)
-        db.session.add(t)
-        db.session.commit()
-        return t
+    comment_votes: Mapped[List["CommentVote"]] = relationship(
+        back_populates="discussion",
+        cascade="all, delete-orphan",
+    )
+    thread_votes: Mapped[List["ThreadVote"]] = relationship(
+        back_populates="discussion",
+        cascade="all, delete-orphan",
+    )
 
     def add_subscription(self, topic: Topic) -> None:
         self.subscriptions.append(topic)
         db.session.add(self)
         db.session.commit()
 
+    def create_thread(self, body: str, title: str, topic: Topic, **kwargs) -> Thread:
+        t = Thread(body=body, discussion=self, title=title, topic=topic, **kwargs)
+        db.session.add(t)
+        db.session.commit()
+        return t
 
-class Thread(db.Model):
+    def is_moderator_of(self, topic: Topic) -> bool:
+        return self in topic.moderators
+
+
+class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
     """Represents a discussion thread containing multiple comments"""
 
     id: Mapped[int] = mapped_column(
         nullable=False,
         primary_key=True,
-    )
-    topic: Mapped["Topic"] = relationship(
-        back_populates="threads",
-    )
-    topic_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("topic.id"),
-        nullable=False,
     )
     comments: Mapped[List["Comment"]] = relationship(
         back_populates="thread",
@@ -251,20 +362,90 @@ class Thread(db.Model):
         sa.Boolean,
         default=False,
     )
+    is_locked = sa.Column(
+        sa.Boolean,
+        default=False,
+    )
+    slug = sa.Column(
+        sa.String,
+        default=default_thread_slug,
+        nullable=False,
+    )
+    topic: Mapped["Topic"] = relationship(
+        back_populates="threads",
+    )
+    topic_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("topic.id"),
+        nullable=False,
+    )
     title = sa.Column(
         sa.String,
         nullable=False,
     )
+    votes: Mapped[List["ThreadVote"]] = relationship(
+        back_populates="thread",
+        cascade="all, delete-orphan",
+    )
 
-    def create_comment(self, *args, **kwargs) -> Comment:
-        c = Comment(*args, discussion=self.discussion, thread=self, **kwargs)
+    def create_comment(self, body: str, discussion: Discussion, **kwargs) -> Comment:
+        c = Comment(body=body, discussion=discussion, thread=self, **kwargs)
         db.session.add(c)
         db.session.commit()
         return c
 
+    def _create_vote(self, discussion: Discussion, value: int) -> Union[CommentVote, None]:
+        # Do not allow multiple votes from the same user
+        if not set(discussion.thread_votes).intersection(self.votes):
+            vote = ThreadVote(thread=self, discussion=discussion, value=value)
+            db.session.add(vote)
+            db.session.commit()
+            return vote
 
-class Topic(db.Model):
-    """Categories contain multiple threads that relate to a similar topic"""
+    def delete_vote(self, discussion: Discussion) -> None:
+        if votes := set(discussion.thread_votes).intersection(self.votes):
+            vote = votes.pop()
+            db.session.delete(vote)
+            db.session.commit()
+
+    def is_downvoted_by(self, discussion: Discussion) -> bool:
+        if votes := set(discussion.thread_votes).intersection(self.votes):
+            vote = votes.pop()
+            return vote.value == self.DOWNVOTE
+        return False
+
+    def is_upvoted_by(self, discussion: Discussion) -> bool:
+        if votes := set(discussion.thread_votes).intersection(self.votes):
+            vote = votes.pop()
+            return vote.value == self.UPVOTE
+        return False
+
+
+class ThreadVote(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="thread_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    thread: Mapped["Thread"] = relationship(
+        back_populates="votes",
+    )
+    thread_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("thread.id"),
+        nullable=False,
+    )
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
+
+
+class Topic(db.Model, CreatedAtMixin):
+    """Topics contain multiple threads that relate to a similar topic"""
 
     id: Mapped[int] = mapped_column(
         nullable=False,
@@ -291,6 +472,7 @@ class Topic(db.Model):
     )
     name = sa.Column(
         sa.String,
+        index=True,
         nullable=False,
         unique=True,
     )
@@ -308,11 +490,17 @@ class Topic(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def create_ban(self, *args, created_by: Discussion, discussion: Discussion, **kwargs) -> Ban:
+    def create_ban(self, created_by: Discussion, discussion: Discussion, **kwargs) -> Ban:
         if created_by in self.moderators:
-            ban = Ban(*args, created_by=created_by, discussion=discussion, topic=self, **kwargs)
+            ban = Ban(created_by=created_by, discussion=discussion, topic=self, **kwargs)
             db.session.add(ban)
             db.session.commit()
             return ban
         else:
             raise ModeratorRequired(f"{created_by.user} is not a moderator of {self.name}")
+
+    def create_thread(self, body: str, title: str, discussion: Discussion, **kwargs) -> Thread:
+        thread = Thread(body=body, discussion=discussion, title=title, topic=self, **kwargs)
+        db.session.add(thread)
+        db.session.commit()
+        return thread

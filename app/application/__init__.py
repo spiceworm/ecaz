@@ -139,10 +139,17 @@ def create_app() -> flask.Flask:
         such as when someone reconnects to a "remember me" session"""
         return db.session.get(User, user_id)
 
+    @app.errorhandler(HTTPStatus.NOT_FOUND)
+    def page_not_found_handler(e):
+        return flask.make_response(
+            flask.jsonify(error=HTTPStatus.NOT_FOUND.phrase),
+            HTTPStatus.NOT_FOUND,
+        )
+
     @app.errorhandler(HTTPStatus.TOO_MANY_REQUESTS)
     def ratelimit_handler(e):
         return flask.make_response(
-            flask.jsonify(error="Rate limit exceeded"),
+            flask.jsonify(error=HTTPStatus.TOO_MANY_REQUESTS.phrase),
             HTTPStatus.TOO_MANY_REQUESTS,
         )
 

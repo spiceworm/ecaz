@@ -11,5 +11,6 @@ __all__ = ("profile",)
 def profile() -> str:
     return flask.render_template(
         "profile.html",
+        create_thread_form=forms.CreateThreadForm(),
         logout_form=forms.LogoutForm(),
     )

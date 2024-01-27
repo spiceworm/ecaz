@@ -1,0 +1,88 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+{% endblock %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('.view_topics') }}">topics</a></li>
+                <li class="active"><a href="{{ url_for('.view_topic', topic=topic.name) }}">{{ topic.name }}</a></li>
+                <li><a href="{{ url_for('.create_thread', topic=topic.name) }}">[ new thread ]</a></li>
+            </ul>
+
+            <div class="well">
+                {% if topic.threads %}
+                    {% for thread in topic.threads %}
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                {% if current_user.is_authenticated %}
+                                    <a onclick="upvote(this, action='upvote', obj='thread', unique_id='{{ thread.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                        {% if thread.is_upvoted_by(current_user.discussion) %}
+                                            <i class="bi bi-arrow-up-square-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-arrow-up-square"></i>
+                                        {% endif %}
+                                    </a>
+                                    <a onclick="downvote(this, action='downvote', obj='thread', unique_id='{{ thread.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                        {% if thread.is_downvoted_by(current_user.discussion) %}
+                                            <i class="bi bi-arrow-down-square-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-arrow-down-square"></i>
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('.view_thread', topic=topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">{{ thread.title }}</a>
+                                <span class="badge">{{ thread.comments | length }}</span>
+                            </li>
+                        </ul>
+                    {% endfor %}
+                {% else %}
+                    <p>No threads exist yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block right_panel%}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <div class="form-horizontal">
+                <fieldset>
+                    <legend>
+                        Information
+                        <button class="btn btn-link" style="float: right">Subscribe</button>
+                    </legend>
+                    <div class="form-group">
+                        <div class="col-lg-10">
+                            <p title="{{ topic.created_at }}">Topic Created: {{ topic.humanized_created_at }}</p>
+                            <p>Subscribers: {{ topic.subscribers | length }}</p>
+                            <p>Threads: {{ topic.threads | length }}</p>
+                            <p>Moderators:</p>
+                            <ul>
+                                {% for discussion in topic.moderators %}
+                                    <li>
+                                        {{ discussion.user.username }}
+                                        {% if current_user.is_authenticated and current_user.discussion == discussion %}
+                                            <button class="btn btn-link">Moderator Tools</button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <p>Description: {{ topic.description }}</p>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+{% endblock %}

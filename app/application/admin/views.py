@@ -21,7 +21,7 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
     def render(self, template, **kwargs) -> str:
         return super().render(
             template,
-            BASE_URL=flask.current_app.config['BASE_URL'],
+            BASE_URL=flask.current_app.config["BASE_URL"],
             **kwargs,
         )
 

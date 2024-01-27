@@ -1,0 +1,43 @@
+{% extends "bases/base.html" %}
+
+
+{% block content %}
+    {{ super() }}
+    <div class="col-lg-3">
+        <div style="overflow-y: scroll; height: 90vh">
+            {% if current_user.is_authenticated %}
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="form-horizontal">
+                            <fieldset>
+                                <legend>Subscriptions</legend>
+                                <ul class="list-group">
+                                    {% for topic in current_user.discussion.subscriptions %}
+                                        <li class="list-group-item">
+                                            <a href="{{ url_for('.view_topic', topic=topic.name) }}">{{ topic.name }}</a>
+                                            <span class="badge">
+                                                <a>Remove</a>
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div style="overflow-y: scroll; height: 90vh">
+            {% block middle_panel %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div style="overflow-y: scroll; height: 90vh">
+            {% block right_panel %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

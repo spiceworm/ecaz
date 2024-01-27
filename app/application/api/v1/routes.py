@@ -12,6 +12,10 @@ from flask_jwt_extended import (
 from application.constants import messages
 from application.models import User
 from application.util import generate_random_username
+from application.api.v1.discussion import api_discussion_bp
+
+
+__all__ = ("api_v1_bp",)
 
 
 api_v1_bp = flask.Blueprint(
@@ -19,6 +23,7 @@ api_v1_bp = flask.Blueprint(
     __name__,
     url_prefix="/v1",
 )
+api_v1_bp.register_blueprint(api_discussion_bp)
 
 
 class EmailApi(flask_restful.Resource):

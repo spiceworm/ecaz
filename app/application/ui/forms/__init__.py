@@ -13,5 +13,6 @@ class BaseForm(flask_wtf.FlaskForm):
 
 
 from .access import *
+from .discussion import *
 from .profile import *
 from .settings import *

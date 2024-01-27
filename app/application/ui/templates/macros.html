@@ -22,3 +22,61 @@
         {% endif %}
     {% endwith %}
 {% endmacro %}
+
+{% macro render_comment(current_user, comment, form, thread) %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div>
+                {% if current_user.is_authenticated %}
+                    <a onclick="upvote(this, action='upvote', obj='comment', unique_id='{{ comment.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                        {% if comment.is_upvoted_by(current_user.discussion) %}
+                            <i class="bi bi-arrow-up-square-fill"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-up-square"></i>
+                        {% endif %}
+                    </a>
+                    <a onclick="downvote(this, action='downvote', obj='comment', unique_id='{{ comment.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                        {% if comment.is_downvoted_by(current_user.discussion) %}
+                            <i class="bi bi-arrow-down-square-fill"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-down-square"></i>
+                        {% endif %}
+                    </a>
+                {% endif %}
+                <small><a onclick="toggleCommentFolding(this);">[-]</a></small>
+                <small>{{ comment.discussion.user.username }}, {{ comment.humanized_created_at }}</small>
+            </div>
+            <div style="display: block">
+                <p>{{ comment.markdown_body | safe }}</p>
+                <small><a onclick="showReplyForm(this);">Reply</a></small>
+                <small><a>Save</a></small>
+                <small><a>Report</a></small>
+                {% if comment.discussion == current_user.discussion %}
+                    <small><a>Delete</a></small>
+                {% endif %}
+
+                <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
+                    {{ form.csrf_token }}
+
+                    <fieldset>
+                        <div class="form-group">
+                            <div class="col-lg-12">
+                                {{ form.body(class_="form-control") }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-12">
+                                <button class="btn btn-default" type="submit">Save</button>
+                                <button class="btn btn-default" type="button" onclick="hideReplyForm(this); return false;">Cancel</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+
+                {% for response in comment.responses %}
+                    {{ render_comment(current_user, response, form, thread) }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}

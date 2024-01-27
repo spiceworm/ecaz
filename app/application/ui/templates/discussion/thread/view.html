@@ -1,0 +1,66 @@
+{% extends "bases/discussion_base.html" %}
+{% from "macros.html" import render_comment %}
+
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+{% endblock %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('.view_topics') }}">topics</a></li>
+                <li><a href="{{ url_for('.view_topic', topic=thread.topic.name) }}">{{ thread.topic.name }}</a></li>
+                <li class="active">{{ thread.slug }}</li>
+            </ul>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="panel-heading">
+                        <h3>{{ thread.title }}</h3>
+                        <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
+                    </div>
+                    <div class="panel-body">
+                        {{ thread.markdown_body | safe }}
+                    </div>
+
+                    <small><a>Save</a></small>
+                    <small><a>Report</a></small>
+                    {% if thread.discussion == current_user.discussion %}
+                        <small><a>Delete</a></small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form class="form-horizontal" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
+                {{ form.csrf_token }}
+
+                <fieldset>
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            {{ form.body(class_="form-control input-lg") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            <button class="btn btn-default" type="submit">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+            {% for comment in thread.comments %}
+                <!-- Only pass top level comments. All responses comments will be rendered recursively in the macro. -->
+                {% if not comment.parent %}
+                    {{ render_comment(current_user, comment, form, thread) }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
