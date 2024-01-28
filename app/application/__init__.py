@@ -130,7 +130,7 @@ def create_app() -> flask.Flask:
     @app.errorhandler(Exception)
     def handle_exception(e):
         flask.flash(str(e), category="error")
-        return flask.redirect(flask.url_for("ui_bp.login"))
+        return flask.redirect(flask.url_for("ui_bp.error"))
 
     @login_manager.user_loader
     def load_user(user_id):
