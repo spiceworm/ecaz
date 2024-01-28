@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 
 from application.constants import messages
@@ -60,8 +62,8 @@ def test_login_with_bad_next_url_param(client, user):
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
-    assert len(resp.history) == 3
-    assert resp.request.path == "/profile"
+    assert len(resp.history) == 1
+    assert resp.json == {"error": HTTPStatus.NOT_FOUND.phrase}
 
 
 def test_login_with_delete_account_pending(client, user):
