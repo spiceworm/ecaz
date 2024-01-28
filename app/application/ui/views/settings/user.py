@@ -47,9 +47,6 @@ def change_username() -> Response:
         db.session.commit()
         flask.flash(messages.USERNAME_UPDATE_SUCCESS, category="success")
 
-    for field, errors in form.errors.items():
-        flask.flash(f"{field}: {', '.join(errors)}", category="error")
-
     return flask.redirect(flask.url_for(".settings"))
 
 

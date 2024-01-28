@@ -1,14 +1,15 @@
-import flask_wtf
 from wtforms import (
     PasswordField,
     validators,
 )
 
+from application.ui.forms import BaseForm
+
 
 __all__ = ("ResetPasswordForm",)
 
 
-class ResetPasswordForm(flask_wtf.FlaskForm):
+class ResetPasswordForm(BaseForm):
     password1 = PasswordField(
         "password1",
         render_kw={"placeholder": "New Password"},

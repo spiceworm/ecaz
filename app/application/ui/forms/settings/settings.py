@@ -1,4 +1,3 @@
-import flask_wtf
 from wtforms import (
     EmailField,
     PasswordField,
@@ -6,6 +5,7 @@ from wtforms import (
     validators,
 )
 
+from application.ui.forms import BaseForm
 from application.ui.forms.validators import unique_username
 
 
@@ -19,7 +19,7 @@ __all__ = (
 )
 
 
-class ChangePasswordForm(flask_wtf.FlaskForm):
+class ChangePasswordForm(BaseForm):
     password1 = PasswordField(
         "password1",
         render_kw={"placeholder": "New Password"},
@@ -38,7 +38,7 @@ class ChangePasswordForm(flask_wtf.FlaskForm):
     )
 
 
-class ChangeUsernameForm(flask_wtf.FlaskForm):
+class ChangeUsernameForm(BaseForm):
     username = StringField(
         "username",
         render_kw={"placeholder": "Username"},
@@ -49,20 +49,20 @@ class ChangeUsernameForm(flask_wtf.FlaskForm):
     )
 
 
-class DeleteAccountForm(flask_wtf.FlaskForm):
+class DeleteAccountForm(BaseForm):
     pass
 
 
-class EmailForm(flask_wtf.FlaskForm):
+class EmailForm(BaseForm):
     email = EmailField(
         "email",
         render_kw={"readonly": True},
     )
 
 
-class TotpDisableForm(flask_wtf.FlaskForm):
+class TotpDisableForm(BaseForm):
     pass
 
 
-class WebAuthnDisableForm(flask_wtf.FlaskForm):
+class WebAuthnDisableForm(BaseForm):
     pass

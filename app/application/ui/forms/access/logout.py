@@ -1,8 +1,8 @@
-import flask_wtf
+from application.ui.forms import BaseForm
 
 
 __all__ = ("LogoutForm",)
 
 
-class LogoutForm(flask_wtf.FlaskForm):
+class LogoutForm(BaseForm):
     pass

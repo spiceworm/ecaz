@@ -29,7 +29,4 @@ def register() -> Union[str, Response]:
         flask_login.login_user(user)
         return flask.redirect(flask.url_for(".profile"))
 
-    for field, errors in form.errors.items():
-        flask.flash(f"{field}: {', '.join(errors)}", category="error")
-
     return flask.render_template("access/register.html", form=form)

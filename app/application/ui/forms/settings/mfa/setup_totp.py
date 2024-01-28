@@ -1,14 +1,15 @@
-import flask_wtf
 from wtforms import (
     StringField,
     validators,
 )
 
+from application.ui.forms import BaseForm
+
 
 __all__ = ("SetupTotpForm",)
 
 
-class SetupTotpForm(flask_wtf.FlaskForm):
+class SetupTotpForm(BaseForm):
     setup_secret = StringField(
         "setup_secret",
         render_kw={"disabled": True},

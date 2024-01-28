@@ -1,10 +1,11 @@
-import flask_wtf
 from wtforms import (
     IntegerField,
     SelectField,
     StringField,
     validators,
 )
+
+from application.ui.forms import BaseForm
 
 
 __all__ = (
@@ -13,7 +14,7 @@ __all__ = (
 )
 
 
-class CreateAuthTokenForm(flask_wtf.FlaskForm):
+class CreateAuthTokenForm(BaseForm):
     EXPIRES_NEVER = "Never"
     EXPIRES_UNIT_MICROSECONDS = "Microseconds"
     EXPIRES_UNIT_MILLISECONDS = "Milliseconds"
@@ -49,7 +50,7 @@ class CreateAuthTokenForm(flask_wtf.FlaskForm):
     )
 
 
-class DeleteAuthTokenForm(flask_wtf.FlaskForm):
+class DeleteAuthTokenForm(BaseForm):
     id = IntegerField(
         "id",
         validators=[validators.DataRequired()],

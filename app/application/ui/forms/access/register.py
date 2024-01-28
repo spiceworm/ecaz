@@ -1,4 +1,3 @@
-import flask_wtf
 from wtforms import (
     PasswordField,
     StringField,
@@ -6,6 +5,7 @@ from wtforms import (
 )
 from wtforms.fields import EmailField
 
+from application.ui.forms import BaseForm
 from application.ui.forms.validators import (
     unique_email,
     unique_username,
@@ -16,7 +16,7 @@ from application.util import generate_random_username
 __all__ = ("RegisterForm",)
 
 
-class RegisterForm(flask_wtf.FlaskForm):
+class RegisterForm(BaseForm):
     email = EmailField(
         "email",
         render_kw={"placeholder": "Email"},

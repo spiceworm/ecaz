@@ -1,15 +1,16 @@
-import flask_wtf
 from wtforms import (
     PasswordField,
     validators,
 )
 from wtforms.fields import EmailField
 
+from application.ui.forms import BaseForm
+
 
 __all__ = ("LoginForm",)
 
 
-class LoginForm(flask_wtf.FlaskForm):
+class LoginForm(BaseForm):
     email = EmailField(
         "email",
         render_kw={"placeholder": "Email"},
