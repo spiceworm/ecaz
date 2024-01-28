@@ -6,6 +6,8 @@ from wtforms import (
     validators,
 )
 
+from application.ui.forms.validators import unique_username
+
 
 __all__ = (
     "ChangePasswordForm",
@@ -42,6 +44,7 @@ class ChangeUsernameForm(flask_wtf.FlaskForm):
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),
+            unique_username,
         ],
     )
 

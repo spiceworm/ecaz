@@ -18,5 +18,6 @@ psycopg2-binary==2.9.9  # sqlalchemy does not support psycopg[binary,pool] yet
 pyotp==2.9.0
 python-decouple==3.8
 qrcode==7.4.2
+random-username==1.0.2
 sqlalchemy-utils==0.41.1
 webauthn==2.0.0

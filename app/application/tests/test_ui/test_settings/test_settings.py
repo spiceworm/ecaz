@@ -72,7 +72,7 @@ def test_change_username_to_duplicate(ui_user):
     ui_user(email="user1@test.com", password="password1", username=duplicate_username)
 
     user = ui_user(email="user2@test.com", password="password2")
-    old_username = user.email
+    old_username = user.username
     resp = user.post(
         "/settings/user/username",
         follow_redirects=True,

@@ -18,14 +18,10 @@ from application.models import (
     MFA,
     utcnow,
 )
+from application.util import generate_random_username
 
 
 __all__ = ("User",)
-
-
-def default_username(ctx) -> str:
-    """Make `User.username` default to the value of `User.email`"""
-    return ctx.get_current_parameters()["email"]
 
 
 class User(db.Model, flask_login.UserMixin):
@@ -104,7 +100,7 @@ class User(db.Model, flask_login.UserMixin):
             key=get_encryption_key,
             padding="pkcs5",
         ),
-        default=default_username,
+        default=generate_random_username,
         nullable=False,
         unique=True,
     )

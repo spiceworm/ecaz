@@ -11,6 +11,7 @@ from flask_jwt_extended import (
 
 from application.constants import messages
 from application.models import User
+from application.util import generate_random_username
 
 
 api_v1_bp = flask.Blueprint(
@@ -37,6 +38,14 @@ class EmailApi(flask_restful.Resource):
         else:
             status = False
         return {"status": status}
+
+
+class GenerateUsernameApi(flask_restful.Resource):
+    def get(self):
+        username = generate_random_username()
+        while User.query.filter_by(username=username).one_or_none():
+            username = generate_random_username()
+        return {"username": username}
 
 
 class StatusApi(flask_restful.Resource):
@@ -69,6 +78,7 @@ class UserApi(flask_restful.Resource):
 
 api = flask_restful.Api(api_v1_bp)
 api.add_resource(EmailApi, "/email")
+api.add_resource(GenerateUsernameApi, "/generate-username")
 api.add_resource(StatusApi, "/status")
 api.add_resource(TerminalApi, "/terminal")
 api.add_resource(UserApi, "/user")
