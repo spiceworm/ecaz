@@ -14,9 +14,7 @@ __all__ = ("create_comment",)
 
 
 @flask_login.login_required
-def create_comment(
-    topic: str, thread_unique_id: str, slug: str, parent_unique_id: str
-) -> Union[str, flask.Response]:
+def create_comment(topic: str, thread_unique_id: str, slug: str, parent_unique_id: str) -> Union[str, flask.Response]:
     form = forms.CreateCommentForm()
     if form.validate_on_submit():
         thread = Thread.query.filter_by(unique_id=thread_unique_id).one_or_none()

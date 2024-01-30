@@ -15,14 +15,9 @@ GET = "GET"
 POST = "POST"
 
 ui_bp.add_url_rule("/", view_func=views.login, methods=[GET, POST])
-
 ui_bp.add_url_rule("/discussion/topics", view_func=views.view_topics, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>", view_func=views.view_topic, methods=[GET])
-ui_bp.add_url_rule(
-    "/discussion/topics/<topic>/<thread_unique_id>/<slug>",
-    view_func=views.view_thread,
-    methods=[GET],
-)
+ui_bp.add_url_rule("/discussion/topics/<topic>/<thread_unique_id>/<slug>", view_func=views.view_thread, methods=[GET])
 ui_bp.add_url_rule("/discussion/topic", view_func=views.create_topic, methods=[GET, POST])
 ui_bp.add_url_rule("/discussion/topic/<topic>", view_func=views.create_thread, methods=[GET, POST])
 ui_bp.add_url_rule(
@@ -30,7 +25,6 @@ ui_bp.add_url_rule(
     view_func=views.create_comment,
     methods=[POST],
 )
-
 ui_bp.add_url_rule("/error", view_func=views.error, methods=[GET])
 ui_bp.add_url_rule("/forgot_password", view_func=views.forgot_password, methods=[GET, POST])
 ui_bp.add_url_rule("/login", view_func=views.login, methods=[GET, POST])
@@ -51,9 +45,5 @@ ui_bp.add_url_rule("/settings/user/username", view_func=views.change_username, m
 ui_bp.add_url_rule("/settings/account/delete", view_func=views.delete_account, methods=[POST])
 ui_bp.add_url_rule("/settings/mfa/totp/disable", view_func=views.disable_totp, methods=[POST])
 ui_bp.add_url_rule("/settings/mfa/totp/setup", view_func=views.setup_totp, methods=[GET, POST])
-ui_bp.add_url_rule(
-    "/settings/mfa/webauthn/disable", view_func=views.disable_webauthn, methods=[POST]
-)
-ui_bp.add_url_rule(
-    "/settings/mfa/webauthn/setup", view_func=views.setup_webauthn, methods=[GET, POST]
-)
+ui_bp.add_url_rule("/settings/mfa/webauthn/disable", view_func=views.disable_webauthn, methods=[POST])
+ui_bp.add_url_rule("/settings/mfa/webauthn/setup", view_func=views.setup_webauthn, methods=[GET, POST])

@@ -20,9 +20,7 @@ def test_create_admin_using_invalid_email(cli_runner):
     """
     Verify `flask cli create-admin --email <bad-email> --password <password>` produces an error.
     """
-    result = cli_runner.invoke(
-        args=["cli", "create-admin", "--email", "not-an-email", "--password", "the-password"]
-    )
+    result = cli_runner.invoke(args=["cli", "create-admin", "--email", "not-an-email", "--password", "the-password"])
     assert messages.INVALID_EMAIL_ADDRESS in result.output
 
 

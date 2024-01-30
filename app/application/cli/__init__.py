@@ -71,9 +71,9 @@ def mark_admin(email):
     """
     Update an existing `User` such that `User.admin == True`
     """
-    user = User.query.filter(User.email == email).one_or_none()
-    if not user:
+    if user := User.query.filter(User.email == email).one_or_none():
+        user.is_admin = True
+        db.session.add(user)
+        db.session.commit()
+    else:
         raise click.UsageError(messages.NO_USER_FOR_PROVIDED_EMAIL)
-    user.is_admin = True
-    db.session.add(user)
-    db.session.commit()

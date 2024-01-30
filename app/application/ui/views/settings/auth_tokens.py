@@ -37,9 +37,7 @@ def create_auth_token() -> Response:
         if expires_unit == form.EXPIRES_NEVER:
             expires_delta = False
         else:
-            expires_delta = datetime.timedelta(
-                **{expires_unit.lower(): int(form.expires_number.data)}
-            )
+            expires_delta = datetime.timedelta(**{expires_unit.lower(): int(form.expires_number.data)})
 
         AuthToken.create(
             user=user,

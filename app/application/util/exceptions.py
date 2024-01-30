@@ -1,12 +1,12 @@
 __all__ = (
-    "EcazException",
+    "AppException",
     "ModeratorRequired",
 )
 
 
-class EcazException(Exception):
+class AppException(Exception):
     pass
 
 
-class ModeratorRequired(EcazException):
+class ModeratorRequired(AppException):
     pass

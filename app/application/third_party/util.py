@@ -28,9 +28,7 @@ def url_has_allowed_host_and_scheme(url, allowed_hosts, require_https=False):
     # basic auth credentials so we need to check both URLs.
     return _url_has_allowed_host_and_scheme(
         url, allowed_hosts, require_https=require_https
-    ) and _url_has_allowed_host_and_scheme(
-        url.replace("\\", "/"), allowed_hosts, require_https=require_https
-    )
+    ) and _url_has_allowed_host_and_scheme(url.replace("\\", "/"), allowed_hosts, require_https=require_https)
 
 
 # Copied from https://github.com/django/django/blob/5.0/django/utils/http.py#L273
@@ -59,6 +57,4 @@ def _url_has_allowed_host_and_scheme(url, allowed_hosts, require_https=False):
     if not url_info.scheme and url_info.netloc:
         scheme = "http"
     valid_schemes = ["https"] if require_https else ["http", "https"]
-    return (not url_info.netloc or url_info.netloc in allowed_hosts) and (
-        not scheme or scheme in valid_schemes
-    )
+    return (not url_info.netloc or url_info.netloc in allowed_hosts) and (not scheme or scheme in valid_schemes)
