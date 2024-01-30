@@ -27,11 +27,3 @@ from .auth_token import *
 from .discussion import *
 from .mfa import *
 from .user import *
-
-
-@sa.event.listens_for(db.session, "loaded_as_persistent")
-def receive_loaded_as_persistent(session, instance):
-    """Automatically delete expired `AuthToken` entries."""
-    if isinstance(instance, AuthToken) and instance.is_expired:
-        session.delete(instance)
-        session.commit()

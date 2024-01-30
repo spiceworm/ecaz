@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from application.models import (
@@ -36,6 +38,15 @@ def test_frontend_tokens(user):
     t2_value = t2.value
     assert AuthToken.FRONTEND_TAG in t1.tags
     assert t1_value != t2_value
+
+
+def test_humanized_created_at(user):
+    """
+    Test `User.humanized_created_at` property.
+    """
+    u = user()
+    u.created_at -= timedelta(minutes=10)
+    assert u.humanized_created_at == "10 minutes ago"
 
 
 def test_public_auth_tokens(user):

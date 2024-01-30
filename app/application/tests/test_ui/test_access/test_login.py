@@ -81,6 +81,24 @@ def test_login_with_delete_account_pending(client, user):
     assert messages.DELETE_ACCOUNT_PENDING in resp.data.decode()
 
 
+def test_login_with_mfa_where_webauthn_supercedes_totp(client, user):
+    """
+    Verify that if a user has both totp and webauthn mfa enabled for their
+    account that webauthn is used as it is a more secure form of mfa.
+    """
+    u = user()
+    u.mfa.totp.enabled = True
+    u.mfa.webauthn.enabled = True
+    resp = client.post(
+        "/login",
+        follow_redirects=True,
+        data={"email": u.email, "password": u.password},
+    )
+    token = [t for t in u.auth_tokens if t.WEBAUTHN_MFA_TAG in t.tags][0]
+    assert len(resp.history) == 1
+    assert resp.request.path == f"/login/mfa/webauthn/{token.value}"
+
+
 def test_login_with_valid_next_url_param(client, user):
     """
     Verify an unauthenticated user who tries to navigate to a route requiring

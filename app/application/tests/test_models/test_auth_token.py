@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from application.models import AuthToken
+from application.models import AuthToken, db
 
 
 def test_create(user):
@@ -39,6 +39,23 @@ def test_action_specific_tokens(user, method, tag):
     assert token.tags == [AuthToken.HIDDEN_TAG, tag]
 
 
+@pytest.mark.parametrize(
+    "expires_delta, exp",
+    [
+        (False, "Never"),
+        (timedelta(hours=-1), "Expired"),
+        (timedelta(days=6, minutes=1), "6 days"),
+    ],
+)
+def test_humanized_expires_in(user, expires_delta, exp):
+    """
+    Test `AuthToken.humanized_expires_in` property.
+    """
+    u = user()
+    t = AuthToken.create(user=u, name="t", expires_delta=expires_delta)
+    assert t.humanized_expires_in == exp
+
+
 def test_is_expired(user):
     """
     Verify `AuthToken.is_expired` attribute behavior for a token with an expiration.
@@ -58,6 +75,21 @@ def test_is_expired_if_never_expires(user):
     u = user()
     token = AuthToken.create(name="t", user=u)
     assert token.is_expired is False
+
+
+def test_receive_loaded_as_persistent(user):
+    """
+    Verify `AuthToken`s are automatically deleted by the "loaded_as_persistent" database
+    event if the `AuthToken` is expired.
+    """
+    u = user()
+    name = "expired-token"
+    t1 = AuthToken.create(user=u, name=name, expires_delta=timedelta(minutes=-1))
+    assert t1.is_expired
+    db.session.expunge(t1)
+    t2 = AuthToken.query.filter_by(name=name).one()
+    assert t2.name == name
+    assert AuthToken.query.filter_by(name=name).count() == 0
 
 
 def test_tags_when_token_expired(user):
