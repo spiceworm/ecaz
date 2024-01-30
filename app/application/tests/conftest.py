@@ -9,12 +9,15 @@ from application import create_app
 from application.models import (
     AuthToken,
     db,
+    Topic,
     User,
 )
 
 
 DEFAULT_EMAIL = "default-email@test.com"
 DEFAULT_PASSWORD = "default-password"
+DEFAULT_TOPIC_DESCRIPTION = "Topic description"
+DEFAULT_TOPIC_NAME = "Topic name"
 
 
 class _UiUser:
@@ -124,6 +127,20 @@ def mock_email_send(monkeypatch):
     # Return `patch_send` so we can change the return value of send to something
     # other than `True` if needed.
     return patch_send
+
+
+@pytest.fixture
+def topic():
+    def func(name=DEFAULT_TOPIC_NAME, description=DEFAULT_TOPIC_DESCRIPTION, **kwargs):
+        _topic = Topic(
+            name=name,
+            description=description,
+            **kwargs,
+        )
+        db.session.add(_topic)
+        db.session.commit()
+        return _topic
+    return func
 
 
 @pytest.fixture()

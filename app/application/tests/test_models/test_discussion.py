@@ -7,11 +7,7 @@ from datetime import (
 import pytest
 import sqlalchemy as sa
 
-from application.models import (
-    Ban,
-    db,
-    Topic,
-)
+from application.models import Ban
 from application.util.exceptions import ModeratorRequired
 
 
@@ -24,65 +20,53 @@ from application.util.exceptions import ModeratorRequired
     ],
 )
 class TestBanIsActive:
-    def test_hybrid_property(self, user, expires_at, is_active):
+    def test_hybrid_property(self, topic, user, expires_at, is_active):
         d1 = user(email="1@test.com").discussion
         d2 = user(email="2@test.com").discussion
-        topic = Topic(name="Topic", moderators=[d1])
-        db.session.add(topic)
-        db.session.commit()
-        b = topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
+        _topic = topic(moderators=[d1])
+        b = _topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
         assert b.is_active is is_active
 
-    def test_hybrid_property_expression(self, user, expires_at, is_active):
+    def test_hybrid_property_expression(self, topic, user, expires_at, is_active):
         d1 = user(email="1@test.com").discussion
         d2 = user(email="2@test.com").discussion
-        topic = Topic(name="Topic", moderators=[d1])
-        db.session.add(topic)
-        db.session.commit()
-        b = topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
+        _topic = topic(moderators=[d1])
+        b = _topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
         expected_bool = sa.true() if is_active else sa.false()
         assert Ban.query.filter(Ban.is_active == expected_bool).all() == [b]
 
 
-def test_comment_is_downvoted_by(user):
+def test_comment_is_downvoted_by(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    db.session.add(topic)
-    db.session.commit()
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     c = t.create_comment(body="body", discussion=d)
     c.downvote(discussion=d)
     assert c.is_downvoted_by(d)
 
 
-def test_comment_is_upvoted_by(user):
+def test_comment_is_upvoted_by(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    db.session.add(topic)
-    db.session.commit()
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     c = t.create_comment(body="body", discussion=d)
     c.upvote(discussion=d)
     assert c.is_upvoted_by(d)
 
 
-def test_create_ban_as_non_moderator(user):
+def test_create_ban_as_non_moderator(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    topic = Topic(name="Test")
-    db.session.add(topic)
-    db.session.commit()
+    _topic = topic()
     with pytest.raises(ModeratorRequired):
-        topic.create_ban(created_by=d1, discussion=d2)
+        _topic.create_ban(created_by=d1, discussion=d2)
 
 
-def test_relation_comments_to_responses(user):
+def test_relation_comments_to_responses(topic, user):
     u = user()
     d = u.discussion
-    topic = Topic(name="Topic 1")
-    db.session.add(topic)
-    db.session.commit()
-    t = d.create_thread(body="body", title="thread 1", topic=topic)
+    _topic = topic()
+    t = d.create_thread(body="body", title="thread 1", topic=_topic)
     c = t.create_comment(body="comment 1", discussion=d)
     r1 = c.create_comment(body="response 1", discussion=d)
     r2 = c.create_comment(body="response 2", discussion=d)
@@ -91,16 +75,14 @@ def test_relation_comments_to_responses(user):
     assert r1.parent is c
     assert r2.parent is c
     assert t.comments == [c, r1, r2]
-    assert t.topic is topic
+    assert t.topic is _topic
 
 
-def test_relation_discussion_to_threads(user):
+def test_relation_discussion_to_threads(topic, user):
     u = user()
     d = u.discussion
-    topic1 = Topic(name="Topic 1")
-    topic2 = Topic(name="Topic 2")
-    db.session.add_all([topic1, topic2])
-    db.session.commit()
+    topic1 = topic(name="t1")
+    topic2 = topic(name="t2")
     t1 = d.create_thread(body="body", title="thread 1", topic=topic1)
     t2 = d.create_thread(body="body", title="thread 2", topic=topic2)
     assert t1.discussion is d
@@ -115,12 +97,12 @@ def test_relation_discussion_to_user(user):
     assert d.user is u
 
 
-def test_relation_discussion_to_comment_votes(user):
+def test_relation_discussion_to_comment_votes(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
     d3 = user(email="3@test.com").discussion
-    topic = Topic(name="Topic 1")
-    t1 = topic.create_thread(body="t1", discussion=d1, title="title 1")
+    _topic = topic()
+    t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
     c1 = t1.create_comment(body="c1", discussion=d2)
     c2 = t1.create_comment(body="c2", discussion=d3)
     v1 = c1.upvote(discussion=d3)
@@ -134,13 +116,13 @@ def test_relation_discussion_to_comment_votes(user):
     assert c2.votes == [v2, v4]
 
 
-def test_relation_discussion_to_thread_votes(user):
+def test_relation_discussion_to_thread_votes(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
     d3 = user(email="3@test.com").discussion
-    topic = Topic(name="Topic 1")
-    t1 = topic.create_thread(body="t1", discussion=d1, title="title 1")
-    t2 = topic.create_thread(body="t1", discussion=d1, title="title 1")
+    _topic = topic()
+    t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
+    t2 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
     v1 = t1.upvote(discussion=d2)
     v2 = t1.upvote(discussion=d3)
     v3 = t2.upvote(discussion=d2)
@@ -151,14 +133,12 @@ def test_relation_discussion_to_thread_votes(user):
     assert t2.votes == [v3]
 
 
-def test_relation_discussion_bans(user):
+def test_relation_discussion_bans(topic, user):
     d0 = user(email="0@test.com").discussion
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    topic1 = Topic(name="Test Topic 1", moderators=[d0])
-    topic2 = Topic(name="Test Topic 2", moderators=[d0])
-    db.session.add_all([topic1, topic2])
-    db.session.commit()
+    topic1 = topic(name="t1", moderators=[d0])
+    topic2 = topic(name="t2", moderators=[d0])
     b1 = topic1.create_ban(created_by=d0, discussion=d1)
     b2 = topic1.create_ban(created_by=d0, discussion=d2)
     b3 = topic2.create_ban(created_by=d0, discussion=d1)
@@ -168,11 +148,11 @@ def test_relation_discussion_bans(user):
     assert b3.discussion is d1
 
 
-def test_relation_discussion_shadow_bans(user):
+def test_relation_discussion_shadow_bans(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    topic1 = Topic(name="Test Topic 1", moderators=[d1])
-    topic2 = Topic(name="Test Topic 2", moderators=[d1])
+    topic1 = topic(name="t1", moderators=[d1])
+    topic2 = topic(name="t2", moderators=[d1])
     b1 = topic1.create_ban(created_by=d1, discussion=d2, is_shadow=True)
     b2 = topic2.create_ban(created_by=d1, discussion=d2, is_shadow=True)
     assert d2.bans == [b1, b2]
@@ -182,13 +162,11 @@ def test_relation_discussion_shadow_bans(user):
     assert d2.bans[1].is_shadow
 
 
-def test_relation_multiple_comments_multiple_users(user):
+def test_relation_multiple_comments_multiple_users(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    topic = Topic(name="Topic 1")
-    db.session.add(topic)
-    db.session.commit()
-    t = d1.create_thread(body="body", title="thread 1", topic=topic)
+    _topic = topic()
+    t = d1.create_thread(body="body", title="thread 1", topic=_topic)
     c1 = t.create_comment(body="comment 1", discussion=d1)
     c2 = t.create_comment(body="comment 2", discussion=d2)
     assert t.discussion is d1
@@ -196,26 +174,22 @@ def test_relation_multiple_comments_multiple_users(user):
     assert c2.discussion is d2
 
 
-def test_relation_subscription_subscriber(user):
+def test_relation_subscription_subscriber(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    topic = Topic(name="Test Topic")
-    db.session.add(topic)
-    db.session.commit()
-    d1.add_subscription(topic)
-    d2.add_subscription(topic)
-    assert d1.subscriptions == [topic]
-    assert d2.subscriptions == [topic]
-    assert topic.subscribers == [d1, d2]
+    _topic = topic()
+    d1.add_subscription(_topic)
+    d2.add_subscription(_topic)
+    assert d1.subscriptions == [_topic]
+    assert d2.subscriptions == [_topic]
+    assert _topic.subscribers == [d1, d2]
 
 
-def test_relation_threads_to_comments(user):
+def test_relation_threads_to_comments(topic, user):
     u = user()
     d = u.discussion
-    topic = Topic(name="Topic 1")
-    db.session.add(topic)
-    db.session.commit()
-    t = d.create_thread(body="body", title="thread 1", topic=topic)
+    _topic = topic()
+    t = d.create_thread(body="body", title="thread 1", topic=_topic)
     c1 = t.create_comment(body="comment 1", discussion=d)
     c2 = t.create_comment(body="comment 2", discussion=d)
     assert c1.discussion is d
@@ -223,17 +197,15 @@ def test_relation_threads_to_comments(user):
     assert c1.thread is t
     assert c2.thread is t
     assert t.comments == [c1, c2]
-    assert t.topic is topic
+    assert t.topic is _topic
 
 
-def test_relation_topic_moderators(user):
+def test_relation_topic_moderators(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
     d3 = user(email="3@test.com").discussion
-    topic1 = Topic(name="Test Topic 1", moderators=[d1, d2])
-    topic2 = Topic(name="Test Topic 2", moderators=[d2, d3])
-    db.session.add_all([topic1, topic2])
-    db.session.commit()
+    topic1 = topic(name="t1", moderators=[d1, d2])
+    topic2 = topic(name="t2", moderators=[d2, d3])
     assert topic1.moderators == [d1, d2]
     assert topic2.moderators == [d2, d3]
     assert d1.moderator_of == [topic1]
@@ -241,26 +213,26 @@ def test_relation_topic_moderators(user):
     assert d3.moderator_of == [topic2]
 
 
-def test_thread_is_downvoted_by(user):
+def test_thread_is_downvoted_by(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     t.downvote(discussion=d)
     assert t.is_downvoted_by(d)
 
 
-def test_thread_is_upvoted_by(user):
+def test_thread_is_upvoted_by(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     t.upvote(discussion=d)
     assert t.is_upvoted_by(d)
 
 
-def test_vote_on_comment(user):
+def test_vote_on_comment(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     c = t.create_comment(body="body", discussion=d)
     v1 = c.upvote(discussion=d)
     assert c.votes == [v1]
@@ -270,10 +242,10 @@ def test_vote_on_comment(user):
     assert c.votes == []
 
 
-def test_vote_on_thread(user):
+def test_vote_on_thread(topic, user):
     d = user().discussion
-    topic = Topic(name="Topic 1")
-    t = topic.create_thread(body="thread 1", title="title", discussion=d)
+    _topic = topic()
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
     v1 = t.upvote(discussion=d)
     assert t.votes == [v1]
     v2 = t.downvote(discussion=d)
