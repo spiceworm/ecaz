@@ -1,6 +1,8 @@
 from datetime import timedelta
 import time
 
+from flask import url_for
+
 from application.constants import messages
 from application.models import AuthToken
 
@@ -15,14 +17,14 @@ def test_reset_password_submit_new_password(client, user):
     token = AuthToken.create_reset_password_token(u)
     new_password = "new-password"
     resp = client.post(
-        f"/reset_password/{token.value}",
+        url_for("ui_bp.reset_password", jwt=token.value),
         follow_redirects=True,
         data={"password1": new_password, "password2": new_password},
     )
     assert u.password == new_password
     assert messages.PASSWORD_UPDATE_SUCCESS in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/"
+    assert resp.request.base_url == url_for("ui_bp.login")
 
 
 def test_reset_password_submit_non_matching_passwords(client, user):
@@ -36,13 +38,13 @@ def test_reset_password_submit_non_matching_passwords(client, user):
     old_password = u.password
     token = AuthToken.create_reset_password_token(u)
     resp = client.post(
-        f"/reset_password/{token.value}",
+        url_for("ui_bp.reset_password", jwt=token.value),
         follow_redirects=True,
         data={"password1": "new-password", "password2": "does-not-match"},
     )
     assert u.password == old_password
     assert messages.PASSWORD_UPDATE_MATCH_ERROR in resp.data.decode()
-    assert resp.request.path == f"/reset_password/{token.value}"
+    assert resp.request.base_url == url_for("ui_bp.reset_password", jwt=token.value)
 
 
 def test_reset_password_using_expired_token(client, user):
@@ -54,16 +56,15 @@ def test_reset_password_using_expired_token(client, user):
     """
     token = AuthToken.create_reset_password_token(
         user(),
-        timedelta(microseconds=1),
+        timedelta(minutes=-1),
     )
-    time.sleep(0.0000011)
     resp = client.get(
-        f"/reset_password/{token.value}",
+        url_for("ui_bp.reset_password", jwt=token.value),
         follow_redirects=True,
     )
     assert messages.INVALID_TOKEN in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/forgot_password"
+    assert resp.request.base_url == url_for("ui_bp.forgot_password")
 
 
 def test_reset_password_using_invalid_email_link(client, user):
@@ -74,12 +75,12 @@ def test_reset_password_using_invalid_email_link(client, user):
     """
     token = AuthToken.create(user(), "not-password-reset-token")
     resp = client.get(
-        f"/reset_password/{token.value}",
+        url_for("ui_bp.reset_password", jwt=token.value),
         follow_redirects=True,
     )
     assert messages.INVALID_TOKEN in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/forgot_password"
+    assert resp.request.base_url == url_for("ui_bp.forgot_password")
 
 
 def test_reset_password_using_valid_email_link(client, user):
@@ -89,5 +90,5 @@ def test_reset_password_using_valid_email_link(client, user):
     password reset form.
     """
     token = AuthToken.create_reset_password_token(user())
-    resp = client.get(f"/reset_password/{token.value}")
-    assert resp.request.path == f"/reset_password/{token.value}"
+    resp = client.get(url_for("ui_bp.reset_password", jwt=token.value))
+    assert resp.request.base_url == url_for("ui_bp.reset_password", jwt=token.value)

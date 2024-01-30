@@ -1,3 +1,5 @@
+from flask import url_for
+
 from application.constants import messages
 
 
@@ -7,7 +9,7 @@ def test_email_endpoint(api_user):
     """
     user = api_user(is_admin=True)
     resp = user.post(
-        "/api/v1/email",
+        url_for("api_v1_bp.emailapi"),
         json={
             "subject": "Test",
             "body": "test-email",
@@ -25,7 +27,7 @@ def test_email_endpoint_failure(api_user, mock_email_send):
     mock_email_send(lambda self: False)
     user = api_user()
     resp = user.post(
-        "/api/v1/email",
+        url_for("api_v1_bp.emailapi"),
         json={
             "subject": "Test",
             "body": "test-email",
@@ -40,7 +42,7 @@ def test_status_endpoint(client):
     """
     Verify GET to /api/v1/status.
     """
-    resp = client.get("/api/v1/status")
+    resp = client.get(url_for("api_v1_bp.statusapi"))
     assert resp.json == {"message": "ok"}
 
 
@@ -51,7 +53,7 @@ def test_terminal_api_as_admin(api_user):
     user = api_user(is_admin=True)
     assert user.is_admin
     resp = user.post(
-        "/api/v1/terminal",
+        url_for("api_v1_bp.terminalapi"),
         json={"command": "whoami"},
     )
     assert resp.json == {"output": "root"}
@@ -64,7 +66,7 @@ def test_terminal_api_as_admin_using_invalid_command(api_user):
     user = api_user(is_admin=True)
     assert user.is_admin
     resp = user.post(
-        "/api/v1/terminal",
+        url_for("api_v1_bp.terminalapi"),
         json={"command": "invalid command"},
     )
     assert "No such file or directory" in resp.json["output"]
@@ -77,7 +79,7 @@ def test_terminal_api_as_not_admin(api_user):
     user = api_user()
     assert not user.is_admin
     resp = user.post(
-        "/api/v1/terminal",
+        url_for("api_v1_bp.terminalapi"),
         json={"command": "whoami"},
     )
     assert resp.json == {"output": messages.RESTRICTED_TO_ADMIN}
@@ -88,5 +90,7 @@ def test_user_endpoint(api_user):
     Verify GET to /api/v1/user with user authentication.
     """
     user = api_user()
-    resp = user.get("/api/v1/user")
+    resp = user.get(
+        url_for("api_v1_bp.userapi"),
+    )
     assert resp.json == {"logged_in_as": user.email}

@@ -1,3 +1,5 @@
+from flask import url_for
+
 from application.constants import messages
 from application.models import AuthToken
 
@@ -8,11 +10,11 @@ def test_forgot_password_when_authenticated(ui_user):
     their settings page.
     """
     resp = ui_user().get(
-        "/forgot_password",
+        url_for("ui_bp.forgot_password"),
         follow_redirects=True,
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 def test_forgot_password_when_unauthenticated(client, user):
@@ -23,7 +25,7 @@ def test_forgot_password_when_unauthenticated(client, user):
     u = user("user@test.com", "old-password")
     assert len(u.auth_tokens) == 0
     resp = client.post(
-        "/forgot_password",
+        url_for("ui_bp.forgot_password"),
         follow_redirects=True,
         data={"email": u.email},
     )

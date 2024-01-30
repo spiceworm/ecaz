@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from urllib.parse import urlparse
 
 import decouple
 import flask
@@ -27,6 +28,9 @@ def create_app() -> flask.Flask:
         APP_NAME = decouple.config("APP_NAME")
         BASE_URL = decouple.config("BASE_URL")
         SECRET_KEY = decouple.config("SECRET_KEY")
+        SERVER_NAME = APP_NAME
+        APPLICATION_ROOT = "/"
+        PREFERRED_URL_SCHEME = urlparse(BASE_URL).scheme
 
         DEBUG = decouple.config("DEBUG", cast=bool, default=False)
         PROD = decouple.config("PROD", cast=bool, default=False)

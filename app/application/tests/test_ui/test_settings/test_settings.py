@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from flask import url_for
+
 from application.constants import messages
 from application.models import (
     AuthToken,
@@ -15,7 +17,7 @@ def test_change_password(ui_user):
     user = ui_user()
     password = "new-password"
     resp1 = user.post(
-        "/settings/user/password",
+        url_for("ui_bp.change_password"),
         follow_redirects=True,
         data={
             "password1": password,
@@ -34,7 +36,7 @@ def test_change_password_not_matching(ui_user):
     user = ui_user()
     old_password = user.password
     resp = user.post(
-        "/settings/user/password",
+        url_for("ui_bp.change_password"),
         follow_redirects=True,
         data={
             "password1": "new-password",
@@ -54,7 +56,7 @@ def test_change_username(ui_user):
     new_username = "new-username"
     assert user.username != new_username
     resp1 = user.post(
-        "/settings/user/username",
+        url_for("ui_bp.change_username"),
         follow_redirects=True,
         data={"username": new_username},
     )
@@ -74,7 +76,7 @@ def test_change_username_to_duplicate(ui_user):
     user = ui_user(email="user2@test.com", password="password2")
     old_username = user.username
     resp = user.post(
-        "/settings/user/username",
+        url_for("ui_bp.change_username"),
         follow_redirects=True,
         data={"username": duplicate_username},
     )
@@ -88,11 +90,11 @@ def test_delete_account(ui_user):
     and deletes the user.
     """
     user = ui_user()
-    resp = user.post("/settings/account/delete", follow_redirects=True)
+    resp = user.post(url_for("ui_bp.delete_account"), follow_redirects=True)
     assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
     assert User.query.filter_by(email=user.email).one_or_none() is None
     assert len(resp.history) == 1
-    assert resp.request.path == "/"
+    assert resp.request.base_url == url_for("ui_bp.login")
 
 
 def test_delete_account_cascades(ui_user):
@@ -105,7 +107,7 @@ def test_delete_account_cascades(ui_user):
     t2 = AuthToken.create(user=user, name="t2")
     t3 = AuthToken.create(user=user, name="t3")
     assert len(user.auth_tokens) == 3
-    user.post("/settings/account/delete")
+    user.post(url_for("ui_bp.delete_account"))
     assert User.query.filter_by(email=user.email).one_or_none() is None
     assert AuthToken.query.filter_by(name=t1.name).one_or_none() is None
     assert AuthToken.query.filter_by(name=t2.name).one_or_none() is None
@@ -119,12 +121,12 @@ def test_disable_totp_when_disabled(ui_user):
     """
     user = ui_user()
     resp = user.post(
-        "/settings/mfa/totp/disable",
+        url_for("ui_bp.disable_totp"),
         follow_redirects=True,
     )
     assert messages.TOTP_NOT_ENABLED in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
 
 
 def test_disable_totp_when_enabled(ui_user):
@@ -135,12 +137,12 @@ def test_disable_totp_when_enabled(ui_user):
     user = ui_user()
     user.mfa.totp.enabled = True
     resp = user.post(
-        "/settings/mfa/totp/disable",
+        url_for("ui_bp.disable_totp"),
         follow_redirects=True,
     )
     assert messages.TOTP_NOW_DISABLED in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
 
 
 def test_disable_webauthn_when_disabled(ui_user):
@@ -150,12 +152,12 @@ def test_disable_webauthn_when_disabled(ui_user):
     """
     user = ui_user()
     resp = user.post(
-        "/settings/mfa/webauthn/disable",
+        url_for("ui_bp.disable_webauthn"),
         follow_redirects=True,
     )
     assert messages.WEBAUTHN_NOT_ENABLED in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
 
 
 def test_disable_webauthn_when_enabled(ui_user):
@@ -166,13 +168,13 @@ def test_disable_webauthn_when_enabled(ui_user):
     user = ui_user()
     user.mfa.webauthn.enabled = True
     resp = user.post(
-        "/settings/mfa/webauthn/disable",
+        url_for("ui_bp.disable_webauthn"),
         follow_redirects=True,
     )
     print(resp.data.decode())
     assert messages.WEBAUTHN_NOW_DISABLED in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
 
 
 def test_send_verify_email(ui_user):
@@ -185,11 +187,11 @@ def test_send_verify_email(ui_user):
     user = ui_user()
     assert len(user.auth_tokens) == 0
     resp = user.post(
-        "/settings/user/email/verify",
+        url_for("ui_bp.send_verify_email"),
         follow_redirects=True,
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
     assert messages.VERIFICATION_EMAIL_SENT in resp.data.decode()
     assert len(user.auth_tokens) == 1
     assert user.auth_tokens[0].tags == [AuthToken.HIDDEN_TAG, AuthToken.VERIFY_EMAIL_TAG]
@@ -201,7 +203,7 @@ def test_send_verify_email_if_already_verified(ui_user):
     already verified their email, that the appropriate notification is shown.
     """
     resp = ui_user(is_verified=True).post(
-        "/settings/user/email/verify",
+        url_for("ui_bp.send_verify_email"),
         follow_redirects=True,
     )
     assert messages.ACCOUNT_ALREADY_VERIFIED in resp.data.decode()
@@ -216,7 +218,7 @@ def test_verify_email(ui_user):
     assert not user.is_verified
     token = AuthToken.create_email_verification_token(user)
     resp = user.get(
-        f"/settings/user/email/verify/{token.value}",
+        url_for("ui_bp.verify_email", jwt=token.value),
         follow_redirects=True,
     )
     assert user.is_verified
@@ -235,7 +237,7 @@ def test_verify_email_using_expired_token(ui_user):
         timedelta(microseconds=1),
     )
     resp = user.get(
-        f"/settings/user/email/verify/{token.value}",
+        url_for("ui_bp.verify_email", jwt=token.value),
         follow_redirects=True,
     )
     assert not user.is_verified

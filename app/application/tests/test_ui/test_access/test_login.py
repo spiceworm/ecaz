@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from flask import url_for
 import pytest
 
 from application.constants import messages
@@ -12,12 +13,12 @@ def test_bad_login(client):
     error message.
     """
     resp = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": "bad@test.com", "password": "invalid-password"},
     )
     assert len(resp.history) == 0
-    assert resp.request.path == "/login"
+    assert resp.request.base_url == url_for("ui_bp.login")
 
 
 def test_login(client, user):
@@ -27,12 +28,12 @@ def test_login(client, user):
     """
     u = user()
     resp = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 def test_login_if_already_authenticated(ui_user):
@@ -42,12 +43,12 @@ def test_login_if_already_authenticated(ui_user):
     """
     user = ui_user()
     resp = user.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": user.email, "password": user.password},
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 def test_login_with_bad_next_url_param(client, user):
@@ -58,7 +59,7 @@ def test_login_with_bad_next_url_param(client, user):
     """
     u = user()
     resp = client.post(
-        "/login?next=%2Fdoes_not_exist",
+        url_for("ui_bp.login", next="does-not-exist"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
@@ -74,7 +75,7 @@ def test_login_with_delete_account_pending(client, user):
     u = user()
     u.is_deleted = True
     resp = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
@@ -90,13 +91,13 @@ def test_login_with_mfa_where_webauthn_supercedes_totp(client, user):
     u.mfa.totp.enabled = True
     u.mfa.webauthn.enabled = True
     resp = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     token = [t for t in u.auth_tokens if t.WEBAUTHN_MFA_TAG in t.tags][0]
     assert len(resp.history) == 1
-    assert resp.request.path == f"/login/mfa/webauthn/{token.value}"
+    assert resp.request.base_url == url_for("ui_bp.webauthn_login", jwt=token.value)
 
 
 def test_login_with_valid_next_url_param(client, user):
@@ -112,7 +113,7 @@ def test_login_with_valid_next_url_param(client, user):
         data={"email": u.email, "password": u.password},
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings/auth_token"
+    assert resp.request.base_url == url_for("ui_bp.auth_token_settings")
 
 
 def test_bad_login_with_next_url_preserves_next_params(client):
@@ -121,12 +122,13 @@ def test_bad_login_with_next_url_preserves_next_params(client):
     authentication, and they provide invalid credentials, the page they were initially
     trying to access is preserved in the URL.
     """
+    next_arg = "settings/auth_token"
     resp = client.post(
-        "/login?next=%2Fsettings%2Fauth_token",
+        url_for("ui_bp.login", next="settings/auth_token"),
         follow_redirects=True,
         data={"email": "invalid@test.com", "password": "invalid123"},
     )
-    assert resp.request.args["next"] == "/settings/auth_token"
+    assert resp.request.args["next"] == next_arg
 
 
 def test_login_with_totp_mfa_enabled(client, user):
@@ -138,16 +140,16 @@ def test_login_with_totp_mfa_enabled(client, user):
     u = user()
     u.mfa.totp.enabled = True
     resp1 = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     token = u.auth_tokens[0]
-    totp_login_url = f"/login/mfa/totp/{token.value}"
+    totp_login_url = url_for("ui_bp.totp_login", jwt=token.value)
 
     assert AuthToken.TOTP_MFA_TAG in token.tags
     assert len(resp1.history) == 1
-    assert resp1.request.path == totp_login_url
+    assert resp1.request.base_url == totp_login_url
 
     resp2 = client.post(
         totp_login_url,
@@ -155,7 +157,7 @@ def test_login_with_totp_mfa_enabled(client, user):
         data={"totp_code": u.mfa.totp.handler.now()},
     )
     assert len(resp2.history) == 1
-    assert resp2.request.path == "/profile"
+    assert resp2.request.base_url == url_for("ui_bp.profile")
 
 
 def test_login_with_invalid_totp_code(client, user):
@@ -167,16 +169,16 @@ def test_login_with_invalid_totp_code(client, user):
     u = user()
     u.mfa.totp.enabled = True
     resp1 = client.post(
-        "/login",
+        url_for("ui_bp.login"),
         follow_redirects=True,
         data={"email": u.email, "password": u.password},
     )
     token = u.auth_tokens[0]
-    totp_login_url = f"/login/mfa/totp/{token.value}"
+    totp_login_url = url_for("ui_bp.totp_login", jwt=token.value)
 
     assert AuthToken.TOTP_MFA_TAG in token.tags
     assert len(resp1.history) == 1
-    assert resp1.request.path == totp_login_url
+    assert resp1.request.base_url == totp_login_url
 
     resp2 = client.post(
         totp_login_url,
@@ -185,7 +187,7 @@ def test_login_with_invalid_totp_code(client, user):
     )
     assert messages.TOTP_CODE_INVALID in resp2.data.decode()
     assert len(resp2.history) == 0
-    assert resp2.request.path == totp_login_url
+    assert resp2.request.base_url == totp_login_url
 
 
 @pytest.mark.parametrize("mfa_type", ["totp", "webauthn"])
@@ -202,7 +204,7 @@ def test_access_mfa_login_page_if_already_authenticated(ui_user, mfa_type):
         follow_redirects=True,
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 @pytest.mark.parametrize("mfa_type", ["totp", "webauthn"])
@@ -219,4 +221,4 @@ def test_access_mfa_login_page_with_invalid_jwt_in_url(client, user, mfa_type):
         follow_redirects=True,
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/"
+    assert resp.request.base_url == url_for("ui_bp.login")

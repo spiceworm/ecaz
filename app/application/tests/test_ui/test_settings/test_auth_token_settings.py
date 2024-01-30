@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from flask import url_for
+
 from application.ui.forms import CreateAuthTokenForm
 
 
@@ -10,7 +12,7 @@ def test_create_auth_token(ui_user):
     user = ui_user()
     token_name = "test-token-1"
     assert len(user.auth_tokens) == 0
-    user.post("/settings/auth_token/create", data={"token_name": token_name})
+    user.post(url_for("ui_bp.create_auth_token"), data={"token_name": token_name})
     assert len(user.auth_tokens) == 1
     assert user.auth_tokens[0].name == token_name
 
@@ -23,7 +25,7 @@ def test_create_expiring_auth_token(ui_user):
     token_name = "test-token-1"
     assert len(user.auth_tokens) == 0
     user.post(
-        "/settings/auth_token/create",
+        url_for("ui_bp.create_auth_token"),
         data={
             "expires_number": "1",
             "expires_unit": CreateAuthTokenForm.EXPIRES_UNIT_DAYS,
@@ -43,7 +45,7 @@ def test_delete_auth_token(ui_user):
     user = ui_user()
     token_name = "test-token-1"
     assert len(user.auth_tokens) == 0
-    user.post("/settings/auth_token/create", data={"token_name": token_name})
+    user.post(url_for("ui_bp.create_auth_token"), data={"token_name": token_name})
     assert len(user.auth_tokens) == 1
-    user.post("/settings/auth_token/delete", data={"id": user.auth_tokens[0].id})
+    user.post(url_for("ui_bp.delete_auth_token"), data={"id": user.auth_tokens[0].id})
     assert len(user.auth_tokens) == 0

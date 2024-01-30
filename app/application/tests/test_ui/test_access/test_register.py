@@ -1,3 +1,6 @@
+from flask import url_for
+
+
 from application.constants import messages
 from application.models import (
     db,
@@ -11,14 +14,14 @@ def test_register(client):
     and redirects the user to their profile page.
     """
     resp = client.post(
-        "/register",
+        url_for("ui_bp.register"),
         follow_redirects=True,
         data={"email": "user@test.com", "password": "password123"},
     )
     user = User.query.filter_by(email="user@test.com")
     assert user
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 def test_register_attempt_if_authenticated(ui_user):
@@ -27,11 +30,11 @@ def test_register_attempt_if_authenticated(ui_user):
     profile page.
     """
     resp = ui_user().get(
-        "/register",
+        url_for("ui_bp.register"),
         follow_redirects=True,
     )
     assert len(resp.history) == 1
-    assert resp.request.path == "/profile"
+    assert resp.request.base_url == url_for("ui_bp.profile")
 
 
 def test_register_duplicate_email(client, user):
@@ -41,7 +44,7 @@ def test_register_duplicate_email(client, user):
     """
     u = user()
     resp = client.post(
-        "/register",
+        url_for("ui_bp.register"),
         follow_redirects=True,
         data={"email": u.email, "password": "some-password"},
     )

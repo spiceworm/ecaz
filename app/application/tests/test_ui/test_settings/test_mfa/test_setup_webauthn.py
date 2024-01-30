@@ -1,5 +1,6 @@
 import json
 
+from flask import url_for
 import webauthn
 
 from application.constants import messages
@@ -13,12 +14,12 @@ def test_setup_if_webauthn_already_enabled(ui_user):
     user = ui_user()
     user.mfa.webauthn.enabled = True
     resp = user.get(
-        "/settings/mfa/webauthn/setup",
+        url_for("ui_bp.setup_webauthn"),
         follow_redirects=True,
     )
     assert messages.WEBAUTHN_ALREADY_ENABLED in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
 
 
 def test_setup_with_invalid_webauthn_options(ui_user):
@@ -45,14 +46,14 @@ def test_setup_with_invalid_webauthn_options(ui_user):
         "authenticatorAttachment": "platform",
     }
     resp = user.post(
-        "/settings/mfa/webauthn/setup",
+        url_for("ui_bp.setup_webauthn"),
         data={"credential_creation_options": json.dumps(credential_creation_options)},
         follow_redirects=True,
     )
     assert not user.mfa.webauthn.enabled
     assert messages.WEBAUTHN_SETUP_VERIFICATION_ERROR in resp.data.decode()
     assert len(resp.history) == 0
-    assert resp.request.path == "/settings/mfa/webauthn/setup"
+    assert resp.request.base_url == url_for("ui_bp.setup_webauthn")
 
 
 def test_setup_with_valid_webauthn_device(ui_user):
@@ -78,11 +79,11 @@ def test_setup_with_valid_webauthn_device(ui_user):
         "authenticatorAttachment": "platform",
     }
     resp = user.post(
-        "/settings/mfa/webauthn/setup",
+        url_for("ui_bp.setup_webauthn"),
         data={"credential_creation_options": json.dumps(credential_creation_options)},
         follow_redirects=True,
     )
     assert user.mfa.webauthn.enabled
     assert messages.WEBAUTHN_SETUP_VERIFICATION_SUCCESS in resp.data.decode()
     assert len(resp.history) == 1
-    assert resp.request.path == "/settings"
+    assert resp.request.base_url == url_for("ui_bp.settings")
