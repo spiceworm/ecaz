@@ -36,22 +36,35 @@ class TestBanIsActive:
         assert Ban.query.filter(Ban.is_active == expected_bool).all() == [b]
 
 
+def test_add_moderator_to_topic(topic, user):
+    t = topic()
+    d1 = user(email="1@test.com").discussion
+    d2 = user(email="2@test.com").discussion
+    t.add_moderator(d1)
+    assert d1.is_moderator_of(t)
+    assert not d2.is_moderator_of(t)
+
+
 def test_comment_is_downvoted_by(topic, user):
-    d = user().discussion
+    d1 = user(email="1@test.com").discussion
+    d2 = user(email="2@test.com").discussion
     _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
-    c = t.create_comment(body="body", discussion=d)
-    c.downvote(discussion=d)
-    assert c.is_downvoted_by(d)
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    c = t.create_comment(body="body", discussion=d1)
+    c.downvote(discussion=d1)
+    assert c.is_downvoted_by(d1)
+    assert not c.is_downvoted_by(d2)
 
 
 def test_comment_is_upvoted_by(topic, user):
-    d = user().discussion
+    d1 = user(email="1@test.com").discussion
+    d2 = user(email="2@test.com").discussion
     _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
-    c = t.create_comment(body="body", discussion=d)
-    c.upvote(discussion=d)
-    assert c.is_upvoted_by(d)
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    c = t.create_comment(body="body", discussion=d1)
+    c.upvote(discussion=d1)
+    assert c.is_upvoted_by(d1)
+    assert not c.is_upvoted_by(d2)
 
 
 def test_create_ban_as_non_moderator(topic, user):
@@ -214,19 +227,23 @@ def test_relation_topic_moderators(topic, user):
 
 
 def test_thread_is_downvoted_by(topic, user):
-    d = user().discussion
+    d1 = user(email="1@test.com").discussion
+    d2 = user(email="2@test.com").discussion
     _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
-    t.downvote(discussion=d)
-    assert t.is_downvoted_by(d)
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    t.downvote(discussion=d1)
+    assert t.is_downvoted_by(d1)
+    assert not t.is_downvoted_by(d2)
 
 
 def test_thread_is_upvoted_by(topic, user):
-    d = user().discussion
+    d1 = user(email="1@test.com").discussion
+    d2 = user(email="2@test.com").discussion
     _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
-    t.upvote(discussion=d)
-    assert t.is_upvoted_by(d)
+    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    t.upvote(discussion=d1)
+    assert t.is_upvoted_by(d1)
+    assert not t.is_upvoted_by(d2)
 
 
 def test_vote_on_comment(topic, user):
