@@ -5,7 +5,10 @@ from wtforms import (
     validators,
 )
 
-from application.ui.forms import BaseForm
+from application.ui.forms import (
+    BaseForm,
+    filters,
+)
 from application.ui.forms.validators import require_unique_username
 
 
@@ -41,6 +44,7 @@ class ChangePasswordForm(BaseForm):
 class ChangeUsernameForm(BaseForm):
     username = StringField(
         "username",
+        filters=[filters.strip_whitespace],
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),

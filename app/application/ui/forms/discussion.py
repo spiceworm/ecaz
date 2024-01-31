@@ -6,7 +6,10 @@ from wtforms import (
 )
 from wtforms.widgets import TextArea
 
-from application.ui.forms import BaseForm
+from application.ui.forms import (
+    BaseForm,
+    filters,
+)
 from application.ui.forms.validators import disallow_whitespace
 
 
@@ -19,6 +22,7 @@ __all__ = (
 
 class CreateCommentForm(BaseForm):
     body = StringField(
+        filters=[filters.strip_whitespace],
         render_kw={"placeholder": "Enter comment ..."},
         validators=[validators.DataRequired()],
         widget=TextArea(),
@@ -28,10 +32,12 @@ class CreateCommentForm(BaseForm):
 
 class CreateThreadForm(BaseForm):
     body = StringField(
+        filters=[filters.strip_whitespace],
         validators=[validators.DataRequired()],
         widget=TextArea(),
     )
     title = StringField(
+        filters=[filters.strip_whitespace],
         validators=[validators.DataRequired()],
     )
     topic_id = SelectField(
@@ -45,6 +51,7 @@ class CreateTopicForm(BaseForm):
         widget=TextArea(),
     )
     name = StringField(
+        filters=[filters.strip_whitespace],
         validators=[
             validators.DataRequired(),
             disallow_whitespace,

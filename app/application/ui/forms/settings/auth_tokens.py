@@ -5,7 +5,10 @@ from wtforms import (
     validators,
 )
 
-from application.ui.forms import BaseForm
+from application.ui.forms import (
+    BaseForm,
+    filters,
+)
 
 
 __all__ = (
@@ -45,6 +48,7 @@ class CreateAuthTokenForm(BaseForm):
     )
     token_name = StringField(
         "name",
+        filters=[filters.strip_whitespace],
         render_kw={"placeholder": "Name"},
         validators=[validators.DataRequired()],
     )
