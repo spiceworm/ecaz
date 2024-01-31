@@ -457,6 +457,7 @@ class Topic(db.Model, CreatedAtMixin):
     )
     description = sa.Column(
         sa.String,
+        nullable=False,
     )
     is_deleted = sa.Column(
         sa.Boolean,

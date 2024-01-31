@@ -17,7 +17,7 @@ from application.models import (
 DEFAULT_EMAIL = "default-email@test.com"
 DEFAULT_PASSWORD = "default-password"
 DEFAULT_TOPIC_DESCRIPTION = "Topic description"
-DEFAULT_TOPIC_NAME = "Topic name"
+DEFAULT_TOPIC_NAME = "Topic-name"
 
 
 class _UiUser:
@@ -140,6 +140,7 @@ def topic():
         db.session.add(_topic)
         db.session.commit()
         return _topic
+
     return func
 
 

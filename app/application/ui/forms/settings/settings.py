@@ -6,7 +6,7 @@ from wtforms import (
 )
 
 from application.ui.forms import BaseForm
-from application.ui.forms.validators import unique_username
+from application.ui.forms.validators import require_unique_username
 
 
 __all__ = (
@@ -44,7 +44,7 @@ class ChangeUsernameForm(BaseForm):
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),
-            unique_username,
+            require_unique_username,
         ],
     )
 

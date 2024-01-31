@@ -7,8 +7,8 @@ from wtforms.fields import EmailField
 
 from application.ui.forms import BaseForm
 from application.ui.forms.validators import (
-    unique_email,
-    unique_username,
+    require_unique_email,
+    require_unique_username,
 )
 from application.util import generate_random_username
 
@@ -23,7 +23,7 @@ class RegisterForm(BaseForm):
         validators=[
             validators.DataRequired(),
             validators.Email(),
-            unique_email,
+            require_unique_email,
         ],
     )
     password = PasswordField(
@@ -40,6 +40,6 @@ class RegisterForm(BaseForm):
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),
-            unique_username,
+            require_unique_username,
         ],
     )

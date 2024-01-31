@@ -7,6 +7,7 @@ from wtforms import (
 from wtforms.widgets import TextArea
 
 from application.ui.forms import BaseForm
+from application.ui.forms.validators import disallow_whitespace
 
 
 __all__ = (
@@ -44,5 +45,8 @@ class CreateTopicForm(BaseForm):
         widget=TextArea(),
     )
     name = StringField(
-        validators=[validators.DataRequired()],
+        validators=[
+            validators.DataRequired(),
+            disallow_whitespace,
+        ],
     )
