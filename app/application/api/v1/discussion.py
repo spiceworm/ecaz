@@ -70,7 +70,7 @@ class _VoteApiBase:
                         obj.upvote(discussion=user.discussion)
                     case "delete":
                         obj.delete_vote(discussion=user.discussion)
-                    case _:
+                    case _:  # pragma: no cover
                         raise NotImplementedError(args.action)
                 return {"success": "processed"}
         return {}, http.HTTPStatus.NOT_FOUND

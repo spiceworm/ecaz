@@ -26,7 +26,7 @@ class GenerateUsernameApi(flask_restful.Resource):
     def get(self):
         username = generate_random_username()
         while User.query.filter_by(username=username).one_or_none():
-            username = generate_random_username()
+            username = generate_random_username()  # pragma: no cover
         return {"username": username}
 
 

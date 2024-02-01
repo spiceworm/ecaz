@@ -152,7 +152,7 @@ def create_app() -> flask.Flask:
             HTTPStatus.NOT_FOUND,
         )
 
-    @app.errorhandler(HTTPStatus.TOO_MANY_REQUESTS)
+    @app.errorhandler(HTTPStatus.TOO_MANY_REQUESTS)  # pragma: no cover
     def ratelimit_handler(e):
         return flask.make_response(
             flask.jsonify(error=HTTPStatus.TOO_MANY_REQUESTS.phrase),

@@ -113,7 +113,7 @@ class VotingMixin:
     DOWNVOTE = -1
 
     def _create_vote(self, discussion: Discussion, value: int) -> Union[CommentVote, None]:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def downvote(self, discussion: Discussion) -> Union[CommentVote, ThreadVote]:
         self.delete_vote(discussion)
