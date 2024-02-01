@@ -18,7 +18,7 @@ from application.models import (
     MFA,
     utcnow,
 )
-from application.util import generate_random_username
+from application.util.misc import generate_random_username
 
 
 __all__ = ("User",)

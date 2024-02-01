@@ -10,7 +10,7 @@ from application.ui.forms.validators import (
     require_unique_email,
     require_unique_username,
 )
-from application.util import generate_random_username
+from application.util.misc import generate_random_username
 
 
 __all__ = ("RegisterForm",)

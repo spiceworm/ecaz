@@ -22,7 +22,7 @@ def create_app() -> flask.Flask:
         migrate,
         User,
     )
-    from application.util import csv_to_list
+    from application.util.misc import csv_to_list
     from application.ui import ui_bp
 
     class Config:
