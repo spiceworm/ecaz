@@ -78,7 +78,12 @@ class _ApiUser(_UiUser):
 
     @property
     def _headers(self):
-        return {"headers": {"Authorization": f"Bearer {self._token.value}"}}
+        return {
+            "headers": {
+                "Authorization": f"Bearer {self._token.value}",
+                "Content-Type": "application/json",
+            }
+        }
 
 
 @pytest.fixture(autouse=True)
