@@ -1,4 +1,5 @@
 import flask
+import flask_marshmallow
 import flask_migrate
 import flask_sqlalchemy
 import sqlalchemy as sa
@@ -6,6 +7,7 @@ from sqlalchemy.ext.compiler import compiles
 
 
 db = flask_sqlalchemy.SQLAlchemy()
+marshmallow = flask_marshmallow.Marshmallow()
 migrate = flask_migrate.Migrate()
 
 
@@ -27,3 +29,4 @@ from .auth_token import *
 from .discussion import *
 from .mfa import *
 from .user import *
+from .schema import *

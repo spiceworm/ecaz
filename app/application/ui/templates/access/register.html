@@ -12,7 +12,7 @@
                     usernameInput.value = JSON.parse(xmlHttp.responseText)['username'];
                 }
             }
-            xmlHttp.open("GET", "/api/v1/generate-username", true);
+            xmlHttp.open("GET", "{{ url_for('api_misc_bp.generateusernameapi') }}", true);
             xmlHttp.send(null);
         }
     </script>

@@ -13,7 +13,7 @@
 
         async function terminalApi(command) {
             return await fetch(
-                '{{ BASE_URL }}/api/v1/terminal', {
+                "{{ url_for('api_misc_bp.terminalapi') }}", {
                     headers: {Authorization: "Bearer {{ current_user.frontend_token.value }}"},
                     method: "POST",
                     body: JSON.stringify({"command": command})

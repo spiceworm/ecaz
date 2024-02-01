@@ -28,14 +28,14 @@
         <div class="panel-body">
             <div>
                 {% if current_user.is_authenticated %}
-                    <a onclick="upvote(this, action='upvote', obj='comment', unique_id='{{ comment.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                    <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
                         {% if comment.is_upvoted_by(current_user.discussion) %}
                             <i class="bi bi-arrow-up-square-fill"></i>
                         {% else %}
                             <i class="bi bi-arrow-up-square"></i>
                         {% endif %}
                     </a>
-                    <a onclick="downvote(this, action='downvote', obj='comment', unique_id='{{ comment.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                    <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
                         {% if comment.is_downvoted_by(current_user.discussion) %}
                             <i class="bi bi-arrow-down-square-fill"></i>
                         {% else %}

@@ -1,14 +1,20 @@
+import http
+
 import flask
-import flask_restful
-from flask_restful import reqparse
 from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+import flask_restful
+from flask_restful import reqparse
 
 from application.models import (
     Comment,
+    CommentSchema,
     Thread,
+    ThreadSchema,
+    Topic,
+    TopicSchema,
     User,
 )
 
@@ -23,23 +29,40 @@ api_discussion_bp = flask.Blueprint(
 )
 
 
-vote_parser = reqparse.RequestParser()
-vote_parser.add_argument("unique_id", type=str, required=True)
-vote_parser.add_argument("obj", choices=("comment", "thread"), required=True)
-vote_parser.add_argument("action", choices=("downvote", "upvote", "delete"), required=True)
+class CommentApi(flask_restful.Resource):
+    def get(self, unique_id):
+        if comment := Comment.query.filter_by(unique_id=unique_id).one_or_none():
+            schema = CommentSchema()
+            return schema.dump(comment)
+        return {}, http.HTTPStatus.NOT_FOUND
 
 
-class VoteApi(flask_restful.Resource):
-    @jwt_required()
-    def post(self):
+class ThreadApi(flask_restful.Resource):
+    def get(self, unique_id):
+        if comment := Thread.query.filter_by(unique_id=unique_id).one_or_none():
+            schema = ThreadSchema()
+            return schema.dump(comment)
+        return {}, http.HTTPStatus.NOT_FOUND
+
+
+class TopicApi(flask_restful.Resource):
+    def get(self, topic):
+        if topic := Topic.query.filter_by(name=topic).one_or_none():
+            schema = TopicSchema()
+            return schema.dump(topic)
+        return {}, http.HTTPStatus.NOT_FOUND
+
+
+class _VoteApiBase:
+    cls = None
+
+    def post(self, unique_id):
         if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
-            args = vote_parser.parse_args()
-            if args.obj == "comment":
-                obj = Comment.query.filter_by(unique_id=args.unique_id).one_or_none()
-            else:
-                obj = Thread.query.filter_by(unique_id=args.unique_id).one_or_none()
+            parser = reqparse.RequestParser()
+            parser.add_argument("action", choices=("downvote", "upvote", "delete"), required=True)
+            args = parser.parse_args()
 
-            if obj:
+            if obj := self.cls.query.filter_by(unique_id=unique_id).one_or_none():
                 match args.action:
                     case "downvote":
                         obj.downvote(discussion=user.discussion)
@@ -50,11 +73,28 @@ class VoteApi(flask_restful.Resource):
                     case _:
                         raise NotImplementedError(args.action)
                 return {"success": "processed"}
-            else:
-                return {"error": "Invalid unique_id"}
-        else:
-            return {"error": "Invalid user"}
+        return {}, http.HTTPStatus.NOT_FOUND
+
+
+class CommentVoteApi(flask_restful.Resource, _VoteApiBase):
+    cls = Comment
+
+    @jwt_required()
+    def post(self, unique_id):
+        return super().post(unique_id)
+
+
+class ThreadVoteApi(flask_restful.Resource, _VoteApiBase):
+    cls = Thread
+
+    @jwt_required()
+    def post(self, unique_id):
+        return super().post(unique_id)
 
 
 api = flask_restful.Api(api_discussion_bp)
-api.add_resource(VoteApi, "/vote")
+api.add_resource(CommentApi, "/comment/<unique_id>")
+api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
+api.add_resource(ThreadApi, "/thread/<unique_id>")
+api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
+api.add_resource(TopicApi, "/topic/<topic>")

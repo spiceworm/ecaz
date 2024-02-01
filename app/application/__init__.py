@@ -18,6 +18,7 @@ def create_app() -> flask.Flask:
     from application.models import (
         AuthToken,
         db,
+        marshmallow,
         migrate,
         User,
     )
@@ -120,6 +121,7 @@ def create_app() -> flask.Flask:
     admin.add_view(admin_views.UserModelView(User, db.session))
 
     db.init_app(app)
+    marshmallow.init_app(app)
     migrate.init_app(app, db)
     with app.app_context():
         db.create_all()

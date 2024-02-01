@@ -18,13 +18,6 @@ class RestrictedIndexView(flask_admin.AdminIndexView):
             return super().index()
         return flask.redirect(flask.url_for("ui_bp.login"))
 
-    def render(self, template, **kwargs) -> str:
-        return super().render(
-            template,
-            BASE_URL=flask.current_app.config["BASE_URL"],
-            **kwargs,
-        )
-
 
 class AuthTokenModelView(ModelView):
     can_create = False

@@ -2,7 +2,6 @@ import shlex
 import subprocess
 
 import flask
-import flask_mailman
 import flask_restful
 from flask_jwt_extended import (
     get_jwt_identity,
@@ -12,37 +11,15 @@ from flask_jwt_extended import (
 from application.constants import messages
 from application.models import User
 from application.util import generate_random_username
-from application.api.v1.discussion import api_discussion_bp
 
 
-__all__ = ("api_v1_bp",)
+__all__ = ("api_misc_bp",)
 
 
-api_v1_bp = flask.Blueprint(
-    "api_v1_bp",
+api_misc_bp = flask.Blueprint(
+    "api_misc_bp",
     __name__,
-    url_prefix="/v1",
 )
-api_v1_bp.register_blueprint(api_discussion_bp)
-
-
-class EmailApi(flask_restful.Resource):
-    @jwt_required()
-    def post(self):
-        user = User.query.filter(User.email == get_jwt_identity()).one_or_none()
-        if user and user.is_admin:
-            args = flask_restful.request.get_json(force=True)
-            msg = flask_mailman.EmailMessage(
-                subject=args["subject"],
-                body=args["body"],
-                to=args["to"],
-            )
-            if args.get("is_html", False):
-                msg.content_subtype = "html"
-            status = bool(msg.send())
-        else:
-            status = False
-        return {"status": status}
 
 
 class GenerateUsernameApi(flask_restful.Resource):
@@ -75,15 +52,7 @@ class TerminalApi(flask_restful.Resource):
         return flask.jsonify(output=output.strip())
 
 
-class UserApi(flask_restful.Resource):
-    @jwt_required()
-    def get(self):
-        return flask.jsonify(logged_in_as=get_jwt_identity())
-
-
-api = flask_restful.Api(api_v1_bp)
-api.add_resource(EmailApi, "/email")
+api = flask_restful.Api(api_misc_bp)
 api.add_resource(GenerateUsernameApi, "/generate-username")
 api.add_resource(StatusApi, "/status")
 api.add_resource(TerminalApi, "/terminal")
-api.add_resource(UserApi, "/user")

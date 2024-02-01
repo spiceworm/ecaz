@@ -6,6 +6,7 @@ flask-jwt-extended==4.6.0
 Flask-Limiter==3.5.0
 flask-login==0.6.3
 flask-mailman==1.0.0
+flask-marshmallow==1.1.0
 Flask-Migrate==4.0.5
 flask-restful==0.3.10
 Flask-SQLAlchemy==3.1.1
@@ -15,6 +16,7 @@ gunicorn==21.2.0
 humanize==4.9.0
 ipython
 markdown==3.5.2
+marshmallow-sqlalchemy==1.0.0
 psycopg2-binary==2.9.9  # sqlalchemy does not support psycopg[binary,pool] yet
 pyotp==2.9.0
 python-decouple==3.8

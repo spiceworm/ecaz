@@ -20,29 +20,27 @@ function toggleCommentFolding(element) {
     }
 }
 
-function postVoteRequest(action, obj, unique_id, jwt) {
-    fetch("/api/v1/discussion/vote", {
+function postVoteRequest(action, url, jwt) {
+    fetch(url, {
         method: "POST",
         headers: {
             'Authorization': 'Bearer ' + jwt,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            obj: obj,
-            unique_id: unique_id,
             action: action,
         })
     })
 }
 
-function upvote(element, action, obj, unique_id, jwt) {
+function upvote(element, url, jwt) {
     let upVoteIcon = element.children[0];
     let upVoteClassList = upVoteIcon.classList;
     if (upVoteClassList.contains('bi-arrow-up-square')) {
         // mark upvote as active
         upVoteClassList.remove('bi-arrow-up-square')
         upVoteClassList.add('bi-arrow-up-square-fill')
-        postVoteRequest('upvote', obj, unique_id, jwt);
+        postVoteRequest('upvote', url, jwt);
 
         let downVoteIcon = element.nextElementSibling.children[0];
         let downVoteClassList = downVoteIcon.classList;
@@ -55,18 +53,18 @@ function upvote(element, action, obj, unique_id, jwt) {
         // mark upvote as inactive
         upVoteClassList.remove('bi-arrow-up-square-fill')
         upVoteClassList.add('bi-arrow-up-square')
-        postVoteRequest('delete', obj, unique_id, jwt);
+        postVoteRequest('delete', url, jwt);
     }
 }
 
-function downvote(element, action, obj, unique_id, jwt) {
+function downvote(element, url, jwt) {
     let downVoteIcon = element.children[0];
     let downVoteClassList = downVoteIcon.classList;
     if (downVoteClassList.contains('bi-arrow-down-square')) {
         // mark downvote as active
         downVoteClassList.remove('bi-arrow-down-square')
         downVoteClassList.add('bi-arrow-down-square-fill')
-        postVoteRequest('downvote', obj, unique_id, jwt);
+        postVoteRequest('downvote', url, jwt);
 
         let upVoteIcon = element.previousElementSibling.children[0];
         let upVoteClassList = upVoteIcon.classList;
@@ -79,6 +77,6 @@ function downvote(element, action, obj, unique_id, jwt) {
         // mark downvote as inactive
         downVoteClassList.remove('bi-arrow-down-square-fill')
         downVoteClassList.add('bi-arrow-down-square')
-        postVoteRequest('delete', obj, unique_id, jwt);
+        postVoteRequest('delete', url, jwt);
     }
 }

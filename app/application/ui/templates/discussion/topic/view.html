@@ -25,14 +25,14 @@
                         <ul class="list-group">
                             <li class="list-group-item">
                                 {% if current_user.is_authenticated %}
-                                    <a onclick="upvote(this, action='upvote', obj='thread', unique_id='{{ thread.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                    <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
                                         {% if thread.is_upvoted_by(current_user.discussion) %}
                                             <i class="bi bi-arrow-up-square-fill"></i>
                                         {% else %}
                                             <i class="bi bi-arrow-up-square"></i>
                                         {% endif %}
                                     </a>
-                                    <a onclick="downvote(this, action='downvote', obj='thread', unique_id='{{ thread.unique_id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                    <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
                                         {% if thread.is_downvoted_by(current_user.discussion) %}
                                             <i class="bi bi-arrow-down-square-fill"></i>
                                         {% else %}
