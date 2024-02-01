@@ -2,12 +2,14 @@ import re
 
 import click
 import flask
+import flask_mailman
 
 from application.constants import messages
 from application.models import (
     db,
     User,
 )
+from application.util.misc import csv_to_list
 
 
 cli_bp = flask.Blueprint(
@@ -77,3 +79,34 @@ def mark_admin(email):
         db.session.commit()
     else:
         raise click.UsageError(messages.NO_USER_FOR_PROVIDED_EMAIL)
+
+
+@click.option(
+    "--subject",
+    prompt="Subject",
+    type=click.UNPROCESSED,
+)
+@click.option(
+    "--to",
+    prompt="Recipient",
+    type=click.UNPROCESSED,
+)
+@click.option(
+    "--body",
+    prompt="Body",
+    type=click.UNPROCESSED,
+)
+@click.option(
+    "--is-html",
+    is_flag=True,
+)
+@cli_bp.cli.command("send-email")
+def send_email(subject, to, body, is_html):
+    """
+    Send an email.
+    """
+    msg = flask_mailman.EmailMessage(subject=subject, body=body, to=csv_to_list(to))
+    if is_html:
+        msg.content_subtype = "html"
+    status = bool(msg.send())
+    click.echo(f"Sent status: {status}")

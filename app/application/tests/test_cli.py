@@ -71,3 +71,36 @@ def test_mark_admin_using_invalid_email(cli_runner):
     """
     result = cli_runner.invoke(args=["cli", "mark-admin", "--email", "not-an-email"])
     assert messages.INVALID_EMAIL_ADDRESS in result.output
+
+
+def test_send_email(cli_runner):
+    """
+    Verify `flask cli send-email` works as expected.
+    """
+    result = cli_runner.invoke(
+        args=[
+            "cli",
+            "send-email",
+            "--subject=Test",
+            "--to=user@test.com",
+            "--body=Body",
+            "--is-html"
+        ])
+    assert "Sent status: True" in result.output
+
+
+def test_send_email_failure(cli_runner, mock_email_send):
+    """
+    Verify `flask cli send-email` works as expected when it fails.
+    """
+    mock_email_send(lambda self: False)
+    result = cli_runner.invoke(
+        args=[
+            "cli",
+            "send-email",
+            "--subject=Test",
+            "--to=user@test.com",
+            "--body=Body",
+            "--is-html"
+        ])
+    assert "Sent status: False" in result.output
