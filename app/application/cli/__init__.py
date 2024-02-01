@@ -62,6 +62,15 @@ def get_config():
         click.echo(f"{k}={v}")
 
 
+@cli_bp.cli.command("get-endpoints")
+def get_endpoints():
+    """
+    Show all URL endpoints and the URL path they map to.
+    """
+    for obj in flask.current_app.url_map.iter_rules():
+        click.echo(f"{obj.endpoint} -> {obj.rule}")
+
+
 @cli_bp.cli.command("mark-admin")
 @click.option(
     "--email",

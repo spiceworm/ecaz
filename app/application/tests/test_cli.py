@@ -32,6 +32,14 @@ def test_get_config(cli_runner):
     assert f"APP_NAME={flask.current_app.config['APP_NAME']}" in result.output
 
 
+def test_get_endpoints(cli_runner):
+    """
+    Verify `flask cli get-endpoints returns at least 1 endpoint to URL path mapping.
+    """
+    result = cli_runner.invoke(args=["cli", "get-endpoints"])
+    assert "ui_bp.login -> /" in result.output
+
+
 def test_mark_admin(cli_runner, user):
     """
     Verify `flask cli mark-admin --email <email>` sets `User.is_admin = True` for an existing
