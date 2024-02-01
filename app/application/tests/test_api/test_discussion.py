@@ -4,11 +4,11 @@ from flask import url_for
 import pytest
 
 
-def test_get_comment(client, topic, user):
+def test_get_comment_top_level(client, topic, user):
     u = user()
     _topic = topic()
-    thread = _topic.create_thread(title="t", body="b", discussion=u.discussion)
-    comment = thread.create_comment(body="b", discussion=u.discussion)
+    thread = _topic.create_thread(title="t", body="b1", discussion=u.discussion)
+    comment = thread.create_comment(body="b2", discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
     assert resp.json == {
         'body': comment.body,
@@ -19,6 +19,7 @@ def test_get_comment(client, topic, user):
                 'username': comment.discussion.user.username
             }
         },
+        "parent": None,
         'thread': {
             'created_at': comment.thread.created_at.isoformat(),
             'discussion': {
@@ -35,6 +36,53 @@ def test_get_comment(client, topic, user):
             'unique_id': thread.unique_id
         },
         'unique_id': comment.unique_id
+    }
+
+
+def test_get_comment_nested(client, topic, user):
+    u = user()
+    _topic = topic()
+    thread = _topic.create_thread(title="t", body="b1", discussion=u.discussion)
+    parent_comment = thread.create_comment(body="b2", discussion=u.discussion)
+    nested_comment = parent_comment.create_comment(body="b3", discussion=u.discussion)
+    resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=nested_comment.unique_id))
+    assert resp.json == {
+        'body': nested_comment.body,
+        'created_at': nested_comment.created_at.isoformat(),
+        'discussion': {
+            'user': {
+                'created_at': nested_comment.discussion.user.created_at.isoformat(),
+                'username': nested_comment.discussion.user.username
+            }
+        },
+        "parent": {
+            'body': parent_comment.body,
+            'created_at': parent_comment.created_at.isoformat(),
+            'discussion': {
+                'user': {
+                    'created_at': parent_comment.discussion.user.created_at.isoformat(),
+                    'username': parent_comment.discussion.user.username
+                }
+            },
+            "parent": None,
+            "unique_id": parent_comment.unique_id,
+        },
+        'thread': {
+            'created_at': nested_comment.thread.created_at.isoformat(),
+            'discussion': {
+                'user': {
+                    'created_at': nested_comment.thread.discussion.user.created_at.isoformat(),
+                    'username': nested_comment.thread.discussion.user.username
+                }
+            },
+            'topic': {
+                'created_at': nested_comment.thread.topic.created_at.isoformat(),
+                'name': nested_comment.thread.topic.name,
+            },
+            'title': nested_comment.thread.title,
+            'unique_id': nested_comment.thread.unique_id
+        },
+        'unique_id': nested_comment.unique_id
     }
 
 
