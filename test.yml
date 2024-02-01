@@ -23,6 +23,8 @@ services:
       RATE_LIMIT_ENABLED: "0"
       WTF_CSRF_ENABLED: "0"
     entrypoint: "tox ${TOX_ARGS:-}"
+    volumes:
+      - ./app:/app
 
   db:
     image: postgres:15.5-bookworm
