@@ -1,5 +1,73 @@
 {% extends "bases/discussion_base.html" %}
-{% from "macros.html" import render_comment %}
+
+
+{% macro render_comment(current_user, comment, form, thread) %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div>
+                {% if not comment.is_deleted %}
+                    {% if current_user.is_authenticated %}
+                        <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+                            {% if comment.is_upvoted_by(current_user.discussion) %}
+                                <i class="bi bi-arrow-up-square-fill"></i>
+                            {% else %}
+                                <i class="bi bi-arrow-up-square"></i>
+                            {% endif %}
+                        </a>
+                        <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+                            {% if comment.is_downvoted_by(current_user.discussion) %}
+                                <i class="bi bi-arrow-down-square-fill"></i>
+                            {% else %}
+                                <i class="bi bi-arrow-down-square"></i>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+                <small><a onclick="toggleCommentFolding(this);">[-]</a></small>
+                {% if comment.is_deleted %}
+                    <small>[removed] - {{ comment.humanized_created_at }}</small>
+                {% else %}
+                    <small>{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
+                {% endif %}
+            </div>
+            <div style="display: block">
+                {% if comment.is_deleted %}
+                    <p>[removed]</p>
+                {% else %}
+                    <p>{{ comment.markdown_body | safe }}</p>
+                    <small><a onclick="showReplyForm(this);">Reply</a></small>
+                    <small><a>Save</a></small>
+                    <small><a>Report</a></small>
+                    {% if comment.discussion == current_user.discussion %}
+                        <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
+                    {% endif %}
+
+                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
+                        {{ form.csrf_token }}
+
+                        <fieldset>
+                            <div class="form-group">
+                                <div class="col-lg-12">
+                                    {{ form.body(class_="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-lg-12">
+                                    <button class="btn btn-default" type="submit">Save</button>
+                                    <button class="btn btn-default" type="button" onclick="hideReplyForm(this); return false;">Cancel</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                {% endif %}
+
+                {% for response in comment.responses %}
+                    {{ render_comment(current_user, response, form, thread) }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
 
 
 {% block head %}
@@ -24,16 +92,24 @@
                 <div class="panel-body">
                     <div class="panel-heading">
                         <h3>{{ thread.title }}</h3>
-                        <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
+                        {% if thread.is_deleted %}
+                            <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
+                        {% else %}
+                            <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
+                        {% endif %}
                     </div>
                     <div class="panel-body">
-                        {{ thread.markdown_body | safe }}
+                        {% if thread.is_deleted %}
+                            [removed]
+                        {% else %}
+                            {{ thread.markdown_body | safe }}
+                        {% endif %}
                     </div>
 
                     <small><a>Save</a></small>
                     <small><a>Report</a></small>
-                    {% if thread.discussion == current_user.discussion %}
-                        <small><a>Delete</a></small>
+                    {% if thread.discussion == current_user.discussion and not thread.is_deleted %}
+                        <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
                     {% endif %}
                 </div>
             </div>

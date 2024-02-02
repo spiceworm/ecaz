@@ -11,6 +11,7 @@ from flask_restful import reqparse
 from application.models import (
     Comment,
     CommentSchema,
+    db,
     Thread,
     ThreadSchema,
     Topic,
@@ -29,20 +30,36 @@ api_discussion_bp = flask.Blueprint(
 )
 
 
-class CommentApi(flask_restful.Resource):
+class _CommentThreadApiBase:
+    model = None
+    schema = None
+
     def get(self, unique_id):
-        if comment := Comment.query.filter_by(unique_id=unique_id).one_or_none():
-            schema = CommentSchema()
+        if comment := self.model.query.filter_by(unique_id=unique_id).one_or_none():
+            schema = self.schema()
             return schema.dump(comment)
         return {}, http.HTTPStatus.NOT_FOUND
 
+    @jwt_required()
+    def delete(self, unique_id):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            if obj := self.model.query.filter_by(discussion=user.discussion, unique_id=unique_id).one_or_none():
+                obj.is_deleted = True
+                db.session.add(obj)
+                db.session.commit()
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
 
-class ThreadApi(flask_restful.Resource):
-    def get(self, unique_id):
-        if comment := Thread.query.filter_by(unique_id=unique_id).one_or_none():
-            schema = ThreadSchema()
-            return schema.dump(comment)
-        return {}, http.HTTPStatus.NOT_FOUND
+
+class CommentApi(flask_restful.Resource, _CommentThreadApiBase):
+    model = Comment
+    schema = CommentSchema
+
+
+class ThreadApi(flask_restful.Resource, _CommentThreadApiBase):
+    model = Thread
+    schema = ThreadSchema
 
 
 class TopicApi(flask_restful.Resource):

@@ -1,3 +1,17 @@
+function deleteCommentOrThread(url, jwt) {
+    fetch(url, {
+        method: "DELETE",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        }
+    }).then(resp => {
+        // Reload the page so the original comment/thread text and poster are removed
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
+}
+
 function hideReplyForm(element) {
     element.closest('form').style.display = 'none';
 }
@@ -24,7 +38,7 @@ function postVoteRequest(action, url, jwt) {
     fetch(url, {
         method: "POST",
         headers: {
-            'Authorization': 'Bearer ' + jwt,
+            'Authorization': `Bearer ${jwt}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({

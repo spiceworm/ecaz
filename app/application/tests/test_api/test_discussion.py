@@ -4,6 +4,46 @@ from flask import url_for
 import pytest
 
 
+def test_delete_comment(api_user, topic):
+    user = api_user()
+    _topic = topic()
+    thread = _topic.create_thread(body="b1", title="t", discussion=user.discussion)
+    comment = thread.create_comment(body="b2", discussion=user.discussion)
+    resp = user.delete(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
+    assert resp.status_code == http.HTTPStatus.OK
+    assert comment.is_deleted
+
+
+def test_delete_comment_created_by_different_user(api_user, topic, user):
+    user1 = api_user(email="1@test.com")
+    user2 = user(email="2@tets.com")
+    _topic = topic()
+    thread = _topic.create_thread(title="t", body="b1", discussion=user1.discussion)
+    comment = thread.create_comment(body="b2", discussion=user2.discussion)
+    resp = user1.delete(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
+    assert resp.status_code == http.HTTPStatus.NOT_FOUND
+    assert not comment.is_deleted
+
+
+def test_delete_thread(api_user, topic):
+    user = api_user()
+    _topic = topic()
+    thread = _topic.create_thread(body="b1", title="t", discussion=user.discussion)
+    resp = user.delete(url_for("api_discussion_bp.threadapi", unique_id=thread.unique_id))
+    assert resp.status_code == http.HTTPStatus.OK
+    assert thread.is_deleted
+
+
+def test_delete_thread_created_by_different_user(api_user, topic, user):
+    user1 = api_user(email="1@test.com")
+    user2 = user(email="2@tets.com")
+    _topic = topic()
+    thread = _topic.create_thread(title="t", body="b1", discussion=user2.discussion)
+    resp = user1.delete(url_for("api_discussion_bp.threadapi", unique_id=thread.unique_id))
+    assert resp.status_code == http.HTTPStatus.NOT_FOUND
+    assert not thread.is_deleted
+
+
 def test_get_comment_top_level(client, topic, user):
     u = user()
     _topic = topic()
