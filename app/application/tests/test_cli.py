@@ -1,27 +1,6 @@
 import flask
 
 from application.constants import messages
-from application.models import User
-
-
-def test_create_admin(cli_runner):
-    """
-    Verify `flask cli create-admin --email <email> --password <password>` creates a new `User`
-    where `User.is_admin == True`.
-    """
-    email = "user@test.com"
-    assert User.query.filter_by(email=email).one_or_none() is None
-    cli_runner.invoke(args=["cli", "create-admin", "--email", email, "--password", "the-password"])
-    user = User.query.filter_by(email=email).one_or_none()
-    assert user.is_admin
-
-
-def test_create_admin_using_invalid_email(cli_runner):
-    """
-    Verify `flask cli create-admin --email <bad-email> --password <password>` produces an error.
-    """
-    result = cli_runner.invoke(args=["cli", "create-admin", "--email", "not-an-email", "--password", "the-password"])
-    assert messages.INVALID_EMAIL_ADDRESS in result.output
 
 
 def test_get_config(cli_runner):

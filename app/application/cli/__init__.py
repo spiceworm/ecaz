@@ -27,32 +27,6 @@ def validate_email(ctx, param, value):
     return value
 
 
-@cli_bp.cli.command("create-admin")
-@click.option(
-    "--email",
-    callback=validate_email,
-    prompt="Email",
-    type=click.UNPROCESSED,
-)
-@click.option(
-    "--password",
-    confirmation_prompt=True,
-    hide_input=True,
-    prompt=True,
-)
-def create_admin(email, password):
-    """
-    Create a new admin `User` with the provided email and password.
-    """
-    user = User(
-        email=email,
-        password=password,
-        is_admin=True,
-    )
-    db.session.add(user)
-    db.session.commit()
-
-
 @cli_bp.cli.command("get-config")
 def get_config():
     """
