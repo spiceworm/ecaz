@@ -4,87 +4,77 @@ from flask import url_for
 import pytest
 
 
-def test_delete_comment(api_user, topic):
+def test_delete_comment(api_user, comment):
     user = api_user()
-    _topic = topic()
-    thread = _topic.create_thread(body="b1", title="t", discussion=user.discussion)
-    comment = thread.create_comment(body="b2", discussion=user.discussion)
-    resp = user.delete(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
+    c = comment(discussion=user.discussion)
+    resp = user.delete(url_for("api_discussion_bp.commentapi", unique_id=c.unique_id))
     assert resp.status_code == http.HTTPStatus.OK
-    assert comment.is_deleted
+    assert c.is_deleted
 
 
-def test_delete_comment_created_by_different_user(api_user, topic, user):
+def test_delete_comment_created_by_different_user(api_user, comment, user):
     user1 = api_user(email="1@test.com")
     user2 = user(email="2@tets.com")
-    _topic = topic()
-    thread = _topic.create_thread(title="t", body="b1", discussion=user1.discussion)
-    comment = thread.create_comment(body="b2", discussion=user2.discussion)
-    resp = user1.delete(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
+    c = comment(discussion=user2.discussion)
+    resp = user1.delete(url_for("api_discussion_bp.commentapi", unique_id=c.unique_id))
     assert resp.status_code == http.HTTPStatus.NOT_FOUND
-    assert not comment.is_deleted
+    assert not c.is_deleted
 
 
-def test_delete_thread(api_user, topic):
+def test_delete_thread(api_user, thread):
     user = api_user()
-    _topic = topic()
-    thread = _topic.create_thread(body="b1", title="t", discussion=user.discussion)
-    resp = user.delete(url_for("api_discussion_bp.threadapi", unique_id=thread.unique_id))
+    t = thread(discussion=user.discussion)
+    resp = user.delete(url_for("api_discussion_bp.threadapi", unique_id=t.unique_id))
     assert resp.status_code == http.HTTPStatus.OK
-    assert thread.is_deleted
+    assert t.is_deleted
 
 
-def test_delete_thread_created_by_different_user(api_user, topic, user):
+def test_delete_thread_created_by_different_user(api_user, thread):
     user1 = api_user(email="1@test.com")
-    user2 = user(email="2@tets.com")
-    _topic = topic()
-    thread = _topic.create_thread(title="t", body="b1", discussion=user2.discussion)
-    resp = user1.delete(url_for("api_discussion_bp.threadapi", unique_id=thread.unique_id))
+    user2 = api_user(email="2@tets.com")
+    t = thread(discussion=user2.discussion)
+    resp = user1.delete(url_for("api_discussion_bp.threadapi", unique_id=t.unique_id))
     assert resp.status_code == http.HTTPStatus.NOT_FOUND
-    assert not thread.is_deleted
+    assert not t.is_deleted
 
 
-def test_get_comment_top_level(client, topic, user):
+def test_get_comment_top_level(comment, client, user):
     u = user()
-    _topic = topic()
-    thread = _topic.create_thread(title="t", body="b1", discussion=u.discussion)
-    comment = thread.create_comment(body="b2", discussion=u.discussion)
-    resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=comment.unique_id))
+    c = comment(discussion=u.discussion)
+    resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=c.unique_id))
     assert resp.json == {
-        'body': comment.body,
-        'created_at': comment.created_at.isoformat(),
+        'body': c.body,
+        'created_at': c.created_at.isoformat(),
         'discussion': {
             'user': {
-                'created_at': comment.discussion.user.created_at.isoformat(),
-                'username': comment.discussion.user.username
+                'created_at': c.discussion.user.created_at.isoformat(),
+                'username': c.discussion.user.username
             }
         },
         "parent": None,
         'thread': {
-            'created_at': comment.thread.created_at.isoformat(),
+            'created_at': c.thread.created_at.isoformat(),
             'discussion': {
                 'user': {
-                    'created_at': thread.discussion.user.created_at.isoformat(),
-                    'username': thread.discussion.user.username
+                    'created_at': c.thread.discussion.user.created_at.isoformat(),
+                    'username': c.thread.discussion.user.username
                 }
             },
             'topic': {
-                'created_at': thread.topic.created_at.isoformat(),
-                'name': thread.topic.name,
+                'created_at': c.thread.topic.created_at.isoformat(),
+                'name': c.thread.topic.name,
             },
-            'title': thread.title,
-            'unique_id': thread.unique_id
+            'title': c.thread.title,
+            'unique_id': c.thread.unique_id
         },
-        'unique_id': comment.unique_id
+        'unique_id': c.unique_id
     }
 
 
-def test_get_comment_nested(client, topic, user):
+def test_get_comment_nested(comment, client, user):
     u = user()
-    _topic = topic()
-    thread = _topic.create_thread(title="t", body="b1", discussion=u.discussion)
-    parent_comment = thread.create_comment(body="b2", discussion=u.discussion)
-    nested_comment = parent_comment.create_comment(body="b3", discussion=u.discussion)
+    parent_comment = comment(discussion=u.discussion)
+    nested_comment = parent_comment.create_comment(body="b", discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=nested_comment.unique_id))
     assert resp.json == {
         'body': nested_comment.body,
@@ -131,25 +121,24 @@ def test_get_comment_using_invalid_unique_id(client):
     assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
-def test_get_thread(client, topic, user):
+def test_get_thread(client, thread, user):
     u = user()
-    _topic = topic()
-    thread = _topic.create_thread(title="t", body="b", discussion=u.discussion)
-    resp = client.get(url_for("api_discussion_bp.threadapi", unique_id=thread.unique_id))
+    t = thread(discussion=u.discussion)
+    resp = client.get(url_for("api_discussion_bp.threadapi", unique_id=t.unique_id))
     assert resp.json == {
-        'created_at': thread.created_at.isoformat(),
+        'created_at': t.created_at.isoformat(),
         'discussion': {
             'user': {
-                'created_at': thread.discussion.user.created_at.isoformat(),
-                'username': thread.discussion.user.username
+                'created_at': t.discussion.user.created_at.isoformat(),
+                'username': t.discussion.user.username
             }
         },
         'topic': {
-            'created_at': thread.topic.created_at.isoformat(),
-            'name': thread.topic.name
+            'created_at': t.topic.created_at.isoformat(),
+            'name': t.topic.name
         },
-        'title': thread.title,
-        'unique_id': thread.unique_id
+        'title': t.title,
+        'unique_id': t.unique_id
     }
 
 
@@ -209,30 +198,27 @@ class TestSaveApi:
     ],
 )
 class TestVoteApi:
-    def test_comment_vote_api(self, topic, api_user, action, vote_count):
+    def test_comment_vote_api(self, comment, api_user, action, vote_count):
         user = api_user()
-        _topic = topic()
-        thread = _topic.create_thread(title="t", body="b", discussion=user.discussion)
-        comment = thread.create_comment(body="b", discussion=user.discussion)
+        c = comment(discussion=user.discussion)
         resp = user.post(
-            url_for("api_discussion_bp.commentvoteapi", unique_id=comment.unique_id),
+            url_for("api_discussion_bp.commentvoteapi", unique_id=c.unique_id),
             json={"action": action}
         )
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.comment_votes) == vote_count
-        assert len(comment.votes) == vote_count
+        assert len(c.votes) == vote_count
 
-    def test_thread_vote_api(self, topic, api_user, action, vote_count):
+    def test_thread_vote_api(self, api_user, thread, action, vote_count):
         user = api_user()
-        _topic = topic()
-        thread = _topic.create_thread(title="t", body="b", discussion=user.discussion)
+        t = thread(discussion=user.discussion)
         resp = user.post(
-            url_for("api_discussion_bp.threadvoteapi", unique_id=thread.unique_id),
+            url_for("api_discussion_bp.threadvoteapi", unique_id=t.unique_id),
             json={"action": action}
         )
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.thread_votes) == vote_count
-        assert len(thread.votes) == vote_count
+        assert len(t.votes) == vote_count
 
 
 @pytest.mark.parametrize(

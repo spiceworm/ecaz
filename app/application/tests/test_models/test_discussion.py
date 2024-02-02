@@ -45,23 +45,19 @@ def test_add_moderator_to_topic(topic, user):
     assert not d2.is_moderator_of(t)
 
 
-def test_comment_is_downvoted_by(topic, user):
+def test_comment_is_downvoted_by(comment, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
-    c = t.create_comment(body="body", discussion=d1)
+    c = comment(body="body", discussion=d1)
     c.downvote(discussion=d1)
     assert c.is_downvoted_by(d1)
     assert not c.is_downvoted_by(d2)
 
 
-def test_comment_is_upvoted_by(topic, user):
+def test_comment_is_upvoted_by(comment, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
-    c = t.create_comment(body="body", discussion=d1)
+    c = comment(body="body", discussion=d1)
     c.upvote(discussion=d1)
     assert c.is_upvoted_by(d1)
     assert not c.is_upvoted_by(d2)
@@ -175,11 +171,10 @@ def test_relation_discussion_shadow_bans(topic, user):
     assert d2.bans[1].is_shadow
 
 
-def test_relation_multiple_comments_multiple_users(topic, user):
+def test_relation_multiple_comments_multiple_users(thread, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    _topic = topic()
-    t = d1.create_thread(body="body", title="thread 1", topic=_topic)
+    t = thread(discussion=d1)
     c1 = t.create_comment(body="comment 1", discussion=d1)
     c2 = t.create_comment(body="comment 2", discussion=d2)
     assert t.discussion is d1
@@ -226,11 +221,9 @@ def test_relation_topic_moderators(topic, user):
     assert d3.moderator_of == [topic2]
 
 
-def test_save_comment(topic, user):
+def test_save_comment(comment, user):
     d = user().discussion
-    _topic = topic()
-    t = _topic.create_thread(body="b1", title="t", discussion=d)
-    c = t.create_comment(body="b2", discussion=d)
+    c = comment(discussion=d)
     c.save(d)
     assert d.saved_comments == [c]
     assert c.is_saved_by(d)
@@ -239,10 +232,9 @@ def test_save_comment(topic, user):
     assert not c.is_saved_by(d)
 
 
-def test_save_thread(topic, user):
+def test_save_thread(thread, user):
     d = user().discussion
-    _topic = topic()
-    t = _topic.create_thread(body="b1", title="t", discussion=d)
+    t = thread(discussion=d)
     t.save(d)
     assert d.saved_threads == [t]
     assert t.is_saved_by(d)
@@ -251,31 +243,27 @@ def test_save_thread(topic, user):
     assert not t.is_saved_by(d)
 
 
-def test_thread_is_downvoted_by(topic, user):
+def test_thread_is_downvoted_by(thread, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    t = thread(discussion=d1)
     t.downvote(discussion=d1)
     assert t.is_downvoted_by(d1)
     assert not t.is_downvoted_by(d2)
 
 
-def test_thread_is_upvoted_by(topic, user):
+def test_thread_is_upvoted_by(thread, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d1)
+    t = thread(discussion=d1)
     t.upvote(discussion=d1)
     assert t.is_upvoted_by(d1)
     assert not t.is_upvoted_by(d2)
 
 
-def test_vote_on_comment(topic, user):
+def test_vote_on_comment(comment, user):
     d = user().discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
-    c = t.create_comment(body="body", discussion=d)
+    c = comment(discussion=d)
     v1 = c.upvote(discussion=d)
     assert c.votes == [v1]
     v2 = c.downvote(discussion=d)
@@ -284,10 +272,9 @@ def test_vote_on_comment(topic, user):
     assert c.votes == []
 
 
-def test_vote_on_thread(topic, user):
+def test_vote_on_thread(thread, user):
     d = user().discussion
-    _topic = topic()
-    t = _topic.create_thread(body="thread 1", title="title", discussion=d)
+    t = thread(discussion=d)
     v1 = t.upvote(discussion=d)
     assert t.votes == [v1]
     v2 = t.downvote(discussion=d)

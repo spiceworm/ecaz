@@ -37,30 +37,28 @@ def test_get_create_thread_page_if_unauthenticated(topic, client):
     assert resp.request.base_url == url_for("ui_bp.login")
 
 
-def test_view_thread(topic, ui_user):
+def test_view_thread(thread, ui_user):
     user = ui_user()
-    _topic = topic()
-    thread = _topic.create_thread(body="b", title="t", discussion=user.discussion)
+    t = thread(discussion=user.discussion)
     url = url_for(
         "ui_bp.view_thread",
-        topic=_topic.name,
-        thread_unique_id=thread.unique_id,
-        slug=thread.slug,
+        topic=t.topic.name,
+        thread_unique_id=t.unique_id,
+        slug=t.slug,
     )
     resp = user.get(url)
     assert resp.request.base_url == url
 
 
-def test_view_thread_that_does_not_exist(topic, ui_user):
+def test_view_thread_that_does_not_exist(thread, ui_user):
     user = ui_user()
-    _topic = topic()
-    thread = _topic.create_thread(body="b", title="t", discussion=user.discussion)
+    t = thread(discussion=user.discussion)
     resp = user.get(
         url_for(
             "ui_bp.view_thread",
-            topic=_topic.name,
+            topic=t.topic.name,
             thread_unique_id="this-in-invalid",
-            slug=thread.slug,
+            slug=t.slug,
         ),
     )
     assert resp.status_code == HTTPStatus.NOT_FOUND

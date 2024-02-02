@@ -14,8 +14,11 @@ from application.models import (
 )
 
 
+DEFAULT_COMMENT_BODY = "default-comment"
 DEFAULT_EMAIL = "default-email@test.com"
 DEFAULT_PASSWORD = "default-password"
+DEFAULT_THREAD_BODY = "thread-body"
+DEFAULT_THREAD_TITLE = "thread-title"
 DEFAULT_TOPIC_DESCRIPTION = "Topic description"
 DEFAULT_TOPIC_NAME = "Topic-name"
 
@@ -116,6 +119,18 @@ def client(_app):
     return _app.test_client()
 
 
+@pytest.fixture
+def comment(thread):
+    def func(discussion, body=DEFAULT_COMMENT_BODY, **kwargs):
+        _thread = thread(discussion=discussion)
+        return _thread.create_comment(
+            body=body,
+            discussion=discussion,
+            **kwargs,
+        )
+    return func
+
+
 @pytest.fixture(autouse=True)
 def mock_email_send(monkeypatch):
     def patched_send(return_value=True):
@@ -132,6 +147,19 @@ def mock_email_send(monkeypatch):
     # Return `patch_send` so we can change the return value of send to something
     # other than `True` if needed.
     return patch_send
+
+
+@pytest.fixture
+def thread(topic):
+    def func(discussion, body=DEFAULT_THREAD_BODY, title=DEFAULT_THREAD_TITLE, **kwargs):
+        _topic = topic()
+        return _topic.create_thread(
+            body=body,
+            title=title,
+            discussion=discussion,
+            **kwargs
+        )
+    return func
 
 
 @pytest.fixture
