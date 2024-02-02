@@ -37,7 +37,7 @@ class _CommentThreadApiBase:
     def get(self, unique_id):
         if comment := self.model.query.filter_by(unique_id=unique_id).one_or_none():
             schema = self.schema()
-            return schema.dump(comment)
+            return schema.dump(comment), http.HTTPStatus.OK
         return {}, http.HTTPStatus.NOT_FOUND
 
     @jwt_required()
@@ -113,7 +113,7 @@ class TopicApi(flask_restful.Resource):
     def get(self, topic):
         if topic := Topic.query.filter_by(name=topic).one_or_none():
             schema = TopicSchema()
-            return schema.dump(topic)
+            return schema.dump(topic), http.HTTPStatus.OK
         return {}, http.HTTPStatus.NOT_FOUND
 
 
