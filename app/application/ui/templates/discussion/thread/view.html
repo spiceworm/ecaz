@@ -36,7 +36,15 @@
                 {% else %}
                     <p>{{ comment.markdown_body | safe }}</p>
                     <small><a onclick="showReplyForm(this);">Reply</a></small>
-                    <small><a>Save</a></small>
+                    <small>
+                        {% if current_user.is_authenticated %}
+                            {% if comment.is_saved_by(current_user.discussion) %}
+                                <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
+                            {% else %}
+                                <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
+                            {% endif %}
+                        {% endif %}
+                    </small>
                     <small><a>Report</a></small>
                     {% if comment.discussion == current_user.discussion %}
                         <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
@@ -106,7 +114,15 @@
                         {% endif %}
                     </div>
 
-                    <small><a>Save</a></small>
+                    <small>
+                        {% if current_user.is_authenticated %}
+                            {% if thread.is_saved_by(current_user.discussion) %}
+                                <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
+                            {% else %}
+                                <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
+                            {% endif %}
+                        {% endif %}
+                    </small>
                     <small><a>Report</a></small>
                     {% if thread.discussion == current_user.discussion and not thread.is_deleted %}
                         <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>

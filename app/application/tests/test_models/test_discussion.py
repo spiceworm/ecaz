@@ -226,6 +226,31 @@ def test_relation_topic_moderators(topic, user):
     assert d3.moderator_of == [topic2]
 
 
+def test_save_comment(topic, user):
+    d = user().discussion
+    _topic = topic()
+    t = _topic.create_thread(body="b1", title="t", discussion=d)
+    c = t.create_comment(body="b2", discussion=d)
+    c.save(d)
+    assert d.saved_comments == [c]
+    assert c.is_saved_by(d)
+    c.unsave(d)
+    assert d.saved_comments == []
+    assert not c.is_saved_by(d)
+
+
+def test_save_thread(topic, user):
+    d = user().discussion
+    _topic = topic()
+    t = _topic.create_thread(body="b1", title="t", discussion=d)
+    t.save(d)
+    assert d.saved_threads == [t]
+    assert t.is_saved_by(d)
+    t.unsave(d)
+    assert d.saved_threads == []
+    assert not t.is_saved_by(d)
+
+
 def test_thread_is_downvoted_by(topic, user):
     d1 = user(email="1@test.com").discussion
     d2 = user(email="2@test.com").discussion

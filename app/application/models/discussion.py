@@ -43,12 +43,44 @@ def default_thread_slug(ctx) -> str:
     return slugify.slugify(title)
 
 
+# Association table for`discussion.saved_comments` <-> `comment.saves`
+discussion_saved_comments = db.Table(
+    "discussion_saved_comments",
+    sa.Column(
+        "comment_id",
+        sa.ForeignKey("comment.id"),
+        primary_key=True,
+    ),
+    sa.Column(
+        "discussion_id",
+        sa.ForeignKey("discussion.id"),
+        primary_key=True,
+    ),
+)
+
+
 # Association table for`discussion.subscriptions` <-> `topic.subscribers`
 subscription_subscriber = db.Table(
     "subscription_subscriber",
     sa.Column(
         "topic_id",
         sa.ForeignKey("topic.id"),
+        primary_key=True,
+    ),
+    sa.Column(
+        "discussion_id",
+        sa.ForeignKey("discussion.id"),
+        primary_key=True,
+    ),
+)
+
+
+# Association table for`discussion.saved_threads` <-> `thread.saves`
+discussion_saved_threads = db.Table(
+    "discussion_saved_threads",
+    sa.Column(
+        "threads_id",
+        sa.ForeignKey("thread.id"),
         primary_key=True,
     ),
     sa.Column(
@@ -203,6 +235,10 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
         back_populates="parent",
         cascade="all, delete-orphan",
     )
+    saves: Mapped[List["Discussion"]] = relationship(
+        back_populates="saved_comments",
+        secondary=discussion_saved_comments,
+    )
     thread: Mapped["Thread"] = relationship(
         back_populates="comments",
     )
@@ -241,11 +277,25 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
             return vote.value == self.DOWNVOTE
         return False
 
+    def is_saved_by(self, discussion: Discussion) -> bool:
+        return self in discussion.saved_comments
+
     def is_upvoted_by(self, discussion: Discussion) -> bool:
         if votes := set(discussion.comment_votes).intersection(self.votes):
             vote = votes.pop()
             return vote.value == self.UPVOTE
         return False
+
+    def save(self, discussion: Discussion) -> None:
+        if self not in discussion.saved_comments:
+            discussion.saved_comments.append(self)
+            db.session.add(self)
+            db.session.commit()
+
+    def unsave(self, discussion: Discussion) -> None:
+        if self in discussion.saved_comments:
+            discussion.saved_comments.remove(self)
+            db.session.commit()
 
 
 class CommentVote(db.Model):
@@ -300,6 +350,14 @@ class Discussion(db.Model):
     moderator_of: Mapped[List["Topic"]] = relationship(
         back_populates="moderators",
         secondary=topic_moderators,
+    )
+    saved_comments: Mapped[List["Comment"]] = relationship(
+        back_populates="saves",
+        secondary=discussion_saved_comments,
+    )
+    saved_threads: Mapped[List["Thread"]] = relationship(
+        back_populates="saves",
+        secondary=discussion_saved_threads,
     )
     subscriptions: Mapped[List["Topic"]] = relationship(
         back_populates="subscribers",
@@ -366,6 +424,10 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
         sa.Boolean,
         default=False,
     )
+    saves: Mapped[List["Discussion"]] = relationship(
+        back_populates="saved_threads",
+        secondary=discussion_saved_threads,
+    )
     slug = sa.Column(
         sa.String,
         default=default_thread_slug,
@@ -413,11 +475,25 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
             return vote.value == self.DOWNVOTE
         return False
 
+    def is_saved_by(self, discussion: Discussion) -> bool:
+        return self in discussion.saved_threads
+
     def is_upvoted_by(self, discussion: Discussion) -> bool:
         if votes := set(discussion.thread_votes).intersection(self.votes):
             vote = votes.pop()
             return vote.value == self.UPVOTE
         return False
+
+    def save(self, discussion: Discussion) -> None:
+        if self not in discussion.saved_threads:
+            discussion.saved_threads.append(self)
+            db.session.add(self)
+            db.session.commit()
+
+    def unsave(self, discussion: Discussion) -> None:
+        if self in discussion.saved_threads:
+            discussion.saved_threads.remove(self)
+            db.session.commit()
 
 
 class ThreadVote(db.Model):

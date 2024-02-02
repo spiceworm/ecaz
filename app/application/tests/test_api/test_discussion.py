@@ -172,6 +172,34 @@ def test_get_topic_using_invalid_name(client):
     assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
+class TestSaveApi:
+    def test_save_comment(self, comment, api_user):
+        user = api_user()
+        c = comment(discussion=user.discussion)
+        url = url_for("api_discussion_bp.commentsaveapi", unique_id=c.unique_id)
+
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_comments == [c]
+
+        resp2 = user.delete(url)
+        assert resp2.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_comments == []
+
+    def test_save_thread(self, thread, api_user):
+        user = api_user()
+        t = thread(discussion=user.discussion)
+        url = url_for("api_discussion_bp.threadsaveapi", unique_id=t.unique_id)
+
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_threads == [t]
+
+        resp2 = user.delete(url)
+        assert resp2.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_threads == []
+
+
 @pytest.mark.parametrize(
     "action, vote_count",
     [
@@ -190,7 +218,7 @@ class TestVoteApi:
             url_for("api_discussion_bp.commentvoteapi", unique_id=comment.unique_id),
             json={"action": action}
         )
-        assert resp.json == {"success": "processed"}
+        assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.comment_votes) == vote_count
         assert len(comment.votes) == vote_count
 
@@ -202,7 +230,7 @@ class TestVoteApi:
             url_for("api_discussion_bp.threadvoteapi", unique_id=thread.unique_id),
             json={"action": action}
         )
-        assert resp.json == {"success": "processed"}
+        assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.thread_votes) == vote_count
         assert len(thread.votes) == vote_count
 

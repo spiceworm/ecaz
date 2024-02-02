@@ -52,6 +52,53 @@ class _CommentThreadApiBase:
         return {}, http.HTTPStatus.UNAUTHORIZED
 
 
+class _CommentThreadSaveApiBase:
+    model = None
+
+    @jwt_required()
+    def delete(self, unique_id):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            if obj := self.model.query.filter_by(unique_id=unique_id).one_or_none():
+                obj.unsave(user.discussion)
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+    @jwt_required()
+    def post(self, unique_id):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            if obj := self.model.query.filter_by(unique_id=unique_id).one_or_none():
+                obj.save(user.discussion)
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+
+class _CommentThreadVoteApiBase:
+    model = None
+
+    @jwt_required()
+    def post(self, unique_id):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            parser = reqparse.RequestParser()
+            parser.add_argument("action", choices=("downvote", "upvote", "delete"), required=True)
+            args = parser.parse_args()
+
+            if obj := self.model.query.filter_by(unique_id=unique_id).one_or_none():
+                match args.action:
+                    case "downvote":
+                        obj.downvote(discussion=user.discussion)
+                    case "upvote":
+                        obj.upvote(discussion=user.discussion)
+                    case "delete":
+                        obj.delete_vote(discussion=user.discussion)
+                    case _:  # pragma: no cover
+                        raise NotImplementedError(args.action)
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+
 class CommentApi(flask_restful.Resource, _CommentThreadApiBase):
     model = Comment
     schema = CommentSchema
@@ -70,48 +117,27 @@ class TopicApi(flask_restful.Resource):
         return {}, http.HTTPStatus.NOT_FOUND
 
 
-class _VoteApiBase:
-    cls = None
-
-    def post(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
-            parser = reqparse.RequestParser()
-            parser.add_argument("action", choices=("downvote", "upvote", "delete"), required=True)
-            args = parser.parse_args()
-
-            if obj := self.cls.query.filter_by(unique_id=unique_id).one_or_none():
-                match args.action:
-                    case "downvote":
-                        obj.downvote(discussion=user.discussion)
-                    case "upvote":
-                        obj.upvote(discussion=user.discussion)
-                    case "delete":
-                        obj.delete_vote(discussion=user.discussion)
-                    case _:  # pragma: no cover
-                        raise NotImplementedError(args.action)
-                return {"success": "processed"}
-        return {}, http.HTTPStatus.NOT_FOUND
+class CommentSaveApi(flask_restful.Resource, _CommentThreadSaveApiBase):
+    model = Comment
 
 
-class CommentVoteApi(flask_restful.Resource, _VoteApiBase):
-    cls = Comment
-
-    @jwt_required()
-    def post(self, unique_id):
-        return super().post(unique_id)
+class ThreadSaveApi(flask_restful.Resource, _CommentThreadSaveApiBase):
+    model = Thread
 
 
-class ThreadVoteApi(flask_restful.Resource, _VoteApiBase):
-    cls = Thread
+class CommentVoteApi(flask_restful.Resource, _CommentThreadVoteApiBase):
+    model = Comment
 
-    @jwt_required()
-    def post(self, unique_id):
-        return super().post(unique_id)
+
+class ThreadVoteApi(flask_restful.Resource, _CommentThreadVoteApiBase):
+    model = Thread
 
 
 api = flask_restful.Api(api_discussion_bp)
 api.add_resource(CommentApi, "/comment/<unique_id>")
-api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
 api.add_resource(ThreadApi, "/thread/<unique_id>")
+api.add_resource(CommentSaveApi, "/comment/<unique_id>/save")
+api.add_resource(ThreadSaveApi, "/thread/<unique_id>/save")
+api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
 api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
 api.add_resource(TopicApi, "/topic/<topic>")
