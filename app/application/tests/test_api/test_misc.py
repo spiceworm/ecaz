@@ -8,7 +8,7 @@ def test_generate_random_username(client, monkeypatch):
     Verify GET to /api/v1/generate-username.
     """
     username = "username"
-    monkeypatch.setattr("application.api.v1.misc.generate_random_username", lambda: username)
+    monkeypatch.setattr("application.api.v1.misc.generate_unique_username", lambda: username)
     resp = client.get(url_for("api_misc_bp.generateusernameapi"))
     assert resp.json["username"] == username
 

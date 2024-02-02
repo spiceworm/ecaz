@@ -18,7 +18,6 @@ from application.models import (
     MFA,
     utcnow,
 )
-from application.util.misc import generate_random_username
 
 
 __all__ = ("User",)
@@ -100,7 +99,6 @@ class User(db.Model, flask_login.UserMixin):
             key=get_encryption_key,
             padding="pkcs5",
         ),
-        default=generate_random_username,
         nullable=False,
         unique=True,
     )

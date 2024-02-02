@@ -10,7 +10,7 @@ from application.ui.forms.validators import (
     require_unique_email,
     require_unique_username,
 )
-from application.util.misc import generate_random_username
+from application.util.misc import generate_unique_username
 
 
 __all__ = ("RegisterForm",)
@@ -36,7 +36,7 @@ class RegisterForm(BaseForm):
     )
     username = StringField(
         "username",
-        default=generate_random_username,
+        default=generate_unique_username,
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),

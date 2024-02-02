@@ -12,6 +12,7 @@ from application.models import (
     Topic,
     User,
 )
+from application.util.misc import generate_unique_username
 
 
 DEFAULT_COMMENT_BODY = "default-comment"
@@ -28,6 +29,7 @@ class _UiUser:
         _user = User(
             email=email,
             password=password,
+            username=kwargs.pop("username", generate_unique_username()),
             **kwargs,
         )
         db.session.add(_user)
@@ -188,6 +190,7 @@ def user():
         _user = User(
             email=email,
             password=password,
+            username=kwargs.pop("username", generate_unique_username()),
             **kwargs,
         )
         db.session.add(_user)

@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 
 from application.constants import messages
 from application.models import User
-from application.util.misc import generate_random_username
+from application.util.misc import generate_unique_username
 
 
 __all__ = ("api_misc_bp",)
@@ -24,10 +24,7 @@ api_misc_bp = flask.Blueprint(
 
 class GenerateUsernameApi(flask_restful.Resource):
     def get(self):
-        username = generate_random_username()
-        while User.query.filter_by(username=username).one_or_none():
-            username = generate_random_username()  # pragma: no cover
-        return {"username": username}
+        return {"username": generate_unique_username()}
 
 
 class StatusApi(flask_restful.Resource):
