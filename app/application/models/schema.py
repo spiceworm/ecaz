@@ -44,6 +44,7 @@ class ThreadSchema(marshmallow.SQLAlchemySchema):
     class Meta:
         model = Thread
 
+    body = marshmallow.auto_field()
     created_at = marshmallow.auto_field()
     discussion = marshmallow.Nested(DiscussionSchema)
     topic = marshmallow.Nested(TopicSchema)

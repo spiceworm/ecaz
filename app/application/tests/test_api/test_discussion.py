@@ -79,6 +79,7 @@ def test_get_comment_top_level(comment, client, user):
         },
         "parent": None,
         "thread": {
+            "body": c.thread.body,
             "created_at": c.thread.created_at.isoformat(),
             "discussion": {
                 "user": {
@@ -124,6 +125,7 @@ def test_get_comment_nested(comment, client, user):
             "unique_id": parent_comment.unique_id,
         },
         "thread": {
+            "body": nested_comment.thread.body,
             "created_at": nested_comment.thread.created_at.isoformat(),
             "discussion": {
                 "user": {
@@ -152,6 +154,7 @@ def test_get_thread(client, thread, user):
     t = thread(discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.threadapi", unique_id=t.unique_id))
     assert resp.json == {
+        "body": t.body,
         "created_at": t.created_at.isoformat(),
         "discussion": {
             "user": {"created_at": t.discussion.user.created_at.isoformat(), "username": t.discussion.user.username}
