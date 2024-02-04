@@ -34,7 +34,24 @@
                 {% if comment.is_deleted %}
                     <p>[removed]</p>
                 {% else %}
-                    <p>{{ comment.markdown_body | safe }}</p>
+                    <p id="body-{{ comment.unique_id }}">{{ comment.body }}</p>
+                    {% if comment.discussion == current_user.discussion %}
+                        <div id="edit-{{ comment.unique_id }}" hidden>
+                            <fieldset>
+                                <div class="form-group">
+                                    <div class="col-lg-12">
+                                        <textarea class="form-control input-lg" id="editInput-{{ comment.unique_id }}"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-lg-12">
+                                        <button class="btn btn-default" type="submit" onclick="saveEditComment('{{ comment.unique_id }}', '{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Save</button>
+                                        <button class="btn btn-default" type="button" onclick="hideEditCommentFields('{{ comment.unique_id }}')">Cancel</button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    {% endif %}
                     <small><a onclick="showReplyForm(this);">Reply</a></small>
                     <small>
                         {% if current_user.is_authenticated %}
@@ -45,18 +62,19 @@
                             {% endif %}
                         {% endif %}
                     </small>
-                    <small><a>Report</a></small>
                     {% if comment.discussion == current_user.discussion %}
+                        <small><a onclick="showEditCommentFields('{{ comment.unique_id }}');">Edit</a></small>
                         <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
                     {% endif %}
+                    <small><a>Report</a></small>
 
                     <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
-                        {{ form.csrf_token }}
+                        {{ create_comment_form.csrf_token }}
 
                         <fieldset>
                             <div class="form-group">
                                 <div class="col-lg-12">
-                                    {{ form.body(class_="form-control") }}
+                                    {{ create_comment_form.body(class_="form-control") }}
                                 </div>
                             </div>
                             <div class="form-group">
@@ -123,20 +141,23 @@
                             {% endif %}
                         {% endif %}
                     </small>
-                    <small><a>Report</a></small>
-                    {% if thread.discussion == current_user.discussion and not thread.is_deleted %}
-                        <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
+                    {% if thread.discussion == current_user.discussion %}
+                    <small><a>Edit</a></small>
+                        {% if not thread.is_deleted %}
+                            <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
+                        {% endif %}
                     {% endif %}
+                    <small><a>Report</a></small>
                 </div>
             </div>
 
             <form class="form-horizontal" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
-                {{ form.csrf_token }}
+                {{ create_comment_form.csrf_token }}
 
                 <fieldset>
                     <div class="form-group">
                         <div class="col-lg-12">
-                            {{ form.body(class_="form-control input-lg") }}
+                            {{ create_comment_form.body(class_="form-control input-lg") }}
                         </div>
                     </div>
                     <div class="form-group">

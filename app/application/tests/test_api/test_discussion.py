@@ -38,6 +38,35 @@ def test_delete_thread_created_by_different_user(api_user, thread):
     assert not t.is_deleted
 
 
+def test_edit_comment_body(api_user, comment):
+    u = api_user()
+    c = comment(discussion=u.discussion)
+    updated_body = "This is the updated comment body string"
+    assert c.body != updated_body
+    resp = u.post(
+        url_for("api_discussion_bp.commentapi", unique_id=c.unique_id),
+        json={"body": updated_body},
+    )
+    assert resp.json["body"] == updated_body
+    assert c.body == updated_body
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_edit_comment_body_created_by_different_user(api_user, comment):
+    u1 = api_user(email="1@test.com")
+    u2 = api_user(email="2@test.com")
+    c = comment(discussion=u1.discussion)
+    updated_body = "This is the updated comment body string but no update should occur"
+    assert c.body != updated_body
+    resp = u2.post(
+        url_for("api_discussion_bp.commentapi", unique_id=c.unique_id),
+        json={"body": updated_body},
+    )
+    assert resp.json == {}
+    assert c.body != updated_body
+    assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+
 def test_get_comment_top_level(comment, client, user):
     u = user()
     c = comment(discussion=u.discussion)

@@ -12,6 +12,42 @@ function deleteCommentOrThread(url, jwt) {
     })
 }
 
+function hideEditCommentFields(comment_id) {
+    let commentText = document.getElementById(`body-${comment_id}`)
+    commentText.hidden = false;
+
+    let editDiv = document.getElementById(`edit-${comment_id}`);
+    editDiv.hidden = true;
+}
+
+function showEditCommentFields(comment_id) {
+    let commentText = document.getElementById(`body-${comment_id}`)
+    commentText.hidden = true;
+
+    let editInput = document.getElementById(`editInput-${comment_id}`);
+    editInput.value = commentText.textContent;
+
+    let editDiv = document.getElementById(`edit-${comment_id}`);
+    editDiv.hidden = false;
+}
+
+function saveEditComment(comment_id, url, jwt) {
+    const editInput = document.getElementById(`editInput-${comment_id}`);
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({body: editInput.value})
+    }).then(resp => {
+        let commentText = document.getElementById(`body-${comment_id}`)
+        commentText.innerText = editInput.value;
+        hideEditCommentFields(comment_id);
+    })
+}
+
 function saveCommentOrThread(url, jwt) {
     fetch(url, {
         method: "POST",

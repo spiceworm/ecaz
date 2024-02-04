@@ -34,12 +34,6 @@ class _CommentThreadApiBase:
     model = None
     schema = None
 
-    def get(self, unique_id):
-        if comment := self.model.query.filter_by(unique_id=unique_id).one_or_none():
-            schema = self.schema()
-            return schema.dump(comment), http.HTTPStatus.OK
-        return {}, http.HTTPStatus.NOT_FOUND
-
     @jwt_required()
     def delete(self, unique_id):
         if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
@@ -48,6 +42,27 @@ class _CommentThreadApiBase:
                 db.session.add(obj)
                 db.session.commit()
                 return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+    def get(self, unique_id):
+        if comment := self.model.query.filter_by(unique_id=unique_id).one_or_none():
+            schema = self.schema()
+            return schema.dump(comment), http.HTTPStatus.OK
+        return {}, http.HTTPStatus.NOT_FOUND
+
+    @jwt_required()
+    def post(self, unique_id):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            parser = reqparse.RequestParser()
+            parser.add_argument("body", required=True)
+            args = parser.parse_args()
+            if obj := self.model.query.filter_by(discussion=user.discussion, unique_id=unique_id).one_or_none():
+                obj.body = args.body
+                db.session.add(obj)
+                db.session.commit()
+                schema = self.schema()
+                return schema.dump(obj), http.HTTPStatus.OK
             return {}, http.HTTPStatus.NOT_FOUND
         return {}, http.HTTPStatus.UNAUTHORIZED
 

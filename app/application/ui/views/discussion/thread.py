@@ -62,7 +62,7 @@ def view_thread(topic: str, thread_unique_id: str, slug: str) -> str:
     thread = db.one_or_404(query)
     return flask.render_template(
         "discussion/thread/view.html",
-        form=forms.CreateCommentForm(),
+        create_comment_form=forms.CreateCommentForm(),
         thread=thread,
         logout_form=forms.LogoutForm(),
     )
