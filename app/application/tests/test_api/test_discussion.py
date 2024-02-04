@@ -72,31 +72,28 @@ def test_get_comment_top_level(comment, client, user):
     c = comment(discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=c.unique_id))
     assert resp.json == {
-        'body': c.body,
-        'created_at': c.created_at.isoformat(),
-        'discussion': {
-            'user': {
-                'created_at': c.discussion.user.created_at.isoformat(),
-                'username': c.discussion.user.username
-            }
+        "body": c.body,
+        "created_at": c.created_at.isoformat(),
+        "discussion": {
+            "user": {"created_at": c.discussion.user.created_at.isoformat(), "username": c.discussion.user.username}
         },
         "parent": None,
-        'thread': {
-            'created_at': c.thread.created_at.isoformat(),
-            'discussion': {
-                'user': {
-                    'created_at': c.thread.discussion.user.created_at.isoformat(),
-                    'username': c.thread.discussion.user.username
+        "thread": {
+            "created_at": c.thread.created_at.isoformat(),
+            "discussion": {
+                "user": {
+                    "created_at": c.thread.discussion.user.created_at.isoformat(),
+                    "username": c.thread.discussion.user.username,
                 }
             },
-            'topic': {
-                'created_at': c.thread.topic.created_at.isoformat(),
-                'name': c.thread.topic.name,
+            "topic": {
+                "created_at": c.thread.topic.created_at.isoformat(),
+                "name": c.thread.topic.name,
             },
-            'title': c.thread.title,
-            'unique_id': c.thread.unique_id
+            "title": c.thread.title,
+            "unique_id": c.thread.unique_id,
         },
-        'unique_id': c.unique_id
+        "unique_id": c.unique_id,
     }
 
 
@@ -106,42 +103,42 @@ def test_get_comment_nested(comment, client, user):
     nested_comment = parent_comment.create_comment(body="b", discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.commentapi", unique_id=nested_comment.unique_id))
     assert resp.json == {
-        'body': nested_comment.body,
-        'created_at': nested_comment.created_at.isoformat(),
-        'discussion': {
-            'user': {
-                'created_at': nested_comment.discussion.user.created_at.isoformat(),
-                'username': nested_comment.discussion.user.username
+        "body": nested_comment.body,
+        "created_at": nested_comment.created_at.isoformat(),
+        "discussion": {
+            "user": {
+                "created_at": nested_comment.discussion.user.created_at.isoformat(),
+                "username": nested_comment.discussion.user.username,
             }
         },
         "parent": {
-            'body': parent_comment.body,
-            'created_at': parent_comment.created_at.isoformat(),
-            'discussion': {
-                'user': {
-                    'created_at': parent_comment.discussion.user.created_at.isoformat(),
-                    'username': parent_comment.discussion.user.username
+            "body": parent_comment.body,
+            "created_at": parent_comment.created_at.isoformat(),
+            "discussion": {
+                "user": {
+                    "created_at": parent_comment.discussion.user.created_at.isoformat(),
+                    "username": parent_comment.discussion.user.username,
                 }
             },
             "parent": None,
             "unique_id": parent_comment.unique_id,
         },
-        'thread': {
-            'created_at': nested_comment.thread.created_at.isoformat(),
-            'discussion': {
-                'user': {
-                    'created_at': nested_comment.thread.discussion.user.created_at.isoformat(),
-                    'username': nested_comment.thread.discussion.user.username
+        "thread": {
+            "created_at": nested_comment.thread.created_at.isoformat(),
+            "discussion": {
+                "user": {
+                    "created_at": nested_comment.thread.discussion.user.created_at.isoformat(),
+                    "username": nested_comment.thread.discussion.user.username,
                 }
             },
-            'topic': {
-                'created_at': nested_comment.thread.topic.created_at.isoformat(),
-                'name': nested_comment.thread.topic.name,
+            "topic": {
+                "created_at": nested_comment.thread.topic.created_at.isoformat(),
+                "name": nested_comment.thread.topic.name,
             },
-            'title': nested_comment.thread.title,
-            'unique_id': nested_comment.thread.unique_id
+            "title": nested_comment.thread.title,
+            "unique_id": nested_comment.thread.unique_id,
         },
-        'unique_id': nested_comment.unique_id
+        "unique_id": nested_comment.unique_id,
     }
 
 
@@ -155,19 +152,13 @@ def test_get_thread(client, thread, user):
     t = thread(discussion=u.discussion)
     resp = client.get(url_for("api_discussion_bp.threadapi", unique_id=t.unique_id))
     assert resp.json == {
-        'created_at': t.created_at.isoformat(),
-        'discussion': {
-            'user': {
-                'created_at': t.discussion.user.created_at.isoformat(),
-                'username': t.discussion.user.username
-            }
+        "created_at": t.created_at.isoformat(),
+        "discussion": {
+            "user": {"created_at": t.discussion.user.created_at.isoformat(), "username": t.discussion.user.username}
         },
-        'topic': {
-            'created_at': t.topic.created_at.isoformat(),
-            'name': t.topic.name
-        },
-        'title': t.title,
-        'unique_id': t.unique_id
+        "topic": {"created_at": t.topic.created_at.isoformat(), "name": t.topic.name},
+        "title": t.title,
+        "unique_id": t.unique_id,
     }
 
 
@@ -179,10 +170,7 @@ def test_get_thread_using_invalid_unique_id(client):
 def test_get_topic(client, topic):
     _topic = topic()
     resp = client.get(url_for("api_discussion_bp.topicapi", topic=_topic.name))
-    assert resp.json == {
-        'created_at': _topic.created_at.isoformat(),
-        'name': _topic.name
-    }
+    assert resp.json == {"created_at": _topic.created_at.isoformat(), "name": _topic.name}
 
 
 def test_get_topic_using_invalid_name(client):
@@ -230,10 +218,7 @@ class TestVoteApi:
     def test_comment_vote_api(self, comment, api_user, action, vote_count):
         user = api_user()
         c = comment(discussion=user.discussion)
-        resp = user.post(
-            url_for("api_discussion_bp.commentvoteapi", unique_id=c.unique_id),
-            json={"action": action}
-        )
+        resp = user.post(url_for("api_discussion_bp.commentvoteapi", unique_id=c.unique_id), json={"action": action})
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.comment_votes) == vote_count
         assert len(c.votes) == vote_count
@@ -241,10 +226,7 @@ class TestVoteApi:
     def test_thread_vote_api(self, api_user, thread, action, vote_count):
         user = api_user()
         t = thread(discussion=user.discussion)
-        resp = user.post(
-            url_for("api_discussion_bp.threadvoteapi", unique_id=t.unique_id),
-            json={"action": action}
-        )
+        resp = user.post(url_for("api_discussion_bp.threadvoteapi", unique_id=t.unique_id), json={"action": action})
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.thread_votes) == vote_count
         assert len(t.votes) == vote_count
@@ -264,8 +246,7 @@ class TestVoteApi:
 def test_vote_api_invalid_unique_id(api_user, action, obj_type):
     user = api_user()
     resp = user.post(
-        url_for(f"api_discussion_bp.{obj_type}voteapi", unique_id="this-is-invalid"),
-        json={"action": action}
+        url_for(f"api_discussion_bp.{obj_type}voteapi", unique_id="this-is-invalid"), json={"action": action}
     )
     assert resp.json == {}
     assert resp.status_code == http.HTTPStatus.NOT_FOUND

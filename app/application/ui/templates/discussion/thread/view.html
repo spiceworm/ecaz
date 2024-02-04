@@ -1,6 +1,13 @@
 {% extends "bases/discussion_base.html" %}
 
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+{% endblock %}
+
+
 {% macro render_comment(current_user, comment, form, thread) %}
     <div class="panel panel-default">
         <div class="panel-body">
@@ -23,13 +30,18 @@
                         </a>
                     {% endif %}
                 {% endif %}
-                <small><a onclick="toggleCommentFolding(this);">[-]</a></small>
+
+                <small>
+                    <a onclick="toggleCommentFolding(this);">[-]</a>
+                </small>
+
                 {% if comment.is_deleted %}
                     <small>[removed] - {{ comment.humanized_created_at }}</small>
                 {% else %}
                     <small>{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
                 {% endif %}
             </div>
+
             <div style="display: block">
                 {% if comment.is_deleted %}
                     <p>[removed]</p>
@@ -45,14 +57,22 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="col-lg-12">
-                                        <button class="btn btn-default" type="submit" onclick="saveEditComment('{{ comment.unique_id }}', '{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Save</button>
-                                        <button class="btn btn-default" type="button" onclick="hideEditCommentFields('{{ comment.unique_id }}')">Cancel</button>
+                                        <button class="btn btn-default" type="submit" onclick="saveEditComment('{{ comment.unique_id }}', '{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">
+                                            Save
+                                        </button>
+                                        <button class="btn btn-default" type="button" onclick="hideEditCommentFields('{{ comment.unique_id }}')">
+                                            Cancel
+                                        </button>
                                     </div>
                                 </div>
                             </fieldset>
                         </div>
                     {% endif %}
-                    <small><a onclick="showReplyForm(this);">Reply</a></small>
+
+                    <small>
+                        <a onclick="showReplyForm(this);">Reply</a>
+                    </small>
+
                     <small>
                         {% if current_user.is_authenticated %}
                             {% if comment.is_saved_by(current_user.discussion) %}
@@ -62,11 +82,19 @@
                             {% endif %}
                         {% endif %}
                     </small>
+
                     {% if comment.discussion == current_user.discussion %}
-                        <small><a onclick="showEditCommentFields('{{ comment.unique_id }}');">Edit</a></small>
-                        <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
+                        <small>
+                            <a onclick="showEditCommentFields('{{ comment.unique_id }}');">Edit</a>
+                        </small>
+                        <small>
+                            <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
+                        </small>
                     {% endif %}
-                    <small><a>Report</a></small>
+
+                    <small>
+                        <a>Report</a>
+                    </small>
 
                     <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
                         {{ create_comment_form.csrf_token }}
@@ -94,13 +122,6 @@
         </div>
     </div>
 {% endmacro %}
-
-
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
-    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
-{% endblock %}
 
 
 {% block middle_panel %}
@@ -142,12 +163,18 @@
                         {% endif %}
                     </small>
                     {% if thread.discussion == current_user.discussion %}
-                    <small><a>Edit</a></small>
+                        <small>
+                            <a>Edit</a>
+                        </small>
                         {% if not thread.is_deleted %}
-                            <small><a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a></small>
+                            <small>
+                                <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
+                            </small>
                         {% endif %}
                     {% endif %}
-                    <small><a>Report</a></small>
+                    <small>
+                        <a>Report</a>
+                    </small>
                 </div>
             </div>
 

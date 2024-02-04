@@ -65,14 +65,8 @@ def test_send_email(cli_runner):
     Verify `flask cli send-email` works as expected.
     """
     result = cli_runner.invoke(
-        args=[
-            "cli",
-            "send-email",
-            "--subject=Test",
-            "--to=user@test.com",
-            "--body=Body",
-            "--is-html"
-        ])
+        args=["cli", "send-email", "--subject=Test", "--to=user@test.com", "--body=Body", "--is-html"]
+    )
     assert "Sent status: True" in result.output
 
 
@@ -82,12 +76,6 @@ def test_send_email_failure(cli_runner, mock_email_send):
     """
     mock_email_send(lambda self: False)
     result = cli_runner.invoke(
-        args=[
-            "cli",
-            "send-email",
-            "--subject=Test",
-            "--to=user@test.com",
-            "--body=Body",
-            "--is-html"
-        ])
+        args=["cli", "send-email", "--subject=Test", "--to=user@test.com", "--body=Body", "--is-html"]
+    )
     assert "Sent status: False" in result.output

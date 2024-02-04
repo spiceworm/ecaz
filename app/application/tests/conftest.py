@@ -130,6 +130,7 @@ def comment(thread):
             discussion=discussion,
             **kwargs,
         )
+
     return func
 
 
@@ -155,12 +156,8 @@ def mock_email_send(monkeypatch):
 def thread(topic):
     def func(discussion, body=DEFAULT_THREAD_BODY, title=DEFAULT_THREAD_TITLE, **kwargs):
         _topic = topic()
-        return _topic.create_thread(
-            body=body,
-            title=title,
-            discussion=discussion,
-            **kwargs
-        )
+        return _topic.create_thread(body=body, title=title, discussion=discussion, **kwargs)
+
     return func
 
 
