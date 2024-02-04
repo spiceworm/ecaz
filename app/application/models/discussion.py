@@ -113,10 +113,6 @@ class BodyMixin:
         nullable=False,
     )
 
-    @property
-    def markdown_body(self) -> str:
-        return markdown.markdown(self.body)
-
 
 class CreatedAtMixin:
     created_at = db.Column(
@@ -483,6 +479,10 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
             vote = votes.pop()
             return vote.value == self.UPVOTE
         return False
+
+    @property
+    def markdown_body(self) -> str:
+        return markdown.markdown(self.body)
 
     def save(self, discussion: Discussion) -> None:
         if self not in discussion.saved_threads:
