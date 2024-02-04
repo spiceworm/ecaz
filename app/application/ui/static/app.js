@@ -12,23 +12,12 @@ function deleteCommentOrThread(url, jwt) {
     })
 }
 
-function hideEditCommentFields(comment_id) {
+function hideEditFields(comment_id) {
     let commentText = document.getElementById(`body-${comment_id}`)
     commentText.hidden = false;
 
     let editDiv = document.getElementById(`edit-${comment_id}`);
     editDiv.hidden = true;
-}
-
-function showEditCommentFields(comment_id) {
-    let commentText = document.getElementById(`body-${comment_id}`)
-    commentText.hidden = true;
-
-    let editInput = document.getElementById(`editInput-${comment_id}`);
-    editInput.value = commentText.textContent;
-
-    let editDiv = document.getElementById(`edit-${comment_id}`);
-    editDiv.hidden = false;
 }
 
 function saveEditComment(comment_id, url, jwt) {
@@ -44,8 +33,54 @@ function saveEditComment(comment_id, url, jwt) {
     }).then(resp => {
         let commentText = document.getElementById(`body-${comment_id}`)
         commentText.innerText = editInput.value;
-        hideEditCommentFields(comment_id);
+        hideEditFields(comment_id);
     })
+}
+
+function saveEditThread(comment_id, url, jwt) {
+    const editInput = document.getElementById(`editInput-${comment_id}`);
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({body: editInput.value})
+    }).then(resp => {
+        let commentText = document.getElementById(`body-${comment_id}`);
+
+        // Convert markdown in edit field back to HTML before saving it
+        const converter = new showdown.Converter();
+        commentText.innerHTML = converter.makeHtml(editInput.value);
+
+        hideEditFields(comment_id);
+    })
+}
+
+function showEditCommentFields(comment_id) {
+    let commentText = document.getElementById(`body-${comment_id}`)
+    commentText.hidden = true;
+
+    let editInput = document.getElementById(`editInput-${comment_id}`);
+    editInput.value = commentText.textContent;
+
+    let editDiv = document.getElementById(`edit-${comment_id}`);
+    editDiv.hidden = false;
+}
+
+function showEditThreadFields(comment_id) {
+    let commentText = document.getElementById(`body-${comment_id}`)
+    commentText.hidden = true;
+
+    let editInput = document.getElementById(`editInput-${comment_id}`);
+
+    // Convert HTML thread body to markdown so the user can edit markdown
+    const turndownService = new TurndownService();
+    editInput.value = turndownService.turndown(commentText.innerHTML);
+
+    let editDiv = document.getElementById(`edit-${comment_id}`);
+    editDiv.hidden = false;
 }
 
 function saveCommentOrThread(url, jwt) {

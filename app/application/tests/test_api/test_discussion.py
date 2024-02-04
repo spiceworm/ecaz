@@ -67,6 +67,35 @@ def test_edit_comment_body_created_by_different_user(api_user, comment):
     assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
+def test_edit_thread_body(api_user, thread):
+    u = api_user()
+    t = thread(discussion=u.discussion)
+    updated_body = "This is the updated thread body string"
+    assert t.body != updated_body
+    resp = u.post(
+        url_for("api_discussion_bp.threadapi", unique_id=t.unique_id),
+        json={"body": updated_body},
+    )
+    assert resp.json["body"] == updated_body
+    assert t.body == updated_body
+    assert resp.status_code == http.HTTPStatus.OK
+
+
+def test_edit_thread_body_created_by_different_user(api_user, thread):
+    u1 = api_user(email="1@test.com")
+    u2 = api_user(email="2@test.com")
+    t = thread(discussion=u1.discussion)
+    updated_body = "This is the updated thread body string but no update should occur"
+    assert t.body != updated_body
+    resp = u2.post(
+        url_for("api_discussion_bp.threadapi", unique_id=t.unique_id),
+        json={"body": updated_body},
+    )
+    assert resp.json == {}
+    assert t.body != updated_body
+    assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+
 def test_get_comment_top_level(comment, client, user):
     u = user()
     c = comment(discussion=u.discussion)
