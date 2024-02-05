@@ -1,5 +1,5 @@
 {% extends "bases/discussion_base.html" %}
-{% from "macros.html" import render_comment %}
+{% from "macros.html" import render_comment, render_thread %}
 
 
 {% block head %}
@@ -24,8 +24,7 @@
                 {% if obj.__class__.__name__ == "Comment" %}
                     {{ render_comment(current_user, obj, create_comment_form, obj.thread) }}
                 {% else %}
-                    <!-- obj is Thread -->
-                    <a href="{{ url_for('ui_bp.view_thread', topic=obj.topic.name, thread_unique_id=obj.unique_id, slug=obj.slug) }}">{{ obj.title }}</a>
+                    {{ render_thread(current_user, obj) }}
                 {% endif %}
             {% endfor %}
         </div>
