@@ -1,4 +1,14 @@
 {% extends "bases/discussion_base.html" %}
+{% from "macros.html" import render_comment %}
+
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/showdown/dist/showdown.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+{% endblock %}
 
 
 {% block middle_panel %}
@@ -10,21 +20,14 @@
                 <li class="active"><a href="{{ url_for('.view_saved') }}">saved</a></li>
             </ul>
 
-            <div class="well">
-                {% for obj in objects %}
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            {% if obj.__class__.__name__ == "Comment" %}
-                                <!-- obj is Comment -->
-                                <a href="{{ url_for('ui_bp.view_thread', topic=obj.thread.topic.name, thread_unique_id=obj.thread.unique_id, slug=obj.thread.slug) }}">{{ obj.body }}</a>
-                            {% else %}
-                                <!-- obj is Thread -->
-                                <a href="{{ url_for('ui_bp.view_thread', topic=obj.topic.name, thread_unique_id=obj.unique_id, slug=obj.slug) }}">{{ obj.title }}</a>
-                            {% endif %}
-                        </li>
-                    </ul>
-                {% endfor %}
-            </div>
+            {% for obj in objects %}
+                {% if obj.__class__.__name__ == "Comment" %}
+                    {{ render_comment(current_user, obj, create_comment_form, obj.thread) }}
+                {% else %}
+                    <!-- obj is Thread -->
+                    <a href="{{ url_for('ui_bp.view_thread', topic=obj.topic.name, thread_unique_id=obj.unique_id, slug=obj.slug) }}">{{ obj.title }}</a>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

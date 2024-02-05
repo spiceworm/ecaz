@@ -17,6 +17,7 @@ def view_saved() -> str:
     )
     return flask.render_template(
         "discussion/saved.html",
+        create_comment_form=forms.CreateCommentForm(),
         objects=objects,
         logout_form=forms.LogoutForm(),
     )
