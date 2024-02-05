@@ -238,6 +238,30 @@ class TestSaveApi:
         assert user.discussion.saved_threads == []
 
 
+class TestSubscribeApi:
+    def test_add_subscription(self, api_user, topic):
+        user = api_user()
+        t = topic()
+        resp = user.post(
+            url_for("api_discussion_bp.topicsubscribeapi", topic=t.name)
+        )
+        assert resp.json == {}
+        assert resp.status_code == http.HTTPStatus.OK
+        assert user.discussion.subscriptions == [t]
+
+    def test_remove_subscription(self, api_user, topic):
+        user = api_user()
+        t = topic()
+        user.discussion.add_subscription(t)
+        assert user.discussion.subscriptions == [t]
+        resp = user.delete(
+            url_for("api_discussion_bp.topicsubscribeapi", topic=t.name)
+        )
+        assert resp.json == {}
+        assert resp.status_code == http.HTTPStatus.OK
+        assert user.discussion.subscriptions == []
+
+
 @pytest.mark.parametrize(
     "action, vote_count",
     [

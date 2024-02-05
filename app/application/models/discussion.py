@@ -380,9 +380,10 @@ class Discussion(db.Model):
     )
 
     def add_subscription(self, topic: Topic) -> None:
-        self.subscriptions.append(topic)
-        db.session.add(self)
-        db.session.commit()
+        if not self.is_subscribed_to(topic):
+            self.subscriptions.append(topic)
+            db.session.add(self)
+            db.session.commit()
 
     def create_thread(self, body: str, title: str, topic: Topic, **kwargs) -> Thread:
         t = Thread(body=body, discussion=self, title=title, topic=topic, **kwargs)
@@ -392,6 +393,15 @@ class Discussion(db.Model):
 
     def is_moderator_of(self, topic: Topic) -> bool:
         return self in topic.moderators
+
+    def is_subscribed_to(self, topic: Topic) -> bool:
+        return topic in self.subscriptions
+
+    def remove_subscription(self, topic: Topic) -> None:
+        if self.is_subscribed_to(topic):
+            self.subscriptions.remove(topic)
+            db.session.add(self)
+            db.session.commit()
 
 
 class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):

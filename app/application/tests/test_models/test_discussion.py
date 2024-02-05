@@ -36,6 +36,45 @@ class TestBanIsActive:
         assert Ban.query.filter(Ban.is_active == expected_bool).all() == [b]
 
 
+class TestDiscussion:
+    def test_add_subscription(self, topic, user):
+        u = user()
+        t = topic()
+        u.discussion.add_subscription(t)
+        assert u.discussion.subscriptions == [t]
+
+    def test_add_duplicate_subscription(self, topic, user):
+        u = user()
+        t = topic()
+        u.discussion.add_subscription(t)
+        u.discussion.add_subscription(t)
+        u.discussion.add_subscription(t)
+        assert u.discussion.subscriptions == [t]
+
+    def test_is_subscribed_to(self, topic, user):
+        u = user()
+        t1 = topic(name="t1")
+        t2 = topic(name="t2")
+        u.discussion.add_subscription(t1)
+        assert u.discussion.subscriptions == [t1]
+        assert u.discussion.is_subscribed_to(t1)
+        assert not u.discussion.is_subscribed_to(t2)
+
+    def test_remove_subscription(self, topic, user):
+        u = user()
+        t = topic()
+        u.discussion.add_subscription(t)
+        assert u.discussion.subscriptions == [t]
+        u.discussion.remove_subscription(t)
+        assert u.discussion.subscriptions == []
+
+    def test_remove_nonexistent_subscription(self, topic, user):
+        u = user()
+        t = topic()
+        u.discussion.remove_subscription(t)
+        assert u.discussion.subscriptions == []
+
+
 def test_add_moderator_to_topic(topic, user):
     t = topic()
     d1 = user(email="1@test.com").discussion

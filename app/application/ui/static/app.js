@@ -111,6 +111,34 @@ function unsaveCommentOrThread(url, jwt) {
     })
 }
 
+function subscribe(url, jwt) {
+    fetch(url, {
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        }
+    }).then(resp => {
+        // Reload the page so the 'Save' / 'Unsave' link changes
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
+}
+
+function unsubscribe(url, jwt) {
+    fetch(url, {
+        method: "DELETE",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        }
+    }).then(resp => {
+        // Reload the page so the 'Save' / 'Unsave' link changes
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
+}
+
 function hideReplyForm(element) {
     element.closest('form').style.display = 'none';
 }

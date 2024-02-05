@@ -60,7 +60,19 @@
                 <fieldset>
                     <legend>
                         Information
-                        <button class="btn btn-link" style="float: right">Subscribe</button>
+                        <small>
+                            {% if current_user.is_authenticated %}
+                                {% if not current_user.discussion.is_subscribed_to(topic) %}
+                                    <button class="btn btn-link" style="float: right" onclick="subscribe('{{ url_for('api_discussion_bp.topicsubscribeapi', topic=topic.name) }}', jwt='{{ current_user.frontend_token.value }}');">
+                                        Subscribe
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-link" style="float: right" onclick="unsubscribe('{{ url_for('api_discussion_bp.topicsubscribeapi', topic=topic.name) }}', jwt='{{ current_user.frontend_token.value }}');">
+                                        Unsubscribe
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </small>
                     </legend>
                     <div class="form-group">
                         <div class="col-lg-10">

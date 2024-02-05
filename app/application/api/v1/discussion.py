@@ -132,6 +132,26 @@ class TopicApi(flask_restful.Resource):
         return {}, http.HTTPStatus.NOT_FOUND
 
 
+class TopicSubscribeApi(flask_restful.Resource):
+    @jwt_required()
+    def delete(self, topic):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            if topic := Topic.query.filter_by(name=topic).one_or_none():
+                user.discussion.remove_subscription(topic)
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+    @jwt_required()
+    def post(self, topic):
+        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+            if topic := Topic.query.filter_by(name=topic).one_or_none():
+                user.discussion.add_subscription(topic)
+                return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+
 class CommentSaveApi(flask_restful.Resource, _CommentThreadSaveApiBase):
     model = Comment
 
@@ -156,3 +176,4 @@ api.add_resource(ThreadSaveApi, "/thread/<unique_id>/save")
 api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
 api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
 api.add_resource(TopicApi, "/topic/<topic>")
+api.add_resource(TopicSubscribeApi, "/topic/<topic>/subscribe")
