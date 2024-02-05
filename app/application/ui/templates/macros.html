@@ -24,9 +24,23 @@
 {% endmacro %}
 
 
-{% macro render_comment(current_user, comment, create_comment_form, thread) %}
+{% macro render_comment(current_user, comment, create_comment_form, thread, render_child_comments=True, show_thread_details=False) %}
     <div class="panel panel-default">
         <div class="panel-body">
+            {% if show_thread_details %}
+                <div>
+                    <small>
+                        <a href="{{ url_for('ui_bp.view_thread', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug) }}">
+                            {{ comment.thread.title }}
+                        </a> by <a>
+                            {{ comment.thread.discussion.user.username }}
+                        </a> in <a href="{{ url_for('ui_bp.view_topic', topic=comment.thread.topic.name) }}">
+                            {{ comment.thread.topic.name }}
+                        </a>
+                    </small>
+                </div>
+            {% endif %}
+
             <div>
                 {% if not comment.is_deleted %}
                     {% if current_user.is_authenticated %}
@@ -131,9 +145,11 @@
                     </form>
                 {% endif %}
 
-                {% for response in comment.responses %}
-                    {{ render_comment(current_user, response, create_comment_form, thread) }}
-                {% endfor %}
+                {% if render_child_comments %}
+                    {% for response in comment.responses %}
+                        {{ render_comment(current_user, response, create_comment_form, thread, depth, show_thread_details) }}
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -144,7 +160,11 @@
     <div class="panel panel-default">
         <div class="panel-body">
             <div class="panel-heading">
-                <h3>{{ thread.title }}</h3>
+                <h3>
+                    <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">
+                        {{ thread.title }}
+                    </a>
+                </h3>
                 {% if thread.is_deleted %}
                     <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
                 {% else %}

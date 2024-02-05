@@ -22,7 +22,7 @@
 
             {% for obj in objects %}
                 {% if obj.__class__.__name__ == "Comment" %}
-                    {{ render_comment(current_user, obj, create_comment_form, obj.thread) }}
+                    {{ render_comment(current_user, obj, create_comment_form, obj.thread, render_child_comments=False, show_thread_details=True) }}
                 {% else %}
                     {{ render_thread(current_user, obj) }}
                 {% endif %}
