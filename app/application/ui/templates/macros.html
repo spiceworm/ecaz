@@ -160,11 +160,26 @@
     <div class="panel panel-default">
         <div class="panel-body">
             <div class="panel-heading">
-                <h3>
-                    <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">
-                        {{ thread.title }}
+                {% if current_user.is_authenticated %}
+                    <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+                        {% if thread.is_upvoted_by(current_user.discussion) %}
+                            <i class="bi bi-arrow-up-square-fill"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-up-square"></i>
+                        {% endif %}
                     </a>
-                </h3>
+                    <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+                        {% if thread.is_downvoted_by(current_user.discussion) %}
+                            <i class="bi bi-arrow-down-square-fill"></i>
+                        {% else %}
+                            <i class="bi bi-arrow-down-square"></i>
+                        {% endif %}
+                    </a>
+                {% endif %}
+
+                <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}" style="font-size: 16px;">
+                    {{ thread.title }}
+                </a>
                 {% if thread.is_deleted %}
                     <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
                 {% else %}
