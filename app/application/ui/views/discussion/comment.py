@@ -5,12 +5,16 @@ import flask_login
 
 from application.models import (
     Comment,
+    db,
     Thread,
 )
 from application.ui import forms
 
 
-__all__ = ("create_comment",)
+__all__ = (
+    "create_comment",
+    "view_comment",
+)
 
 
 @flask_login.login_required
@@ -32,9 +36,20 @@ def create_comment(topic: str, thread_unique_id: str, slug: str, parent_unique_i
 
     return flask.redirect(
         flask.url_for(
-            ".view_thread",
+            "ui_bp.view_thread",
             topic=topic,
             thread_unique_id=thread_unique_id,
             slug=slug,
         ),
+    )
+
+
+def view_comment(topic: str, thread_unique_id: str, slug: str, comment_unique_id: str) -> str:
+    query = Comment.query.filter_by(unique_id=comment_unique_id)
+    comment = db.one_or_404(query)
+    return flask.render_template(
+        "discussion/comment/view.html",
+        create_comment_form=forms.CreateCommentForm(),
+        comment=comment,
+        logout_form=forms.LogoutForm(),
     )

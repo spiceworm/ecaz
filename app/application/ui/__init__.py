@@ -19,6 +19,7 @@ ui_bp.add_url_rule("/discussion/saved", view_func=views.view_saved, methods=[GET
 ui_bp.add_url_rule("/discussion/topics", view_func=views.view_topics, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>", view_func=views.view_topic, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>/<thread_unique_id>/<slug>", view_func=views.view_thread, methods=[GET])
+ui_bp.add_url_rule("/discussion/topics/<topic>/<thread_unique_id>/<slug>/<comment_unique_id>", view_func=views.view_comment, methods=[GET])
 ui_bp.add_url_rule("/discussion/topic", view_func=views.create_topic, methods=[GET, POST])
 ui_bp.add_url_rule("/discussion/topic/<topic>", view_func=views.create_thread, methods=[GET, POST])
 ui_bp.add_url_rule(

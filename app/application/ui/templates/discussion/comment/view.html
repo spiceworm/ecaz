@@ -1,0 +1,30 @@
+{% extends "bases/discussion_base.html" %}
+{% from "macros.html" import render_comment, render_thread %}
+
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/showdown/dist/showdown.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+{% endblock %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('.view_topics') }}">topics</a></li>
+                <li><a href="{{ url_for('.view_topic', topic=comment.thread.topic.name) }}">{{ comment.thread.topic.name }}</a></li>
+                <li><a href="{{ url_for('.view_thread', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug) }}">{{ comment.thread.slug }}</a></li>
+                <li class="active">comment</li>
+            </ul>
+
+            {{ render_thread(current_user, comment.thread) }}
+            {{ render_comment(current_user, comment, create_comment_form) }}
+        </div>
+    </div>
+{% endblock %}

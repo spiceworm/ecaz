@@ -108,10 +108,14 @@
                     {% endif %}
 
                     <small>
+                        <a href="{{ url_for('ui_bp.view_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, comment_unique_id=comment.unique_id) }}">Permalink</a>
+                    </small>
+
+                    <small>
                         <a>Report</a>
                     </small>
 
-                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
+                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('ui_bp.create_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
                         {{ create_comment_form.csrf_token }}
 
                         <fieldset>

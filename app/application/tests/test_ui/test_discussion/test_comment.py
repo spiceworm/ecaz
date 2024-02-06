@@ -1,3 +1,6 @@
+import http
+
+import flask
 from flask import url_for
 
 from application.models import Comment
@@ -51,3 +54,31 @@ def test_create_nested_comment(comment, ui_user):
         thread_unique_id=parent_comment.thread.unique_id,
         slug=parent_comment.thread.slug,
     )
+
+
+def test_view_permalinked_comment(comment, ui_user):
+    user = ui_user()
+    c = comment(discussion=user.discussion)
+    url = flask.url_for(
+        "ui_bp.view_comment",
+        topic=c.thread.topic.name,
+        thread_unique_id=c.thread.unique_id,
+        slug=c.thread.slug,
+        comment_unique_id=c.unique_id,
+    )
+    resp = user.get(url)
+    assert resp.request.base_url == url
+
+
+def test_view_permalinked_comment_that_does_not_exist(thread, ui_user):
+    user = ui_user()
+    t = thread(discussion=user.discussion)
+    url = flask.url_for(
+        "ui_bp.view_comment",
+        topic=t.topic.name,
+        thread_unique_id=t.unique_id,
+        slug=t.slug,
+        comment_unique_id="this-does-not-exist",
+    )
+    resp = user.get(url)
+    assert resp.status_code == http.HTTPStatus.NOT_FOUND
