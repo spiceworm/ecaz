@@ -2,15 +2,6 @@
 {% from "macros.html" import render_comment, render_thread %}
 
 
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('ui_bp.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
-    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='node_modules/showdown/dist/showdown.min.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='app.js') }}"></script>
-{% endblock %}
-
-
 {% block middle_panel %}
     {{ super() }}
     <div class="panel panel-primary">
