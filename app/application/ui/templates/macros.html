@@ -43,22 +43,7 @@
 
             <div>
                 {% if not comment.is_deleted %}
-                    {% if current_user.is_authenticated %}
-                        <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
-                            {% if comment.is_upvoted_by(current_user.discussion) %}
-                                <i class="bi bi-arrow-up-square-fill"></i>
-                            {% else %}
-                                <i class="bi bi-arrow-up-square"></i>
-                            {% endif %}
-                        </a>
-                        <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.commentvoteapi', unique_id=comment.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
-                            {% if comment.is_downvoted_by(current_user.discussion) %}
-                                <i class="bi bi-arrow-down-square-fill"></i>
-                            {% else %}
-                                <i class="bi bi-arrow-down-square"></i>
-                            {% endif %}
-                        </a>
-                    {% endif %}
+                    {{ render_voting(current_user, 'api_discussion_bp.commentvoteapi', comment) }}
                 {% endif %}
 
                 <small>
@@ -160,23 +145,7 @@
     <div class="panel panel-default">
         <div class="panel-body">
             <div class="panel-heading">
-                {% if current_user.is_authenticated %}
-                    <a onclick="upvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
-                        {% if thread.is_upvoted_by(current_user.discussion) %}
-                            <i class="bi bi-arrow-up-square-fill"></i>
-                        {% else %}
-                            <i class="bi bi-arrow-up-square"></i>
-                        {% endif %}
-                    </a>
-                    <a onclick="downvote(this, url=`{{ url_for('api_discussion_bp.threadvoteapi', unique_id=thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
-                        {% if thread.is_downvoted_by(current_user.discussion) %}
-                            <i class="bi bi-arrow-down-square-fill"></i>
-                        {% else %}
-                            <i class="bi bi-arrow-down-square"></i>
-                        {% endif %}
-                    </a>
-                {% endif %}
-
+                {{ render_voting(current_user, 'api_discussion_bp.threadvoteapi', thread) }}
                 <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}" style="font-size: 16px;">
                     {{ thread.title }}
                 </a>
@@ -239,4 +208,24 @@
             </small>
         </div>
     </div>
+{% endmacro %}
+
+
+{% macro render_voting(current_user, endpoint, comment_or_thread) %}
+    {% if current_user.is_authenticated %}
+        <a onclick="upvote(this, url=`{{ url_for(endpoint, unique_id=comment_or_thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+            {% if comment_or_thread.is_upvoted_by(current_user.discussion) %}
+                <i class="bi bi-arrow-up-square-fill"></i>
+            {% else %}
+                <i class="bi bi-arrow-up-square"></i>
+            {% endif %}
+        </a>
+        <a onclick="downvote(this, url=`{{ url_for(endpoint, unique_id=comment_or_thread.unique_id) }}`, jwt='{{ current_user.frontend_token.value }}');">
+            {% if comment_or_thread.is_downvoted_by(current_user.discussion) %}
+                <i class="bi bi-arrow-down-square-fill"></i>
+            {% else %}
+                <i class="bi bi-arrow-down-square"></i>
+            {% endif %}
+        </a>
+    {% endif %}
 {% endmacro %}
