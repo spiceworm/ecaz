@@ -38,7 +38,7 @@
                     <ul class="list-group">
                         {% for token in current_user.public_auth_tokens %}
                             <li class="list-group-item">
-                                <form class="form-horizontal" action="{{ url_for('.delete_auth_token') }}" method="post">
+                                <form class="form-horizontal" action="{{ url_for('ui_bp.delete_auth_token') }}" method="post">
                                     {{ delete_auth_token_form.csrf_token }}
 
                                     <div class="form-group">
@@ -68,7 +68,7 @@
                         {% endfor %}
 
                         <li class="list-group-item">
-                            <form class="form-horizontal" action="{{ url_for('.create_auth_token') }}" method="post">
+                            <form class="form-horizontal" action="{{ url_for('ui_bp.create_auth_token') }}" method="post">
                                 {{ create_auth_token_form.csrf_token }}
 
                                 <div class="form-group">

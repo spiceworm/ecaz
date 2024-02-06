@@ -14,7 +14,7 @@
                                 <ul class="list-group">
                                     {% for topic in current_user.discussion.subscriptions %}
                                         <li class="list-group-item">
-                                            <a href="{{ url_for('.view_topic', topic=topic.name) }}">{{ topic.name }}</a>
+                                            <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }}</a>
                                             <span class="badge">
                                                 <a onclick="unsubscribe('{{ url_for('api_discussion_bp.topicsubscribeapi', topic=topic.name) }}', jwt='{{ current_user.frontend_token.value }}'); return false;">
                                                     Remove

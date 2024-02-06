@@ -7,13 +7,13 @@
         <div class="panel-body">
             <ul class="breadcrumb">
                 <li><a>discussion</a></li>
-                <li><a href="{{ url_for('.view_topics') }}">topics</a></li>
+                <li><a href="{{ url_for('ui_bp.view_topics') }}">topics</a></li>
                 <li><a>threads</a></li>
                 <li class="active">create</li>
             </ul>
 
             <div class="well">
-                <form class="form-horizontal" action="{{ url_for('.create_thread', topic=topic_name) }}" method="post">
+                <form class="form-horizontal" action="{{ url_for('ui_bp.create_thread', topic=topic_name) }}" method="post">
                     {{ form.csrf_token }}
 
                     <fieldset>

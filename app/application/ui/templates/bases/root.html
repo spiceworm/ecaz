@@ -2,13 +2,13 @@
 <html>
     <head>
         {% block head %}
-            <link rel="shortcut icon" href="{{ url_for('.static', filename='favicon.ico') }}">
-            <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='hacker.css') }}">
-            <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='app.css') }}">
+            <link rel="shortcut icon" href="{{ url_for('ui_bp.static', filename='favicon.ico') }}">
+            <link rel="stylesheet" type="text/css" href="{{ url_for('ui_bp.static', filename='hacker.css') }}">
+            <link rel="stylesheet" type="text/css" href="{{ url_for('ui_bp.static', filename='app.css') }}">
 
             <style>
                 body{
-                    background-image: url("{{ url_for('.static', filename='background.gif') }}");
+                    background-image: url("{{ url_for('ui_bp.static', filename='background.gif') }}");
                     background-size: cover;
                     height: 100vh;
                     padding:0;

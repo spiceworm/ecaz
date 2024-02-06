@@ -8,9 +8,9 @@
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="{{ url_for('.login') }}">ECAZ</a>
+                <a class="navbar-brand" href="{{ url_for('ui_bp.login') }}">ECAZ</a>
             </div>
-            <form action="{{ url_for('.logout') }}" method="post">
+            <form action="{{ url_for('ui_bp.logout') }}" method="post">
                 {{ logout_form.csrf_token }}
 
                 <div id="navbar">
@@ -20,8 +20,8 @@
                                 <a href="{{ url_for('admin.index') }}">Admin</a>
                             </li>
                         {% endif %}
-                        <li><a href="{{ url_for('.profile') }}">Profile</a></li>
-                        <li><a href="{{ url_for('.settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('ui_bp.profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('ui_bp.settings') }}">Settings</a></li>
                         <li><a id="logout" href="" onclick="this.closest('form').submit(); return false;">Logout</a></li>
                     </ul>
                 </div>

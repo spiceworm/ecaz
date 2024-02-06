@@ -4,10 +4,10 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
-    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/showdown/dist/showdown.min.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
-    <script type="application/javascript" src="{{ url_for('.static', filename='app.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('ui_bp.static', filename='node_modules/bootstrap-icons/font/bootstrap-icons.min.css') }}">
+    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='node_modules/showdown/dist/showdown.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='app.js') }}"></script>
 {% endblock %}
 
 
@@ -17,14 +17,14 @@
         <div class="panel-body">
             <ul class="breadcrumb">
                 <li><a>discussion</a></li>
-                <li><a href="{{ url_for('.view_topics') }}">topics</a></li>
-                <li><a href="{{ url_for('.view_topic', topic=thread.topic.name) }}">{{ thread.topic.name }}</a></li>
+                <li><a href="{{ url_for('ui_bp.view_topics') }}">topics</a></li>
+                <li><a href="{{ url_for('ui_bp.view_topic', topic=thread.topic.name) }}">{{ thread.topic.name }}</a></li>
                 <li class="active">{{ thread.slug }}</li>
             </ul>
 
             {{ render_thread(current_user, thread) }}
 
-            <form class="form-horizontal" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
+            <form class="form-horizontal" action="{{ url_for('ui_bp.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
                 {{ create_comment_form.csrf_token }}
 
                 <fieldset>
