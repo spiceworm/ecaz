@@ -1,5 +1,5 @@
 {% extends "bases/discussion_base.html" %}
-{% from "macros.html" import render_voting %}
+{% from "macros.html" import render_thread, render_voting %}
 
 
 {% block head %}
@@ -20,21 +20,13 @@
                 <li><a href="{{ url_for('.create_thread', topic=topic.name) }}">[ new thread ]</a></li>
             </ul>
 
-            <div class="well">
-                {% if topic.threads %}
-                    {% for thread in topic.threads %}
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                {{ render_voting(current_user, 'api_discussion_bp.threadvoteapi', thread) }}
-                                <a href="{{ url_for('.view_thread', topic=topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">{{ thread.title }}</a>
-                                <span class="badge">{{ thread.comments | length }}</span>
-                            </li>
-                        </ul>
-                    {% endfor %}
-                {% else %}
-                    <p>No threads exist yet</p>
-                {% endif %}
-            </div>
+            {% if topic.threads %}
+                {% for thread in topic.threads %}
+                    {{ render_thread(current_user, thread, title_only=True, include_comment_count=True) }}
+                {% endfor %}
+            {% else %}
+                <p>No threads exist yet</p>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
