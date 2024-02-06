@@ -153,6 +153,9 @@
                 <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}" style="font-size: 16px;">
                     {{ thread.title }}
                 </a>
+            </div>
+
+            <div class="panel-body">
                 {% if thread.is_deleted %}
                     <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
                 {% else %}
