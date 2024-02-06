@@ -44,7 +44,7 @@
             {% for comment in thread.comments %}
                 <!-- Only pass top level comments. All responses comments will be rendered recursively in the macro. -->
                 {% if not comment.parent %}
-                    {{ render_comment(current_user, comment, create_comment_form, thread) }}
+                    {{ render_comment(current_user, comment, create_comment_form) }}
                 {% endif %}
             {% endfor %}
         </div>

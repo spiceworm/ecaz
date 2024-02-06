@@ -24,7 +24,7 @@
 {% endmacro %}
 
 
-{% macro render_comment(current_user, comment, create_comment_form, thread, render_child_comments=True, show_thread_details=False) %}
+{% macro render_comment(current_user, comment, create_comment_form, render_child_comments=True, show_thread_details=False) %}
     <div class="panel panel-default">
         <div class="panel-body">
             {% if show_thread_details %}
@@ -111,7 +111,7 @@
                         <a>Report</a>
                     </small>
 
-                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
+                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('.create_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
                         {{ create_comment_form.csrf_token }}
 
                         <fieldset>
@@ -132,7 +132,7 @@
 
                 {% if render_child_comments %}
                     {% for response in comment.responses %}
-                        {{ render_comment(current_user, response, create_comment_form, thread, depth, show_thread_details) }}
+                        {{ render_comment(current_user, response, create_comment_form, depth, show_thread_details) }}
                     {% endfor %}
                 {% endif %}
             </div>
