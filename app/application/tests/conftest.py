@@ -91,6 +91,18 @@ class _ApiUser(_UiUser):
         }
 
 
+class _BadAuthTokenApiUser(_ApiUser):
+    @property
+    def _headers(self):
+        token_belonging_to_nonexistent_user = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNzI0NDkyOCwianRpIjoiNDMxMGZmMmMtMTMyNS00ZGM4LWFmMjYtN2M4Yzc2NTI3MmQwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImktZG8tbm90LWV4aXN0QHRlc3QuY29tIiwibmJmIjoxNzA3MjQ0OTI4LCJjc3JmIjoiZmVkYjllNWItMGQ0Ni00OGE0LTg5NzYtMTQ4ODk1OGFiOTk3IiwidGFncyI6W119.c7oV0TnBTcoxLrgxkq57Kxbwj3R55yfpegBm39aNPpI'
+        return {
+            "headers": {
+                "Authorization": f"Bearer {token_belonging_to_nonexistent_user}",
+                "Content-Type": "application/json",
+            }
+        }
+
+
 @pytest.fixture(autouse=True)
 def _cleanup_and_teardown():
     db.drop_all()
@@ -150,6 +162,11 @@ def mock_email_send(monkeypatch):
     # Return `patch_send` so we can change the return value of send to something
     # other than `True` if needed.
     return patch_send
+
+
+@pytest.fixture()
+def bad_auth_token_api_user(_app):
+    return functools.partial(_BadAuthTokenApiUser, _app)
 
 
 @pytest.fixture

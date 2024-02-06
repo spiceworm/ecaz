@@ -22,6 +22,13 @@ class TestCommentApi:
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
         assert not c.is_deleted
 
+    def test_delete_using_bad_auth_token(self, bad_auth_token_api_user, comment):
+        user = bad_auth_token_api_user()
+        c = comment(discussion=user.discussion)
+        resp = user.delete(url_for(self.endpoint, unique_id=c.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert not c.is_deleted
+
     def test_edit(self, api_user, comment):
         u = api_user()
         c = comment(discussion=u.discussion)
@@ -42,6 +49,15 @@ class TestCommentApi:
         assert resp.json == {}
         assert c.body != updated_body
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_edit_using_bad_auth_token(self, bad_auth_token_api_user, comment):
+        u = bad_auth_token_api_user()
+        c = comment(discussion=u.discussion)
+        updated_body = "This is the updated comment body string"
+        assert c.body != updated_body
+        resp = u.post(url_for(self.endpoint, unique_id=c.unique_id), json={"body": updated_body})
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert c.body != updated_body
 
     def test_get_nested_comment(self, comment, client, user):
         u = user()
@@ -141,6 +157,13 @@ class TestThread:
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
         assert not t.is_deleted
 
+    def test_delete_using_bad_auth_token(self, bad_auth_token_api_user, thread):
+        user = bad_auth_token_api_user()
+        t = thread(discussion=user.discussion)
+        resp = user.delete(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert not t.is_deleted
+
     def test_edit(self, api_user, thread):
         u = api_user()
         t = thread(discussion=u.discussion)
@@ -162,6 +185,15 @@ class TestThread:
         assert t.body != updated_body
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
+    def test_edit_using_bad_auth_token(self, bad_auth_token_api_user, thread):
+        u = bad_auth_token_api_user()
+        t = thread(discussion=u.discussion)
+        updated_body = "This is the updated thread body string"
+        assert t.body != updated_body
+        resp = u.post(url_for(self.endpoint, unique_id=t.unique_id), json={"body": updated_body})
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert t.body != updated_body
+
     def test_get(self, client, thread, user):
         u = user()
         t = thread(discussion=u.discussion)
@@ -182,11 +214,29 @@ class TestThread:
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
-class TestSaveApi:
-    def test_save_comment(self, comment, api_user):
+class TestSaveCommentApi:
+    endpoint = "api_discussion_bp.commentsaveapi"
+
+    def test_save(self, api_user, comment):
         user = api_user()
         c = comment(discussion=user.discussion)
-        url = url_for("api_discussion_bp.commentsaveapi", unique_id=c.unique_id)
+        url = url_for(self.endpoint, unique_id=c.unique_id)
+
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_comments == [c]
+
+    def test_save_as_nonexistent_user(self, bad_auth_token_api_user, comment):
+        user = bad_auth_token_api_user()
+        c = comment(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=c.unique_id)
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_save_delete(self, api_user, comment):
+        user = api_user()
+        c = comment(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=c.unique_id)
 
         resp1 = user.post(url)
         assert resp1.status_code == http.HTTPStatus.OK
@@ -196,10 +246,33 @@ class TestSaveApi:
         assert resp2.status_code == http.HTTPStatus.OK
         assert user.discussion.saved_comments == []
 
-    def test_save_thread(self, thread, api_user):
+    def test_save_delete_as_nonexistent_user(self, bad_auth_token_api_user, comment):
+        user = bad_auth_token_api_user()
+        c = comment(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=c.unique_id)
+        resp1 = user.delete(url)
+        assert resp1.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_save_delete_using_invalid_unique_id(self, api_user):
+        user = api_user()
+        url = url_for(self.endpoint, unique_id="this-is-invalid")
+        resp1 = user.delete(url)
+        assert resp1.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_save_using_invalid_unique_id(self, api_user):
+        user = api_user()
+        url = url_for(self.endpoint, unique_id="this-is-invalid")
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.NOT_FOUND
+
+
+class TestSaveThreadApi:
+    endpoint = "api_discussion_bp.threadsaveapi"
+
+    def test_save(self, api_user, thread):
         user = api_user()
         t = thread(discussion=user.discussion)
-        url = url_for("api_discussion_bp.threadsaveapi", unique_id=t.unique_id)
+        url = url_for(self.endpoint, unique_id=t.unique_id)
 
         resp1 = user.post(url)
         assert resp1.status_code == http.HTTPStatus.OK
@@ -209,11 +282,50 @@ class TestSaveApi:
         assert resp2.status_code == http.HTTPStatus.OK
         assert user.discussion.saved_threads == []
 
+    def test_save_as_nonexistent_user(self, bad_auth_token_api_user, thread):
+        user = bad_auth_token_api_user()
+        t = thread(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=t.unique_id)
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_save_delete(self, api_user, thread):
+        user = api_user()
+        t = thread(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=t.unique_id)
+
+        resp1 = user.post(url)
+        assert user.discussion.saved_threads == [t]
+        assert resp1.status_code == http.HTTPStatus.OK
+
+        resp2 = user.delete(url)
+        assert resp2.status_code == http.HTTPStatus.OK
+        assert user.discussion.saved_threads == []
+
+    def test_save_delete_as_nonexistent_user(self, bad_auth_token_api_user, thread):
+        user = bad_auth_token_api_user()
+        t = thread(discussion=user.discussion)
+        url = url_for(self.endpoint, unique_id=t.unique_id)
+        resp1 = user.delete(url)
+        assert resp1.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_save_delete_using_invalid_unique_id(self, api_user):
+        user = api_user()
+        url = url_for(self.endpoint, unique_id="this-is-invalid")
+        resp1 = user.delete(url)
+        assert resp1.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_save_using_invalid_unique_id(self, api_user):
+        user = api_user()
+        url = url_for(self.endpoint, unique_id="this-is-invalid")
+        resp1 = user.post(url)
+        assert resp1.status_code == http.HTTPStatus.NOT_FOUND
+
 
 class TestSubscribeApi:
     endpoint = "api_discussion_bp.topicsubscribeapi"
 
-    def test_add_subscription(self, api_user, topic):
+    def test_add(self, api_user, topic):
         user = api_user()
         t = topic()
         resp = user.post(url_for(self.endpoint, topic=t.name))
@@ -221,7 +333,18 @@ class TestSubscribeApi:
         assert resp.status_code == http.HTTPStatus.OK
         assert user.discussion.subscriptions == [t]
 
-    def test_remove_subscription(self, api_user, topic):
+    def test_add_as_nonexistent_user(self, bad_auth_token_api_user, topic):
+        user = bad_auth_token_api_user()
+        t = topic()
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_add_using_invalid_topic(self, api_user):
+        user = api_user()
+        resp = user.post(url_for(self.endpoint, topic="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_remove(self, api_user, topic):
         user = api_user()
         t = topic()
         user.discussion.add_subscription(t)
@@ -230,6 +353,17 @@ class TestSubscribeApi:
         assert resp.json == {}
         assert resp.status_code == http.HTTPStatus.OK
         assert user.discussion.subscriptions == []
+
+    def test_remove_as_nonexistent_user(self, bad_auth_token_api_user, topic):
+        user = bad_auth_token_api_user()
+        t = topic()
+        resp = user.delete(url_for(self.endpoint, topic=t.name))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_remove_using_invalid_topic(self, api_user):
+        user = api_user()
+        resp = user.delete(url_for(self.endpoint, topic="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
 class TestTopicApi:
@@ -253,22 +387,48 @@ class TestTopicApi:
         ("delete", 0),
     ],
 )
-class TestVoteApi:
-    def test_comment(self, comment, api_user, action, vote_count):
+class TestCommentVoteApi:
+    endpoint = "api_discussion_bp.commentvoteapi"
+
+    def test_vote(self, comment, api_user, action, vote_count):
         user = api_user()
         c = comment(discussion=user.discussion)
-        resp = user.post(url_for("api_discussion_bp.commentvoteapi", unique_id=c.unique_id), json={"action": action})
+        resp = user.post(url_for(self.endpoint, unique_id=c.unique_id), json={"action": action})
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.comment_votes) == vote_count
         assert len(c.votes) == vote_count
 
-    def test_thread(self, api_user, thread, action, vote_count):
+    def test_vote_as_nonexistent_user(self, comment, bad_auth_token_api_user, action, vote_count):
+        user = bad_auth_token_api_user()
+        c = comment(discussion=user.discussion)
+        resp = user.post(url_for(self.endpoint, unique_id=c.unique_id), json={"action": action})
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+
+@pytest.mark.parametrize(
+    "action, vote_count",
+    [
+        ("downvote", 1),
+        ("upvote", 1),
+        ("delete", 0),
+    ],
+)
+class TestThreadVoteApi:
+    endpoint = "api_discussion_bp.threadvoteapi"
+
+    def test_vote(self, api_user, thread, action, vote_count):
         user = api_user()
         t = thread(discussion=user.discussion)
-        resp = user.post(url_for("api_discussion_bp.threadvoteapi", unique_id=t.unique_id), json={"action": action})
+        resp = user.post(url_for(self.endpoint, unique_id=t.unique_id), json={"action": action})
         assert resp.status_code == http.HTTPStatus.OK
         assert len(user.discussion.thread_votes) == vote_count
         assert len(t.votes) == vote_count
+
+    def test_vote_as_nonexistent_user(self, bad_auth_token_api_user, thread, action, vote_count):
+        user = bad_auth_token_api_user()
+        t = thread(discussion=user.discussion)
+        resp = user.post(url_for(self.endpoint, unique_id=t.unique_id), json={"action": action})
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
 
 
 @pytest.mark.parametrize(
