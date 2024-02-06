@@ -5,6 +5,7 @@ import secrets
 import click
 import flask
 import flask_mailman
+import IPython
 
 from application.constants import messages
 from application.models import (
@@ -152,3 +153,8 @@ def send_email(subject, to, body, is_html):
         msg.content_subtype = "html"
     status = bool(msg.send())
     click.echo(f"Sent status: {status}")
+
+
+@cli_bp.cli.command("shell")  # pragma: no cover
+def shell():
+    IPython.embed()
