@@ -9,6 +9,7 @@ import flask_limiter
 from flask_limiter.util import get_remote_address
 import flask_login
 import flask_mailman
+import jinja2
 
 
 def create_app() -> flask.Flask:
@@ -94,6 +95,11 @@ def create_app() -> flask.Flask:
     config = Config()
     app.config.from_object(config)
     app.logger.debug(config.json())
+
+    if not config.TESTING:
+        # `form.csrf_token` will be undefined in templates when running tests because
+        # WTF_CSRF_ENABLED=False in test environment.
+        app.jinja_env.undefined = jinja2.StrictUndefined
 
     flask_jwt_extended.JWTManager(app)
     flask_mailman.Mail(app)
