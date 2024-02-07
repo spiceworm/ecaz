@@ -1,7 +1,6 @@
 FROM python:3.12.1-bookworm
 
 WORKDIR /app
-EXPOSE 8080
 ENV FLASK_APP=application:create_app()
 
 RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
