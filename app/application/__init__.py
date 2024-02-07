@@ -96,7 +96,7 @@ def create_app() -> flask.Flask:
     app.config.from_object(config)
     app.logger.debug(config.json())
 
-    if not config.TESTING:
+    if not config.TESTING:  # pragma: no cover
         # `form.csrf_token` will be undefined in templates when running tests because
         # WTF_CSRF_ENABLED=False in test environment.
         app.jinja_env.undefined = jinja2.StrictUndefined
@@ -139,7 +139,7 @@ def create_app() -> flask.Flask:
         flask.g.config = config
         flask.g.rate_limiter = rate_limiter
 
-    @app.errorhandler(Exception)
+    @app.errorhandler(Exception)  # pragma: no cover
     def handle_exception(e):
         flask.flash(str(e), category="error")
         return flask.redirect(flask.url_for("ui_bp.error"))
