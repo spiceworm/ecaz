@@ -7,7 +7,7 @@ docker compose up --build
 docker exec -it ecaz_xyz-app-1 flask shell
 
 # Flask CLI commands
-docker exec -it ecaz_xyz-app-1 flask shell
+docker exec -it ecaz_xyz-app-1 flask cli --help
 ```
 
 # Helper Scripts
@@ -20,6 +20,12 @@ docker exec -it ecaz-app-1 ./db.sh
 ### Execute query in postgres database
 ```bash
 docker exec -it ecaz-app-1 ./db.sh "SELECT * FROM public.user;"
+```
+
+### Start Flower server to inspect celery workers (only works locally)
+```bash
+docker exec -it ecaz-app-1 ./celery.sh flower --port=5555
+# Access at http://localhost:5555
 ```
 
 ## Debugging
