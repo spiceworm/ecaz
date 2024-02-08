@@ -21,40 +21,32 @@ def test_status_endpoint(client):
     assert resp.json == {"message": "ok"}
 
 
-def test_terminal_api_as_admin(api_user):
-    """
-    Verify admins are able to successfully use the terminal api endpoint.
-    """
-    user = api_user(is_admin=True)
-    assert user.is_admin
-    resp = user.post(
-        url_for("api_misc_bp.terminalapi"),
-        json={"command": "whoami"},
-    )
-    assert resp.json == {"output": "root"}
+class TestTerminalApi:
+    endpoint = "api_misc_bp.terminalapi"
 
+    def test_as_admin(self, api_user):
+        """
+        Verify admins are able to successfully use the terminal api endpoint.
+        """
+        user = api_user(is_admin=True)
+        assert user.is_admin
+        resp = user.post(url_for(self.endpoint), json={"command": "whoami"})
+        assert resp.json == {"output": "root"}
 
-def test_terminal_api_as_admin_using_invalid_command(api_user):
-    """
-    Verify exceptions are properly handled when thrown from invalid commands.
-    """
-    user = api_user(is_admin=True)
-    assert user.is_admin
-    resp = user.post(
-        url_for("api_misc_bp.terminalapi"),
-        json={"command": "invalid command"},
-    )
-    assert "No such file or directory" in resp.json["output"]
+    def test_as_admin_using_invalid_command(self, api_user):
+        """
+        Verify exceptions are properly handled when thrown from invalid commands.
+        """
+        user = api_user(is_admin=True)
+        assert user.is_admin
+        resp = user.post(url_for(self.endpoint), json={"command": "invalid command"})
+        assert "No such file or directory" in resp.json["output"]
 
-
-def test_terminal_api_as_not_admin(api_user):
-    """
-    Verify only admins are able to use the terminal api endpoint.
-    """
-    user = api_user()
-    assert not user.is_admin
-    resp = user.post(
-        url_for("api_misc_bp.terminalapi"),
-        json={"command": "whoami"},
-    )
-    assert resp.json == {"output": messages.RESTRICTED_TO_ADMIN}
+    def test_as_not_admin(self, api_user):
+        """
+        Verify only admins are able to use the terminal api endpoint.
+        """
+        user = api_user()
+        assert not user.is_admin
+        resp = user.post(url_for(self.endpoint), json={"command": "whoami"})
+        assert resp.json == {"output": messages.RESTRICTED_TO_ADMIN}
