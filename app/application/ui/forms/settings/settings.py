@@ -13,13 +13,26 @@ from application.ui.forms.validators import require_unique_username
 
 
 __all__ = (
+    "ChangeEmailForm",
     "ChangePasswordForm",
     "ChangeUsernameForm",
     "DeleteAccountForm",
-    "EmailForm",
     "TotpDisableForm",
     "WebAuthnDisableForm",
 )
+
+
+class ChangeEmailForm(BaseForm):
+    email = EmailField(
+        "email",
+        filters=[filters.strip_whitespace],
+        render_kw={"placeholder": "Email"},
+        validators=[
+            validators.DataRequired(),
+            # Email does not have to be unique. Multiple accounts could have the same
+            # email, but only the account with the verified email will receive emails.
+        ],
+    )
 
 
 class ChangePasswordForm(BaseForm):
@@ -55,13 +68,6 @@ class ChangeUsernameForm(BaseForm):
 
 class DeleteAccountForm(BaseForm):
     pass
-
-
-class EmailForm(BaseForm):
-    email = EmailField(
-        "email",
-        render_kw={"readonly": True},
-    )
 
 
 class TotpDisableForm(BaseForm):

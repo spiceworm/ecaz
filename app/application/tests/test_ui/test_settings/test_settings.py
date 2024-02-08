@@ -9,6 +9,38 @@ from application.models import (
 )
 
 
+def test_change_email(ui_user):
+    """
+    Verify behavior for submitting the form to change the email on the settings page.
+    """
+    user = ui_user()
+    new_email = "new@test.com"
+    assert user.email != new_email
+    resp = user.post(
+        url_for("ui_bp.change_email"),
+        data={"email": new_email},
+        follow_redirects=True,
+    )
+    assert len(resp.history) == 1
+    assert user.email == new_email
+    assert messages.EMAIL_UPDATE_SUCCESS in resp.data.decode()
+
+
+def test_change_email_resets_verification(ui_user):
+    """
+    Verify that if a user changes their email, the `User.is_verified` attribute is set back to False.
+    """
+    user = ui_user(is_verified=True)
+    resp = user.post(
+        url_for("ui_bp.change_email"),
+        data={"email": "new@test.com"},
+        follow_redirects=True,
+    )
+    assert len(resp.history) == 1
+    assert messages.EMAIL_UPDATE_SUCCESS in resp.data.decode()
+    assert not user.is_verified
+
+
 def test_change_password(ui_user):
     """
     Verify behavior for submitting the form to change the password on the
@@ -175,38 +207,6 @@ def test_disable_webauthn_when_enabled(ui_user):
     assert messages.WEBAUTHN_NOW_DISABLED in resp.data.decode()
     assert len(resp.history) == 1
     assert resp.request.base_url == url_for("ui_bp.settings")
-
-
-def test_send_verify_email(ui_user):
-    """
-    Verify that when a user clicks the verify button next to their email address
-    on the settings page that it creates an `AuthToken` instance with the
-    `AuthToken.VERIFY_EMAIL_TAG` and shows a notification telling the user that
-    a verification email has been sent.
-    """
-    user = ui_user()
-    assert len(user.auth_tokens) == 0
-    resp = user.post(
-        url_for("ui_bp.send_verify_email"),
-        follow_redirects=True,
-    )
-    assert len(resp.history) == 1
-    assert resp.request.base_url == url_for("ui_bp.settings")
-    assert messages.VERIFICATION_EMAIL_SENT in resp.data.decode()
-    assert len(user.auth_tokens) == 1
-    assert user.auth_tokens[0].tags == [AuthToken.HIDDEN_TAG, AuthToken.VERIFY_EMAIL_TAG]
-
-
-def test_send_verify_email_if_already_verified(ui_user):
-    """
-    Verify that if a user tries to send a POST to /settings/verify, and they have
-    already verified their email, that the appropriate notification is shown.
-    """
-    resp = ui_user(is_verified=True).post(
-        url_for("ui_bp.send_verify_email"),
-        follow_redirects=True,
-    )
-    assert messages.ACCOUNT_ALREADY_VERIFIED in resp.data.decode()
 
 
 def test_verify_email(ui_user):

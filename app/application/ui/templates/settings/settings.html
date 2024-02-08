@@ -1,6 +1,43 @@
 {% extends "bases/base.html" %}
 
 
+{% block head %}
+    {{ super() }}
+    <script>
+        function sendVerificationEmail(jwt) {
+            fetch("{{ url_for('api_misc_bp.verifyemailapi') }}", {
+                method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'application/json',
+                },
+            }).then(resp => {
+                if (resp.ok) {
+                    document.getElementById("emailVerifyBtn").innerText = "Sent";
+                }
+            })
+        }
+
+        window.addEventListener("load", () => {
+            const emailInput = document.getElementById("email");
+            const loadedEmail = emailInput.value;
+
+            emailInput.addEventListener("input", (emailField) => {
+                // Email save button is disabled if the user has not changed the email field value.
+                document.getElementById("emailSaveBtn").disabled = emailField.value === loadedEmail;
+
+                // Email verify button is disabled if the user has changed the email field value.
+                // They need to save first before they can verify.
+                let emailVerifyBtn = document.getElementById("emailVerifyBtn");
+                if (emailVerifyBtn !== null) {
+                    emailVerifyBtn.disabled = emailField.value !== loadedEmail;
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+
 {% block content %}
     {{ super() }}
 
@@ -14,18 +51,19 @@
             <div class="panel-body">
                 <fieldset>
                     <legend>User</legend>
-                    <form class="form-horizontal" action="{{ url_for('ui_bp.send_verify_email') }}" method="post">
-                        {{ email_form.csrf_token }}
+                    <form class="form-horizontal" action="{{ url_for('ui_bp.change_email') }}" method="post">
+                        {{ change_email_form.csrf_token }}
                         <div class="form-group">
                             <label class="col-lg-2 control-label" for="email">Email</label>
-                            <div class="col-lg-7">
-                                {{ email_form.email(class_="form-control", value=current_user.email) }}
+                            <div class="col-lg-6">
+                                {{ change_email_form.email(class_="form-control", value=current_user.email, autocomplete="off") }}
                             </div>
-                            <div class="col-lg-3">
+                            <div class="col-lg-4">
+                                <button class="btn btn-primary" id="emailSaveBtn" type="submit" disabled>Save</button>
                                 {% if current_user.is_verified %}
-                                    <p>VERIFIED</p>
+                                    <button class="btn btn-info" type="button" disabled>VERIFIED</button>
                                 {% else %}
-                                    <button class="btn btn-primary" type="submit">Verify</button>
+                                    <button class="btn btn-primary" id="emailVerifyBtn" type="button" onclick="sendVerificationEmail('{{ current_user.frontend_token.value }}')">Verify</button>
                                 {% endif %}
                             </div>
                         </div>
@@ -35,10 +73,10 @@
 
                         <div class="form-group">
                             <label class="col-lg-2 control-label" for="username">Username</label>
-                            <div class="col-lg-7">
-                                {{ change_username_form.username(class_="form-control", value=current_user.username) }}
+                            <div class="col-lg-6">
+                                {{ change_username_form.username(class_="form-control", value=current_user.username, autocomplete="off") }}
                             </div>
-                            <div class="col-lg-3">
+                            <div class="col-lg-2">
                                 <button class="btn btn-primary" type="submit">Save</button>
                             </div>
                         </div>

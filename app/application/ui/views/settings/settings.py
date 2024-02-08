@@ -78,10 +78,10 @@ def disable_webauthn() -> Response:
 def settings() -> str:
     return flask.render_template(
         "settings/settings.html",
+        change_email_form=forms.ChangeEmailForm(),
         change_password_form=forms.ChangePasswordForm(),
         change_username_form=forms.ChangeUsernameForm(),
         delete_account_form=forms.DeleteAccountForm(),
-        email_form=forms.EmailForm(),
         logout_form=forms.LogoutForm(),
         totp_disable_form=forms.TotpDisableForm(),
         webauthn_disable_form=forms.WebAuthnDisableForm(),
