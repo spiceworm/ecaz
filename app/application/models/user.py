@@ -52,7 +52,6 @@ class User(db.Model, flask_login.UserMixin):
             padding="pkcs5",
         ),
         nullable=False,
-        unique=True,
     )
     is_admin = sa.Column(
         StringEncryptedType(

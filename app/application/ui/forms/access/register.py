@@ -6,10 +6,7 @@ from wtforms import (
 from wtforms.fields import EmailField
 
 from application.ui.forms import BaseForm
-from application.ui.forms.validators import (
-    require_unique_email,
-    require_unique_username,
-)
+from application.ui.forms.validators import require_unique_username
 from application.util.misc import generate_unique_username
 
 
@@ -23,7 +20,8 @@ class RegisterForm(BaseForm):
         validators=[
             validators.DataRequired(),
             validators.Email(),
-            require_unique_email,
+            # Email does not have to be unique. Multiple accounts could have the same
+            # email, but only the account with the verified email will receive emails.
         ],
     )
     password = PasswordField(

@@ -21,15 +21,15 @@ from application.util.exceptions import ModeratorRequired
 )
 class TestBanIsActive:
     def test_hybrid_property(self, topic, user, expires_at, is_active):
-        d1 = user(email="1@test.com").discussion
-        d2 = user(email="2@test.com").discussion
+        d1 = user().discussion
+        d2 = user().discussion
         _topic = topic(moderators=[d1])
         b = _topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
         assert b.is_active is is_active
 
     def test_hybrid_property_expression(self, topic, user, expires_at, is_active):
-        d1 = user(email="1@test.com").discussion
-        d2 = user(email="2@test.com").discussion
+        d1 = user().discussion
+        d2 = user().discussion
         _topic = topic(moderators=[d1])
         b = _topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
         expected_bool = sa.true() if is_active else sa.false()
@@ -77,16 +77,16 @@ class TestDiscussion:
 
 def test_add_moderator_to_topic(topic, user):
     t = topic()
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     t.add_moderator(d1)
     assert d1.is_moderator_of(t)
     assert not d2.is_moderator_of(t)
 
 
 def test_comment_is_downvoted_by(comment, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     c = comment(body="body", discussion=d1)
     c.downvote(discussion=d1)
     assert c.is_downvoted_by(d1)
@@ -94,8 +94,8 @@ def test_comment_is_downvoted_by(comment, user):
 
 
 def test_comment_is_upvoted_by(comment, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     c = comment(body="body", discussion=d1)
     c.upvote(discussion=d1)
     assert c.is_upvoted_by(d1)
@@ -103,8 +103,8 @@ def test_comment_is_upvoted_by(comment, user):
 
 
 def test_create_ban_as_non_moderator(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     _topic = topic()
     with pytest.raises(ModeratorRequired):
         _topic.create_ban(created_by=d1, discussion=d2)
@@ -146,8 +146,8 @@ def test_relation_discussion_to_user(user):
 
 
 def test_relation_discussion_to_comment_votes(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     d3 = user(email="3@test.com").discussion
     _topic = topic()
     t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
@@ -165,8 +165,8 @@ def test_relation_discussion_to_comment_votes(topic, user):
 
 
 def test_relation_discussion_to_thread_votes(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     d3 = user(email="3@test.com").discussion
     _topic = topic()
     t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
@@ -183,8 +183,8 @@ def test_relation_discussion_to_thread_votes(topic, user):
 
 def test_relation_discussion_bans(topic, user):
     d0 = user(email="0@test.com").discussion
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     topic1 = topic(name="t1", moderators=[d0])
     topic2 = topic(name="t2", moderators=[d0])
     b1 = topic1.create_ban(created_by=d0, discussion=d1)
@@ -197,8 +197,8 @@ def test_relation_discussion_bans(topic, user):
 
 
 def test_relation_discussion_shadow_bans(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     topic1 = topic(name="t1", moderators=[d1])
     topic2 = topic(name="t2", moderators=[d1])
     b1 = topic1.create_ban(created_by=d1, discussion=d2, is_shadow=True)
@@ -211,8 +211,8 @@ def test_relation_discussion_shadow_bans(topic, user):
 
 
 def test_relation_multiple_comments_multiple_users(thread, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     t = thread(discussion=d1)
     c1 = t.create_comment(body="comment 1", discussion=d1)
     c2 = t.create_comment(body="comment 2", discussion=d2)
@@ -222,8 +222,8 @@ def test_relation_multiple_comments_multiple_users(thread, user):
 
 
 def test_relation_subscription_subscriber(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     _topic = topic()
     d1.add_subscription(_topic)
     d2.add_subscription(_topic)
@@ -248,8 +248,8 @@ def test_relation_threads_to_comments(topic, user):
 
 
 def test_relation_topic_moderators(topic, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     d3 = user(email="3@test.com").discussion
     topic1 = topic(name="t1", moderators=[d1, d2])
     topic2 = topic(name="t2", moderators=[d2, d3])
@@ -283,8 +283,8 @@ def test_save_thread(thread, user):
 
 
 def test_thread_is_downvoted_by(thread, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     t = thread(discussion=d1)
     t.downvote(discussion=d1)
     assert t.is_downvoted_by(d1)
@@ -292,8 +292,8 @@ def test_thread_is_downvoted_by(thread, user):
 
 
 def test_thread_is_upvoted_by(thread, user):
-    d1 = user(email="1@test.com").discussion
-    d2 = user(email="2@test.com").discussion
+    d1 = user().discussion
+    d2 = user().discussion
     t = thread(discussion=d1)
     t.upvote(discussion=d1)
     assert t.is_upvoted_by(d1)

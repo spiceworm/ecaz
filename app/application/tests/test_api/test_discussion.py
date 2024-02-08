@@ -15,8 +15,8 @@ class TestCommentApi:
         assert c.is_deleted
 
     def test_delete_if_created_by_different_user(self, api_user, comment, user):
-        user1 = api_user(email="1@test.com")
-        user2 = user(email="2@tets.com")
+        user1 = api_user()
+        user2 = user()
         c = comment(discussion=user2.discussion)
         resp = user1.delete(url_for(self.endpoint, unique_id=c.unique_id))
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
@@ -40,8 +40,8 @@ class TestCommentApi:
         assert resp.status_code == http.HTTPStatus.OK
 
     def test_edit_if_created_by_different_user(self, api_user, comment):
-        u1 = api_user(email="1@test.com")
-        u2 = api_user(email="2@test.com")
+        u1 = api_user()
+        u2 = api_user()
         c = comment(discussion=u1.discussion)
         updated_body = "This is the updated comment body string but no update should occur"
         assert c.body != updated_body
@@ -150,7 +150,7 @@ class TestThread:
         assert t.is_deleted
 
     def test_delete_if_created_by_different_user(self, api_user, thread):
-        user1 = api_user(email="1@test.com")
+        user1 = api_user()
         user2 = api_user(email="2@tets.com")
         t = thread(discussion=user2.discussion)
         resp = user1.delete(url_for(self.endpoint, unique_id=t.unique_id))
@@ -175,8 +175,8 @@ class TestThread:
         assert resp.status_code == http.HTTPStatus.OK
 
     def test_edit_if_created_by_different_user(self, api_user, thread):
-        u1 = api_user(email="1@test.com")
-        u2 = api_user(email="2@test.com")
+        u1 = api_user()
+        u2 = api_user()
         t = thread(discussion=u1.discussion)
         updated_body = "This is the updated thread body string but no update should occur"
         assert t.body != updated_body

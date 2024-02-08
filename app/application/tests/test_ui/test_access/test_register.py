@@ -37,20 +37,6 @@ class TestRegister:
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.profile")
 
-    def test_if_duplicate_email(self, client, user):
-        """
-        Verify that the correct error message is shown if a user tries to register
-        using an email address that is already in use by another user.
-        """
-        u = user()
-        resp = client.post(
-            url_for("ui_bp.register"),
-            follow_redirects=True,
-            data={"email": u.email, "password": "some-password"},
-        )
-        assert messages.DUPLICATE_EMAIL_ERROR in resp.data.decode()
-        db.session.rollback()
-
     def test_if_registration_disabled(self, client, monkeypatch):
         """
         Verify the appropriate message is shown and that registration attempts do
