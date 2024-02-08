@@ -65,6 +65,8 @@ def create_app() -> flask.Flask:
         RATE_LIMIT_ENABLED = decouple.config("RATE_LIMIT_ENABLED", cast=bool, default=True)
         RATE_LIMIT_STORAGE_URI = decouple.config("RATE_LIMIT_STORAGE_URI", default="memory://")
 
+        REGISTRATION_ENABLED = decouple.config("REGISTRATION_ENABLED", cast=bool, default=True)
+
         # Magic flask-sqlalchemy environment variable
         SQLALCHEMY_DATABASE_URI = (
             f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"

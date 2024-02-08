@@ -21,6 +21,7 @@ services:
       POSTGRES_USER: "postgres"
       SECRET_KEY: "1234"
       RATE_LIMIT_ENABLED: "0"
+      REGISTRATION_ENABLED: "1"
       WTF_CSRF_ENABLED: "0"
     entrypoint: "tox ${TOX_ARGS:-}"
     volumes:

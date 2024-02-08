@@ -1,3 +1,4 @@
+import flask
 from flask import url_for
 
 
@@ -49,3 +50,21 @@ class TestRegister:
         )
         assert messages.DUPLICATE_EMAIL_ERROR in resp.data.decode()
         db.session.rollback()
+
+    def test_if_registration_disabled(self, client, monkeypatch):
+        """
+        Verify the appropriate message is shown and that registration attempts do
+        not succeed if the environment variable REGISTRATION_ENABLED=False.
+        """
+        updated_config = {**flask.current_app.config, **{"REGISTRATION_ENABLED": False}}
+        monkeypatch.setattr(flask.current_app, "config", updated_config)
+
+        resp1 = client.get(url_for("ui_bp.register"))
+        assert messages.REGISTRATION_DISABLED in resp1.data.decode()
+
+        resp2 = client.post(
+            url_for("ui_bp.register"),
+            data={"email": "user@test.com", "password": "password123"},
+        )
+        assert messages.REGISTRATION_DISABLED in resp2.data.decode()
+        assert User.query.count() == 0
