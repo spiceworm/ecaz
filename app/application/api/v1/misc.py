@@ -35,7 +35,7 @@ class StatusApi(flask_restful.Resource):
 class TerminalApi(flask_restful.Resource):
     @jwt_required()
     def post(self):
-        user = User.query.filter(User.email == get_jwt_identity()).one_or_none()
+        user = User.from_jwt_identity(get_jwt_identity())
         if user and user.is_admin:
             data = flask_restful.request.get_json(force=True)
             command = data.get("command", "")

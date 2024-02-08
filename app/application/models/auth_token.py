@@ -65,7 +65,7 @@ class AuthToken(db.Model):
         token_value = flask_jwt_extended.create_access_token(
             additional_claims={"tags": tags or []},
             expires_delta=expires_delta,
-            identity=user.email,
+            identity=user.id,
         )
         token = cls(
             name=name,

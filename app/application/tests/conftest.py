@@ -74,7 +74,7 @@ class _ApiUser(_UiUser):
             name="test-token",
             value=create_access_token(
                 expires_delta=False,
-                identity=self._user.email,
+                identity=self._user.id,
             ),
             user=self._user,
         )
@@ -94,7 +94,9 @@ class _ApiUser(_UiUser):
 class _BadAuthTokenApiUser(_ApiUser):
     @property
     def _headers(self):
-        token_belonging_to_nonexistent_user = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNzI0NDkyOCwianRpIjoiNDMxMGZmMmMtMTMyNS00ZGM4LWFmMjYtN2M4Yzc2NTI3MmQwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImktZG8tbm90LWV4aXN0QHRlc3QuY29tIiwibmJmIjoxNzA3MjQ0OTI4LCJjc3JmIjoiZmVkYjllNWItMGQ0Ni00OGE0LTg5NzYtMTQ4ODk1OGFiOTk3IiwidGFncyI6W119.c7oV0TnBTcoxLrgxkq57Kxbwj3R55yfpegBm39aNPpI'
+        # identity is normally `User.id` so setting it to -1 here makes it intentionally invalid
+        # for testing purposes.
+        token_belonging_to_nonexistent_user = create_access_token(identity=-1)
         return {
             "headers": {
                 "Authorization": f"Bearer {token_belonging_to_nonexistent_user}",

@@ -36,7 +36,7 @@ class _CommentThreadApiBase:
 
     @jwt_required()
     def delete(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             if obj := self.model.query.filter_by(discussion=user.discussion, unique_id=unique_id).one_or_none():
                 obj.is_deleted = True
                 db.session.add(obj)
@@ -53,7 +53,7 @@ class _CommentThreadApiBase:
 
     @jwt_required()
     def post(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             parser = reqparse.RequestParser()
             parser.add_argument("body", required=True)
             args = parser.parse_args()
@@ -72,7 +72,7 @@ class _CommentThreadSaveApiBase:
 
     @jwt_required()
     def delete(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             if obj := self.model.query.filter_by(unique_id=unique_id).one_or_none():
                 obj.unsave(user.discussion)
                 return {}, http.HTTPStatus.OK
@@ -81,7 +81,7 @@ class _CommentThreadSaveApiBase:
 
     @jwt_required()
     def post(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             if obj := self.model.query.filter_by(unique_id=unique_id).one_or_none():
                 obj.save(user.discussion)
                 return {}, http.HTTPStatus.OK
@@ -94,7 +94,7 @@ class _CommentThreadVoteApiBase:
 
     @jwt_required()
     def post(self, unique_id):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             parser = reqparse.RequestParser()
             parser.add_argument("action", choices=("downvote", "upvote", "delete"), required=True)
             args = parser.parse_args()
@@ -135,7 +135,7 @@ class TopicApi(flask_restful.Resource):
 class TopicSubscribeApi(flask_restful.Resource):
     @jwt_required()
     def delete(self, topic):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             if topic := Topic.query.filter_by(name=topic).one_or_none():
                 user.discussion.remove_subscription(topic)
                 return {}, http.HTTPStatus.OK
@@ -144,7 +144,7 @@ class TopicSubscribeApi(flask_restful.Resource):
 
     @jwt_required()
     def post(self, topic):
-        if user := User.query.filter(User.email == get_jwt_identity()).one_or_none():
+        if user := User.from_jwt_identity(get_jwt_identity()):
             if topic := Topic.query.filter_by(name=topic).one_or_none():
                 user.discussion.add_subscription(topic)
                 return {}, http.HTTPStatus.OK

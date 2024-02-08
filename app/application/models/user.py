@@ -1,4 +1,8 @@
-from typing import List
+from __future__ import annotations
+from typing import (
+    List,
+    Union,
+)
 
 import flask_login
 import humanize
@@ -129,6 +133,10 @@ class User(db.Model, flask_login.UserMixin):
         else:
             db.session.commit()
         return AuthToken.create_frontend_token(self)
+
+    @staticmethod
+    def from_jwt_identity(jwt_identity: str) -> Union[User, None]:
+        return User.query.filter_by(id=jwt_identity).one_or_none()
 
     @property
     def public_auth_tokens(self) -> List[AuthToken]:
