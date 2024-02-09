@@ -55,9 +55,9 @@ def test_public_auth_tokens(user):
     `AuthToken.HIDDEN_TAG` in its claims.
     """
     u = user()
-    AuthToken.create(name="t1", user=u, tags=[AuthToken.HIDDEN_TAG])
-    AuthToken.create(name="t2", user=u, tags=[AuthToken.HIDDEN_TAG])
-    AuthToken.create(name="t3", user=u, tags=[AuthToken.HIDDEN_TAG])
+    AuthToken.create(name="t1", user=u, meta={"tags": [AuthToken.HIDDEN_TAG]})
+    AuthToken.create(name="t2", user=u, meta={"tags": [AuthToken.HIDDEN_TAG]})
+    AuthToken.create(name="t3", user=u, meta={"tags": [AuthToken.HIDDEN_TAG]})
     assert u.public_auth_tokens == []
 
     t4 = AuthToken.create(name="t4", user=u)

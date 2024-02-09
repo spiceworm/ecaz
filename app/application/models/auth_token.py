@@ -61,9 +61,12 @@ class AuthToken(db.Model):
     )
 
     @classmethod
-    def create(cls, user, name, tags=None, expires_delta=False) -> AuthToken:
+    def create(cls, user, name, tags=None, meta=None, expires_delta=False) -> AuthToken:
         token_value = flask_jwt_extended.create_access_token(
-            additional_claims={"tags": tags or []},
+            additional_claims={
+                "meta": meta or {},
+                "tags": tags or [],
+            },
             expires_delta=expires_delta,
             identity=user.id,
         )
@@ -81,8 +84,8 @@ class AuthToken(db.Model):
         return cls.create(
             user,
             cls.TOTP_MFA_TAG,
-            [cls.HIDDEN_TAG, cls.TOTP_MFA_TAG],
-            expires_delta or timedelta(seconds=60),
+            meta={"tags": [cls.HIDDEN_TAG, cls.TOTP_MFA_TAG]},
+            expires_delta=expires_delta or timedelta(seconds=60),
         )
 
     @classmethod
@@ -90,8 +93,8 @@ class AuthToken(db.Model):
         return cls.create(
             user,
             cls.WEBAUTHN_MFA_TAG,
-            [cls.HIDDEN_TAG, cls.WEBAUTHN_MFA_TAG],
-            expires_delta or timedelta(seconds=60),
+            meta={"tags": [cls.HIDDEN_TAG, cls.WEBAUTHN_MFA_TAG]},
+            expires_delta=expires_delta or timedelta(seconds=60),
         )
 
     @classmethod
@@ -99,8 +102,8 @@ class AuthToken(db.Model):
         return cls.create(
             user,
             cls.VERIFY_EMAIL_TAG,
-            [cls.HIDDEN_TAG, cls.VERIFY_EMAIL_TAG],
-            expires_delta or timedelta(hours=24),
+            meta={"tags": [cls.HIDDEN_TAG, cls.VERIFY_EMAIL_TAG]},
+            expires_delta=expires_delta or timedelta(hours=24),
         )
 
     @classmethod
@@ -111,8 +114,8 @@ class AuthToken(db.Model):
         return cls.create(
             user,
             cls.FRONTEND_TAG,
-            [cls.HIDDEN_TAG, cls.FRONTEND_TAG],
-            expires_delta,
+            meta={"tags": [cls.HIDDEN_TAG, cls.FRONTEND_TAG]},
+            expires_delta=expires_delta,
         )
 
     @classmethod
@@ -120,8 +123,8 @@ class AuthToken(db.Model):
         return cls.create(
             user,
             cls.RESET_PASSWORD_TAG,
-            [cls.HIDDEN_TAG, cls.RESET_PASSWORD_TAG],
-            expires_delta or timedelta(hours=24),
+            meta={"tags": [cls.HIDDEN_TAG, cls.RESET_PASSWORD_TAG]},
+            expires_delta=expires_delta or timedelta(hours=24),
         )
 
     @property
@@ -153,13 +156,17 @@ class AuthToken(db.Model):
         return self.expires_in is True
 
     @property
-    def tags(self) -> List[str]:
+    def meta(self) -> dict:
         try:
             claims = flask_jwt_extended.decode_token(self.value)
         except jwt.ExpiredSignatureError:
-            return []
+            return {}
         else:
-            return claims.get("tags", [])
+            return claims.get("meta", {})
+
+    @property
+    def tags(self) -> List[str]:
+        return self.meta.get("tags", [])
 
     def validate(self, require_tags=(), allow_expired=False) -> bool:
         return (not self.is_expired and not allow_expired) and set(require_tags).issubset(self.tags)
