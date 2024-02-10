@@ -73,6 +73,37 @@ def test_view_topic(topic, ui_user):
     assert resp.request.base_url == url
 
 
+def test_view_topic_if_is_private_and_is_authenticated(topic, ui_user):
+    user = ui_user()
+    _topic = topic(is_private=True)
+    resp = user.get(url_for("ui_bp.view_topic", topic=_topic.name))
+    assert "This topic is private" in resp.data.decode()
+
+
+def test_view_topic_if_is_private_and_is_moderator(topic, ui_user):
+    user = ui_user()
+    _topic = topic(is_private=True)
+    thread = _topic.create_thread(body="b", title="This is the title", discussion=user.discussion)
+    _topic.add_moderator(user.discussion)
+    resp = user.get(url_for("ui_bp.view_topic", topic=_topic.name))
+    assert thread.title in resp.data.decode()
+
+
+def test_view_topic_if_is_private_and_is_subscribed(topic, ui_user):
+    user = ui_user()
+    _topic = topic(is_private=True)
+    thread = _topic.create_thread(body="b", title="This is the title", discussion=user.discussion)
+    user.discussion.add_subscription(_topic)
+    resp = user.get(url_for("ui_bp.view_topic", topic=_topic.name))
+    assert thread.title in resp.data.decode()
+
+
+def test_view_topic_if_is_private_and_is_unauthenticated(client, topic):
+    _topic = topic(is_private=True)
+    resp = client.get(url_for("ui_bp.view_topic", topic=_topic.name))
+    assert "This topic is private" in resp.data.decode()
+
+
 def test_view_topic_that_does_not_exist(ui_user):
     user = ui_user()
     resp = user.get(url_for("ui_bp.view_topic", topic="does-not-exist"))

@@ -322,7 +322,20 @@ class TestSaveThreadApi:
         assert resp1.status_code == http.HTTPStatus.NOT_FOUND
 
 
-class TestSubscribeApi:
+class TestTopicApi:
+    endpoint = "api_discussion_bp.topicapi"
+
+    def test_get(self, client, topic):
+        _topic = topic()
+        resp = client.get(url_for(self.endpoint, topic=_topic.name))
+        assert resp.json == {"created_at": _topic.created_at.isoformat(), "name": _topic.name}
+
+    def test_get_using_invalid_name(self, client):
+        resp = client.get(url_for(self.endpoint, topic="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+
+class TestTopicSubscribeApi:
     endpoint = "api_discussion_bp.topicsubscribeapi"
 
     def test_add(self, api_user, topic):
@@ -338,6 +351,22 @@ class TestSubscribeApi:
         t = topic()
         resp = user.post(url_for(self.endpoint, topic=t.name))
         assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_add_if_is_private_topic(self, api_user, topic):
+        user = api_user()
+        t = topic(is_private=True)
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert not user.discussion.is_subscribed_to(t)
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_add_if_is_private_topic_and_user_is_moderator_of_topic(self, api_user, topic):
+        user = api_user()
+        t = topic(is_private=True)
+        t.add_moderator(user.discussion)
+        assert not user.discussion.is_subscribed_to(t)
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert user.discussion.is_subscribed_to(t)
+        assert resp.status_code == http.HTTPStatus.OK
 
     def test_add_using_invalid_topic(self, api_user):
         user = api_user()
@@ -360,23 +389,130 @@ class TestSubscribeApi:
         resp = user.delete(url_for(self.endpoint, topic=t.name))
         assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
 
+    def test_remove_leaves_moderation_status_unchanged(self, api_user, topic):
+        user = api_user()
+        t = topic()
+        user.discussion.add_subscription(t)
+        t.add_moderator(user.discussion)
+        url = url_for(self.endpoint, topic=t.name)
+        resp = user.delete(url)
+        assert resp.status_code == http.HTTPStatus.OK
+        assert user.discussion.is_moderator_of(t)
+
     def test_remove_using_invalid_topic(self, api_user):
         user = api_user()
         resp = user.delete(url_for(self.endpoint, topic="this-is-invalid"))
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
-class TestTopicApi:
-    endpoint = "api_discussion_bp.topicapi"
+class TestTopicSubscribeRequestApi:
+    endpoint = "api_discussion_bp.topicsubscriberequestapi"
 
-    def test_get(self, client, topic):
-        _topic = topic()
-        resp = client.get(url_for(self.endpoint, topic=_topic.name))
-        assert resp.json == {"created_at": _topic.created_at.isoformat(), "name": _topic.name}
+    def test_approve(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        t.add_moderator(user1.discussion)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.put(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id})
+        assert user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 0
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.OK
 
-    def test_get_using_invalid_name(self, client):
-        resp = client.get(url_for(self.endpoint, topic="this-is-invalid"))
+    def test_approve_if_invalid_subscribe_request_id(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        t.add_moderator(user1.discussion)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.put(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id + 1})
+        assert not user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 1
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_approve_if_not_moderator(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.put(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id})
+        assert not user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 1
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_create(self, api_user, topic):
+        user = api_user()
+        t = topic(is_private=True)
+        assert len(user.discussion.topic_subscribe_requests) == 0
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert resp.json == {}
+        assert resp.status_code == http.HTTPStatus.OK
+        assert len(user.discussion.topic_subscribe_requests) == 1
+
+    def test_create_as_nonexistent_user(self, bad_auth_token_api_user, topic):
+        user = bad_auth_token_api_user()
+        t = topic(is_private=True)
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_create_duplicate_request(self, api_user, topic):
+        user = api_user()
+        t = topic(is_private=True)
+        user.post(url_for(self.endpoint, topic=t.name))
+        assert len(user.discussion.topic_subscribe_requests) == 1
+        sr = user.discussion.topic_subscribe_requests[0]
+        user.post(url_for(self.endpoint, topic=t.name))
+        assert user.discussion.topic_subscribe_requests == [sr]
+
+    def test_create_if_is_not_private_topic(self, api_user, topic):
+        user = api_user()
+        t = topic()
+        resp = user.post(url_for(self.endpoint, topic=t.name))
+        assert len(user.discussion.topic_subscribe_requests) == 0
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_create_using_invalid_topic(self, api_user):
+        user = api_user()
+        resp = user.post(url_for(self.endpoint, topic="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_deny(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        t.add_moderator(user1.discussion)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.delete(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id})
+        assert not user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 0
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.OK
+
+    def test_deny_if_invalid_subscribe_request_id(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        t.add_moderator(user1.discussion)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.delete(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id + 1})
+        assert not user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 1
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_deny_if_not_moderator(self, api_user, topic):
+        user1 = api_user(username="u1")
+        user2 = api_user(username="u2")
+        t = topic(is_private=True)
+        sr = user2.discussion.create_subscribe_request(t)
+        resp2 = user1.delete(url_for(self.endpoint, topic=t.name), json={"subscribe_request_id": sr.id})
+        assert not user2.discussion.is_subscribed_to(t)
+        assert len(user2.discussion.topic_subscribe_requests) == 1
+        assert resp2.json == {}
+        assert resp2.status_code == http.HTTPStatus.UNAUTHORIZED
 
 
 @pytest.mark.parametrize(

@@ -1,4 +1,5 @@
 from wtforms import (
+    BooleanField,
     HiddenField,
     SelectField,
     StringField,
@@ -57,3 +58,4 @@ class CreateTopicForm(BaseForm):
             disallow_whitespace,
         ],
     )
+    is_private = BooleanField()

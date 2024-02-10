@@ -8,9 +8,28 @@ from application.models import AuthToken
 
 
 __all__ = (
+    "require_moderator",
     "require_unauthenticated",
     "validate_jwt_as_auth_token",
 )
+
+
+def require_moderator(if_not_moderator_redirect_to):
+    """
+    Decorator used on view functions that should only be accessed if the current user is a moderator
+    of at least one topic. If not, redirect them to `if_not_moderator_redirect_to`.
+    """
+
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def wrapper(*args, **kwargs):
+            if not flask_login.current_user.discussion.moderator_of:
+                return flask.redirect(flask.url_for(if_not_moderator_redirect_to))
+            return view_func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def require_unauthenticated(if_authenticated_redirect_to):

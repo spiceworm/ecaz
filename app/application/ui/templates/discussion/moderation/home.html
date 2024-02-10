@@ -3,24 +3,23 @@
 
 {% block middle_panel %}
     {{ super() }}
+
     <div class="panel panel-primary">
         <div class="panel-body">
             <ul class="breadcrumb">
                 <li><a>discussion</a></li>
-                <li class="active"><a href="{{ url_for('ui_bp.view_topics') }}">topics</a></li>
-                <li><a href="{{ url_for('ui_bp.create_topic') }}">[ new topic ]</a></li>
+                <li class="active"><a href="{{ url_for('ui_bp.moderation_home') }}">moderation</a></li>
             </ul>
 
             <div class="well">
-                {% for topic in topics %}
+                {% for topic in current_user.discussion.moderator_of %}
                     <ul class="list-group">
                         <li class="list-group-item">
                             {% if topic.is_private %}
-                                <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }} (Private) | {{ topic.description }}</a>
+                                <a href="{{ url_for('ui_bp.moderation_topic', topic=topic.name) }}">{{ topic.name }} (Private) | {{ topic.description }}</a>
                             {% else %}
-                                <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }} | {{ topic.description }}</a>
+                                <a href="{{ url_for('ui_bp.moderation_topic', topic=topic.name) }}">{{ topic.name }} | {{ topic.description }}</a>
                             {% endif %}
-                            <span class="badge">{{ topic.threads | length }}</span>
                         </li>
                     </ul>
                 {% endfor %}

@@ -16,6 +16,7 @@ from application.models import (
     ThreadSchema,
     Topic,
     TopicSchema,
+    TopicSubscribeRequest,
     User,
 )
 
@@ -126,9 +127,9 @@ class ThreadApi(flask_restful.Resource, _CommentThreadApiBase):
 
 class TopicApi(flask_restful.Resource):
     def get(self, topic):
-        if topic := Topic.query.filter_by(name=topic).one_or_none():
+        if _topic := Topic.query.filter_by(name=topic).one_or_none():
             schema = TopicSchema()
-            return schema.dump(topic), http.HTTPStatus.OK
+            return schema.dump(_topic), http.HTTPStatus.OK
         return {}, http.HTTPStatus.NOT_FOUND
 
 
@@ -136,20 +137,67 @@ class TopicSubscribeApi(flask_restful.Resource):
     @jwt_required()
     def delete(self, topic):
         if user := User.from_jwt_identity(get_jwt_identity()):
-            if topic := Topic.query.filter_by(name=topic).one_or_none():
-                user.discussion.remove_subscription(topic)
+            if _topic := Topic.query.filter_by(name=topic).one_or_none():
+                user.discussion.remove_subscription(_topic)
                 return {}, http.HTTPStatus.OK
             return {}, http.HTTPStatus.NOT_FOUND
         return {}, http.HTTPStatus.UNAUTHORIZED
 
     @jwt_required()
     def post(self, topic):
+        """
+        Endpoint for users to subscribe to a topic that is not private. In order to subscribe to a private
+        topic, a user needs to create a topic subscribe request which must be approved by a moderator of
+        the private topic. However, if a user is already a moderator of a private topic, then they can use
+        this endpoint to subscribe to that topic.
+        """
         if user := User.from_jwt_identity(get_jwt_identity()):
-            if topic := Topic.query.filter_by(name=topic).one_or_none():
-                user.discussion.add_subscription(topic)
+            if _topic := Topic.query.filter_by(name=topic).one_or_none():
+                if not _topic.is_private or user.discussion.is_moderator_of(_topic):
+                    user.discussion.add_subscription(_topic)
+                    return {}, http.HTTPStatus.OK
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+
+class TopicSubscribeRequestApi(flask_restful.Resource):
+    @jwt_required()
+    def delete(self, topic):
+        """Endpoint for moderators to deny subscribe requests"""
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            parser = reqparse.RequestParser()
+            parser.add_argument("subscribe_request_id", required=True, type=int)
+            args = parser.parse_args()
+            if sr := TopicSubscribeRequest.query.filter_by(id=args.subscribe_request_id).one_or_none():
+                if user.discussion.is_moderator_of(sr.topic):
+                    sr.deny(user.discussion)
+                    return {}, http.HTTPStatus.OK
+                return {}, http.HTTPStatus.UNAUTHORIZED
+        return {}, http.HTTPStatus.NOT_FOUND
+
+    @jwt_required()
+    def post(self, topic):
+        """Endpoint for users to create subscribe requests for private topics"""
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            if _topic := Topic.query.filter_by(name=topic, is_private=True).one_or_none():
+                user.discussion.create_subscribe_request(_topic)
                 return {}, http.HTTPStatus.OK
             return {}, http.HTTPStatus.NOT_FOUND
         return {}, http.HTTPStatus.UNAUTHORIZED
+
+    @jwt_required()
+    def put(self, topic):
+        """Endpoint for moderators to approve subscribe requests"""
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            parser = reqparse.RequestParser()
+            parser.add_argument("subscribe_request_id", required=True, type=int)
+            args = parser.parse_args()
+            if sr := TopicSubscribeRequest.query.filter_by(id=args.subscribe_request_id).one_or_none():
+                if user.discussion.is_moderator_of(sr.topic):
+                    sr.approve(user.discussion)
+                    return {}, http.HTTPStatus.OK
+                return {}, http.HTTPStatus.UNAUTHORIZED
+        return {}, http.HTTPStatus.NOT_FOUND
 
 
 class CommentSaveApi(flask_restful.Resource, _CommentThreadSaveApiBase):
@@ -177,3 +225,4 @@ api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
 api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
 api.add_resource(TopicApi, "/topic/<topic>")
 api.add_resource(TopicSubscribeApi, "/topic/<topic>/subscribe")
+api.add_resource(TopicSubscribeRequestApi, "/topic/<topic>/subscribe/request")

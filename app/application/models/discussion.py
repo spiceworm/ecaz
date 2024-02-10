@@ -25,7 +25,10 @@ from application.models import (
     db,
     utcnow,
 )
-from application.util.exceptions import ModeratorRequired
+from application.util.exceptions import (
+    ModeratorRequired,
+    TopicSubscribeRequestError,
+)
 
 
 __all__ = (
@@ -34,6 +37,7 @@ __all__ = (
     "Discussion",
     "Thread",
     "Topic",
+    "TopicSubscribeRequest",
 )
 
 
@@ -363,6 +367,10 @@ class Discussion(db.Model):
         back_populates="discussion",
         cascade="all, delete-orphan",
     )
+    topic_subscribe_requests: Mapped[List["TopicSubscribeRequest"]] = relationship(
+        back_populates="discussion",
+        cascade="all, delete-orphan",
+    )
     user: Mapped["User"] = relationship(
         back_populates="discussion",
     )
@@ -385,11 +393,28 @@ class Discussion(db.Model):
             db.session.add(self)
             db.session.commit()
 
+    def create_subscribe_request(self, topic: Topic, **kwargs) -> Union[TopicSubscribeRequest, None]:
+        if topic.is_private:
+            if not self.has_subscribe_request_for(topic):
+                subscribe_request = TopicSubscribeRequest(topic=topic, discussion=self, **kwargs)
+                db.session.add(subscribe_request)
+                db.session.commit()
+                return subscribe_request
+            return None
+        else:
+            raise TopicSubscribeRequestError("Subscribe requests are only used for private topics")
+
     def create_thread(self, body: str, title: str, topic: Topic, **kwargs) -> Thread:
         t = Thread(body=body, discussion=self, title=title, topic=topic, **kwargs)
         db.session.add(t)
         db.session.commit()
         return t
+
+    def has_subscribe_request_for(self, topic: Topic) -> bool:
+        for sr in self.topic_subscribe_requests:
+            if sr.topic == topic:
+                return True
+        return False
 
     def is_moderator_of(self, topic: Topic) -> bool:
         return self in topic.moderators
@@ -553,6 +578,10 @@ class Topic(db.Model, CreatedAtMixin):
         sa.Boolean,
         default=False,
     )
+    subscribe_requests: Mapped[List["TopicSubscribeRequest"]] = relationship(
+        back_populates="topic",
+        cascade="all, delete-orphan",
+    )
     moderators: Mapped[List["Discussion"]] = relationship(
         back_populates="moderator_of",
         secondary=topic_moderators,
@@ -591,3 +620,39 @@ class Topic(db.Model, CreatedAtMixin):
         db.session.add(thread)
         db.session.commit()
         return thread
+
+
+class TopicSubscribeRequest(db.Model, CreatedAtMixin):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    topic: Mapped["Topic"] = relationship(
+        back_populates="subscribe_requests",
+    )
+    topic_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("topic.id"),
+        nullable=False,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="topic_subscribe_requests",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+
+    def approve(self, discussion: Discussion):
+        if discussion.is_moderator_of(self.topic):
+            self.discussion.add_subscription(self.topic)
+            db.session.delete(self)
+            db.session.commit()
+        else:
+            raise ModeratorRequired("Only moderators can approve a TopicSubscribeRequest")
+
+    def deny(self, discussion: Discussion):
+        if discussion.is_moderator_of(self.topic):
+            db.session.delete(self)
+            db.session.commit()
+        else:
+            raise ModeratorRequired("Only moderators can deny a TopicSubscribeRequest")

@@ -51,6 +51,7 @@
                             <p title="{{ topic.created_at }}">Topic Created: {{ topic.humanized_created_at }}</p>
                             <p>Subscribers: {{ topic.subscribers | length }}</p>
                             <p>Threads: {{ topic.threads | length }}</p>
+                            <p>Private: {{ topic.is_private }}</p>
                             <p>Moderators:</p>
                             <ul>
                                 {% for discussion in topic.moderators %}

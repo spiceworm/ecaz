@@ -1,3 +1,33 @@
+function approveTopicSubscribeRequest(url, subscribe_request_id, jwt) {
+    fetch(url, {
+        method: "PUT",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({subscribe_request_id: subscribe_request_id})
+    }).then(resp => {
+        // Reload the page so the original comment/thread text and poster are removed
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
+}
+
+function denyTopicSubscribeRequest(url, subscribe_request_id, jwt) {
+    fetch(url, {
+        method: "DELETE",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({subscribe_request_id: subscribe_request_id})
+    }).then(resp => {
+        // Reload the page so the original comment/thread text and poster are removed
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
+}
+
 function deleteCommentOrThread(url, jwt) {
     fetch(url, {
         method: "DELETE",
@@ -159,6 +189,20 @@ function toggleCommentFolding(element) {
         element.closest('a').text  = '[-]';
         element.parentElement.parentElement.nextElementSibling.style.display = 'block';
     }
+}
+
+function postTopicSubscribeRequest(url, jwt) {
+    fetch(url, {
+        method: "POST",
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json',
+        }
+    }).then(resp => {
+        // Reload the page so the original comment/thread text and poster are removed
+        // TODO: find a less heavy handed way to do this.
+        location.reload();
+    })
 }
 
 function postVoteRequest(action, url, jwt) {

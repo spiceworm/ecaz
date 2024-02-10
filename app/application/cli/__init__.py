@@ -94,6 +94,13 @@ def generate_data(object_multiplier, wipe_db):
                 comment = comments[comment_idx]
                 comment.create_comment(body=f"Reply {user.username}-{i}", discussion=user.discussion)
 
+    private_topic_count = 5 * object_multiplier
+    with click.progressbar(range(private_topic_count), label=f"Creating {private_topic_count} private topics") as count:
+        for i in count:
+            topic = Topic(name=f"Private-topic-{i}", description=f"Private topic {i} description", is_private=True)
+            db.session.add(topic)
+            db.session.commit()
+
 
 @cli_bp.cli.command("mark-admin")
 @click.option(

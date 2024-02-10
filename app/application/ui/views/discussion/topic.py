@@ -26,6 +26,7 @@ def create_topic() -> Union[str, flask.Response]:
             topic = Topic(
                 name=form.name.data,
                 description=form.description.data,
+                is_private=form.is_private.data,
                 moderators=[user.discussion],
             )
             user.discussion.add_subscription(topic)
@@ -44,8 +45,21 @@ def create_topic() -> Union[str, flask.Response]:
 
 def view_topic(topic: str) -> str:
     query = Topic.query.filter_by(name=topic)
+    topic = db.one_or_404(query)
+    user = flask_login.current_user
+    template = "view.html"
+
+    if topic.is_private:
+        template = "is_private.html"
+
+        # Make sure the user is authenticated before accessing attributes that will only be
+        # present for an authenticated user.
+        if user.is_authenticated:
+            if user.discussion.is_subscribed_to(topic) or user.discussion.is_moderator_of(topic):
+                template = "view.html"
+
     return flask.render_template(
-        "discussion/topic/view.html",
-        topic=db.one_or_404(query),
+        f"discussion/topic/{template}",
+        topic=topic,
         logout_form=forms.LogoutForm(),
     )

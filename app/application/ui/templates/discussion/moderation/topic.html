@@ -1,0 +1,51 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('ui_bp.moderation_home') }}">moderation</a></li>
+                <li class="active"><a href="{{ url_for('ui_bp.moderation_topic', topic=topic.name) }}">{{ topic.name }}</a></li>
+            </ul>
+
+            <div class="well">
+                <h3>Moderation tools for {{ topic.name }}</h3>
+
+                {% if topic.is_private %}
+                    <h4>Subscribe Requests</h4>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subscribe_request in topic.subscribe_requests %}
+                                <tr>
+                                    <td>{{ subscribe_request.discussion.user.username }}</td>
+                                    <td>{{ subscribe_request.discussion.user.email }}</td>
+                                    <td>
+                                        <div>
+                                            <button class="btn btn-primary" type="button" onclick="approveTopicSubscribeRequest('{{ url_for('api_discussion_bp.topicsubscriberequestapi', topic=topic.name) }}', subscribe_request_id='{{ subscribe_request.id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                                Approve
+                                            </button>
+                                            <button class="btn btn-danger" type="button" onclick="denyTopicSubscribeRequest('{{ url_for('api_discussion_bp.topicsubscriberequestapi', topic=topic.name) }}', subscribe_request_id='{{ subscribe_request.id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                                Deny
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

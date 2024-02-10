@@ -8,7 +8,10 @@ import pytest
 import sqlalchemy as sa
 
 from application.models import Ban
-from application.util.exceptions import ModeratorRequired
+from application.util.exceptions import (
+    ModeratorRequired,
+    TopicSubscribeRequestError,
+)
 
 
 class TestBan:
@@ -170,6 +173,58 @@ class TestTopic:
         assert not d2.is_moderator_of(t)
 
 
+class TestTopicSubscribeRequest:
+    def test_approve(self, topic, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        t = topic(is_private=True)
+        t.add_moderator(d2)
+        sr = d1.create_subscribe_request(t)
+        assert not d1.is_subscribed_to(t)
+        sr.approve(d2)
+        assert d1.is_subscribed_to(t)
+
+    def test_approve_as_not_moderator(self, topic, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        t = topic(is_private=True)
+        sr = d1.create_subscribe_request(t)
+        with pytest.raises(ModeratorRequired):
+            sr.approve(d2)
+
+    def test_create_for_not_private_topic(self, topic, user):
+        d = user().discussion
+        t = topic(is_private=False)
+        with pytest.raises(TopicSubscribeRequestError):
+            d.create_subscribe_request(t)
+
+    def test_deny(self, topic, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        t = topic(is_private=True)
+        t.add_moderator(d2)
+        sr = d1.create_subscribe_request(t)
+        assert not d1.is_subscribed_to(t)
+        sr.deny(d2)
+        assert not d1.is_subscribed_to(t)
+
+    def test_deny_as_not_moderator(self, topic, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        t = topic(is_private=True)
+        sr = d1.create_subscribe_request(t)
+        with pytest.raises(ModeratorRequired):
+            sr.deny(d2)
+
+    def test_has_subscribe_request_for(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="t1", is_private=True)
+        t2 = topic(name="t2", is_private=True)
+        d.create_subscribe_request(t1)
+        assert d.has_subscribe_request_for(t1)
+        assert not d.has_subscribe_request_for(t2)
+
+
 class TestRelation:
     def test_comments_to_responses(self, topic, user):
         u = user()
@@ -217,6 +272,15 @@ class TestRelation:
         assert d3.comment_votes == [v1]
         assert c1.votes == [v1, v3]
         assert c2.votes == [v2, v4]
+
+    def test_discussion_to_subscribe_request(self, topic, user):
+        d = user().discussion
+        t = topic(is_private=True)
+        sr = d.create_subscribe_request(t)
+        assert d.topic_subscribe_requests == [sr]
+        assert t.subscribe_requests == [sr]
+        assert sr.topic == t
+        assert sr.discussion == d
 
     def test_discussion_to_thread_votes(self, topic, user):
         d1 = user().discussion

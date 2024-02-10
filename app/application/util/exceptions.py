@@ -1,6 +1,7 @@
 __all__ = (
     "AppException",
     "ModeratorRequired",
+    "TopicSubscribeRequestError",
 )
 
 
@@ -9,4 +10,8 @@ class AppException(Exception):
 
 
 class ModeratorRequired(AppException):
+    pass
+
+
+class TopicSubscribeRequestError(AppException):
     pass
