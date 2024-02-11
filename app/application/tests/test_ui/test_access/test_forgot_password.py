@@ -22,7 +22,7 @@ def test_forgot_password_when_unauthenticated(client, user):
     Verify an unauthenticated user navigating to /forgot_password can submit the
     form and generate an AuthToken used for password resets.
     """
-    u = user("user@test.com", "old-password")
+    u = user(email="user@test.com", password="old-password", is_verified=True)
     assert len(u.auth_tokens) == 0
     resp = client.post(
         url_for("ui_bp.forgot_password"),
@@ -32,3 +32,19 @@ def test_forgot_password_when_unauthenticated(client, user):
     assert len(u.auth_tokens) == 1
     assert u.auth_tokens[0].tags == [AuthToken.HIDDEN_TAG, AuthToken.RESET_PASSWORD_TAG]
     assert messages.PASSWORD_RESET_EMAIL_SENT in resp.data.decode()
+
+
+def test_forgot_password_when_unauthenticated_using_unverified_email(client, user):
+    """
+    Verify an unauthenticated user navigating to /forgot_password can submit the
+    form and generate an AuthToken used for password resets.
+    """
+    u = user(email="user@test.com", password="old-password", is_verified=False)
+    assert len(u.auth_tokens) == 0
+    resp = client.post(
+        url_for("ui_bp.forgot_password"),
+        follow_redirects=True,
+        data={"email": u.email},
+    )
+    assert len(u.auth_tokens) == 0
+    assert messages.USER_NOT_FOUND_OR_EMAIL_NOT_VERIFIED in resp.data.decode()
