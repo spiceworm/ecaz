@@ -15,6 +15,14 @@ from application.util.exceptions import (
 
 
 class TestBan:
+    def test_humanized_expires_at(self, topic, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        t = topic(moderators=[d1])
+        expires_at = datetime.now(tz=timezone.utc) + timedelta(days=7, minutes=1)
+        b = t.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
+        assert b.humanized_expires_at == "7 days from now"
+
     def test_create_as_non_moderator(self, topic, user):
         d1 = user().discussion
         d2 = user().discussion
@@ -242,7 +250,7 @@ class TestRelation:
         assert t.topic is _topic
 
     def test_discussion_to_bans(self, topic, user):
-        d0 = user(email="0@test.com").discussion
+        d0 = user().discussion
         d1 = user().discussion
         d2 = user().discussion
         topic1 = topic(name="t1", moderators=[d0])
@@ -251,14 +259,21 @@ class TestRelation:
         b2 = topic1.create_ban(created_by=d0, discussion=d2)
         b3 = topic2.create_ban(created_by=d0, discussion=d1)
         assert topic1.bans == [b1, b2]
+        assert d0.created_bans == [b1, b2, b3]
+        assert d0.bans == []
         assert d1.bans == [b1, b3]
+        assert d2.bans == [b2]
         assert b1.discussion is d1
+        assert b2.discussion is d2
         assert b3.discussion is d1
+        assert b1.topic is topic1
+        assert b2.topic is topic1
+        assert b3.topic is topic2
 
     def test_discussion_to_comment_votes(self, topic, user):
         d1 = user().discussion
         d2 = user().discussion
-        d3 = user(email="3@test.com").discussion
+        d3 = user().discussion
         _topic = topic()
         t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
         c1 = t1.create_comment(body="c1", discussion=d2)
@@ -285,7 +300,7 @@ class TestRelation:
     def test_discussion_to_thread_votes(self, topic, user):
         d1 = user().discussion
         d2 = user().discussion
-        d3 = user(email="3@test.com").discussion
+        d3 = user().discussion
         _topic = topic()
         t1 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
         t2 = _topic.create_thread(body="t1", discussion=d1, title="title 1")
@@ -365,7 +380,7 @@ class TestRelation:
     def test_topic_moderators(self, topic, user):
         d1 = user().discussion
         d2 = user().discussion
-        d3 = user(email="3@test.com").discussion
+        d3 = user().discussion
         topic1 = topic(name="t1", moderators=[d1, d2])
         topic2 = topic(name="t2", moderators=[d2, d3])
         assert topic1.moderators == [d1, d2]

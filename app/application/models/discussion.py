@@ -170,15 +170,19 @@ class Ban(db.Model, CreatedAtMixin):
         sa.ForeignKey("topic.id"),
         nullable=False,
     )
-    created_by: Mapped["Discussion"] = relationship(
-        viewonly=True,
+    created_by_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
     )
-    discussion: Mapped["Discussion"] = relationship(
-        back_populates="bans",
+    created_by: Mapped["Discussion"] = relationship(
+        foreign_keys=[created_by_id],
     )
     discussion_id: Mapped[int] = mapped_column(
         sa.ForeignKey("discussion.id"),
         nullable=False,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        foreign_keys=[discussion_id],
     )
     expires_at = db.Column(
         db.DateTime(timezone=True),
@@ -190,6 +194,10 @@ class Ban(db.Model, CreatedAtMixin):
     reason = db.Column(
         sa.String,
     )
+
+    @property
+    def humanized_expires_at(self) -> str:
+        return humanize.naturaltime(self.expires_at)
 
     @hybrid_property
     def is_active(self) -> Union[None, bool]:
@@ -336,12 +344,16 @@ class Discussion(db.Model):
         primary_key=True,
     )
     bans: Mapped[List["Ban"]] = relationship(
-        back_populates="discussion",
         cascade="all, delete-orphan",
+        foreign_keys=[Ban.discussion_id],
     )
     comments: Mapped[List["Comment"]] = relationship(
         back_populates="discussion",
         cascade="all, delete-orphan",
+    )
+    created_bans: Mapped[List["Ban"]] = relationship(
+        cascade="all, delete-orphan",
+        foreign_keys=[Ban.created_by_id],
     )
     is_banned = sa.Column(
         sa.Boolean,
@@ -607,7 +619,7 @@ class Topic(db.Model, CreatedAtMixin):
         db.session.commit()
 
     def create_ban(self, created_by: Discussion, discussion: Discussion, **kwargs) -> Ban:
-        if created_by in self.moderators:
+        if created_by.is_moderator_of(self):
             ban = Ban(created_by=created_by, discussion=discussion, topic=self, **kwargs)
             db.session.add(ban)
             db.session.commit()
