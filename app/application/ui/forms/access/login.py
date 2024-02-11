@@ -1,8 +1,8 @@
 from wtforms import (
     PasswordField,
+    StringField,
     validators,
 )
-from wtforms.fields import EmailField
 
 from application.ui.forms import BaseForm
 
@@ -11,16 +11,15 @@ __all__ = ("LoginForm",)
 
 
 class LoginForm(BaseForm):
-    email = EmailField(
-        "email",
-        render_kw={"placeholder": "Email"},
-        validators=[
-            validators.DataRequired(),
-            validators.Email(),
-        ],
-    )
     password = PasswordField(
         "password",
         render_kw={"placeholder": "Password"},
         validators=[validators.DataRequired()],
+    )
+    username = StringField(
+        "username",
+        render_kw={"placeholder": "Username"},
+        validators=[
+            validators.DataRequired(),
+        ],
     )

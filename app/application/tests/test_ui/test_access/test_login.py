@@ -15,7 +15,7 @@ class TestBasicLogin:
         """
         resp = client.post(
             url_for("ui_bp.login"),
-            data={"email": "bad@test.com", "password": "invalid-password"},
+            data={"username": "bad", "password": "invalid-password"},
         )
         assert resp.request.base_url == url_for("ui_bp.login")
 
@@ -28,8 +28,9 @@ class TestBasicLogin:
         resp = client.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
+        print(resp.data.decode())
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.profile")
 
@@ -42,7 +43,7 @@ class TestBasicLogin:
         resp = user.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": user.email, "password": user.password},
+            data={"username": user.username, "password": user.password},
         )
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.profile")
@@ -57,7 +58,7 @@ class TestBasicLogin:
         resp = client.post(
             url_for("ui_bp.login", next="does-not-exist"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         assert len(resp.history) == 1
         assert resp.json == {"error": HTTPStatus.NOT_FOUND.phrase}
@@ -72,7 +73,7 @@ class TestBasicLogin:
         resp = client.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         assert messages.DELETE_ACCOUNT_PENDING in resp.data.decode()
 
@@ -86,7 +87,7 @@ class TestBasicLogin:
         resp = client.post(
             url_for("ui_bp.login", next="settings/auth_token"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.auth_token_settings")
@@ -101,7 +102,7 @@ class TestBasicLogin:
         resp = client.post(
             url_for("ui_bp.login", next="settings/auth_token"),
             follow_redirects=True,
-            data={"email": "invalid@test.com", "password": "invalid123"},
+            data={"username": "invalid", "password": "invalid123"},
         )
         assert resp.request.args["next"] == next_arg
 
@@ -118,7 +119,7 @@ class TestMfaWebAuthnLogin:
         resp = client.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         token = [t for t in u.auth_tokens if t.WEBAUTHN_MFA_TAG in t.tags][0]
         assert len(resp.history) == 1
@@ -137,7 +138,7 @@ class TestMfaTotpLogin:
         resp1 = client.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         token = u.auth_tokens[0]
         totp_login_url = url_for("ui_bp.totp_login", jwt=token.value)
@@ -165,7 +166,7 @@ class TestMfaTotpLogin:
         resp1 = client.post(
             url_for("ui_bp.login"),
             follow_redirects=True,
-            data={"email": u.email, "password": u.password},
+            data={"username": u.username, "password": u.password},
         )
         token = u.auth_tokens[0]
         totp_login_url = url_for("ui_bp.totp_login", jwt=token.value)

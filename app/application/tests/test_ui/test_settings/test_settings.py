@@ -124,7 +124,7 @@ def test_delete_account(ui_user):
     user = ui_user()
     resp = user.post(url_for("ui_bp.delete_account"), follow_redirects=True)
     assert messages.DELETE_ACCOUNT_SUCCESS in resp.data.decode()
-    assert User.query.filter_by(email=user.email).one_or_none() is None
+    assert User.query.filter_by(username=user.username).one_or_none() is None
     assert len(resp.history) == 1
     assert resp.request.base_url == url_for("ui_bp.login")
 
@@ -140,7 +140,7 @@ def test_delete_account_cascades(ui_user):
     t3 = AuthToken.create(user=user, name="t3")
     assert len(user.auth_tokens) == 3
     user.post(url_for("ui_bp.delete_account"))
-    assert User.query.filter_by(email=user.email).one_or_none() is None
+    assert User.query.filter_by(username=user.username).one_or_none() is None
     assert AuthToken.query.filter_by(name=t1.name).one_or_none() is None
     assert AuthToken.query.filter_by(name=t2.name).one_or_none() is None
     assert AuthToken.query.filter_by(name=t3.name).one_or_none() is None

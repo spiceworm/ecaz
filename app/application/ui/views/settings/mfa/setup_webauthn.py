@@ -54,7 +54,7 @@ def setup_webauthn() -> Union[str, Response]:
             exclude_credentials=user.mfa.webauthn.registrations,
             rp_id=flask.g.config.APP_NAME,
             rp_name=flask.g.config.APP_NAME,
-            user_name=user.email,
+            user_name=user.id,
             user_id=user.mfa.webauthn.user_handle,
         )
     )

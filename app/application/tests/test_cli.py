@@ -30,8 +30,8 @@ def test_mark_admin(cli_runner, user):
         args=[
             "cli",
             "mark-admin",
-            "--email",
-            u.email,
+            "--username",
+            u.username,
         ]
     )
     assert u.is_admin
@@ -45,19 +45,11 @@ def test_mark_admin_for_non_user(cli_runner):
         args=[
             "cli",
             "mark-admin",
-            "--email",
-            "not-a-user@test.com",
+            "--username",
+            "not-a-user",
         ]
     )
-    assert messages.NO_USER_FOR_PROVIDED_EMAIL in result.output
-
-
-def test_mark_admin_using_invalid_email(cli_runner):
-    """
-    Verify `flask cli mark-admin --email <invalid-email>` produces an error.
-    """
-    result = cli_runner.invoke(args=["cli", "mark-admin", "--email", "not-an-email"])
-    assert messages.INVALID_EMAIL_ADDRESS in result.output
+    assert messages.NO_USER_FOR_PROVIDED_USERNAME in result.output
 
 
 def test_send_email(cli_runner):

@@ -25,11 +25,11 @@ DEFAULT_TOPIC_NAME = "Topic-name"
 
 
 class _UiUser:
-    def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
+    def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, username=None, **kwargs):
         _user = User(
             email=email,
             password=password,
-            username=kwargs.pop("username", generate_unique_username()),
+            username=username or generate_unique_username(),
             **kwargs,
         )
         db.session.add(_user)
@@ -66,8 +66,8 @@ class _UiUser:
 
 
 class _ApiUser(_UiUser):
-    def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
-        super().__init__(app, email=email, password=password, **kwargs)
+    def __init__(self, app, email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, username=None, **kwargs):
+        super().__init__(app, email=email, password=password, username=username, **kwargs)
 
         self._client = app.test_client()
         self._token = AuthToken(
@@ -202,11 +202,11 @@ def ui_user(_app):
 
 @pytest.fixture
 def user():
-    def func(email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, **kwargs):
+    def func(email=DEFAULT_EMAIL, password=DEFAULT_PASSWORD, username=None, **kwargs):
         _user = User(
             email=email,
             password=password,
-            username=kwargs.pop("username", generate_unique_username()),
+            username=username or generate_unique_username(),
             **kwargs,
         )
         db.session.add(_user)

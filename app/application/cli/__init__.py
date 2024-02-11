@@ -1,5 +1,4 @@
 import random
-import re
 import secrets
 
 import click
@@ -25,15 +24,6 @@ cli_bp = flask.Blueprint(
     "cli",
     __name__,
 )
-
-
-EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
-
-
-def validate_email(ctx, param, value):
-    if not EMAIL_REGEX.match(value):
-        raise click.BadParameter(messages.INVALID_EMAIL_ADDRESS)
-    return value
 
 
 @cli_bp.cli.command("get-config")
@@ -107,21 +97,20 @@ def generate_data(object_multiplier, wipe_db):
 
 @cli_bp.cli.command("mark-admin")
 @click.option(
-    "--email",
-    callback=validate_email,
-    prompt="Email",
+    "--username",
+    prompt="Username",
     type=click.UNPROCESSED,
 )
-def mark_admin(email):
+def mark_admin(username):
     """
     Update an existing `User` such that `User.admin == True`
     """
-    if user := User.query.filter(User.email == email).one_or_none():
+    if user := User.query.filter_by(username=username).one_or_none():
         user.is_admin = True
         db.session.add(user)
         db.session.commit()
     else:
-        raise click.UsageError(messages.NO_USER_FOR_PROVIDED_EMAIL)
+        raise click.UsageError(messages.NO_USER_FOR_PROVIDED_USERNAME)
 
 
 @click.option(

@@ -43,8 +43,8 @@ def _login(user) -> Response:
 def login() -> Union[str, Response]:
     form = forms.LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).one_or_none()
-        if user and user.password == form.password.data:
+        user = User.query.filter_by(username=form.username.data).one_or_none()
+        if user and user.username == form.username.data:
             if user.is_deleted:
                 flask.flash(messages.DELETE_ACCOUNT_PENDING, category="info")
             elif user.mfa.webauthn.enabled:
