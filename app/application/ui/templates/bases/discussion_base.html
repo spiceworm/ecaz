@@ -12,37 +12,41 @@
 
 {% block content %}
     {{ super() }}
+
     <div class="col-lg-3">
         <div style="overflow-y: scroll; height: 90vh">
-            {% if current_user.is_authenticated %}
-                <div class="panel panel-primary">
-                    <div class="panel-body">
-                        <div class="form-horizontal">
-                            <fieldset>
-                                <legend>Subscriptions</legend>
-                                <ul class="list-group">
-                                    {% for topic in current_user.discussion.subscriptions %}
-                                        <li class="list-group-item">
-                                            {% if topic.is_private %}
-                                                <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }} (Private)</a>
-                                            {% else %}
-                                                <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }}</a>
-                                            {% endif %}
-                                            <span class="badge">
-                                                <a onclick="unsubscribe('{{ url_for('api_discussion_bp.topicsubscribeapi', topic=topic.name) }}', jwt='{{ current_user.frontend_token.value }}'); return false;">
-                                                    Remove
-                                                </a>
-                                            </span>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </fieldset>
+            {% block left_panel %}
+                {% if current_user.is_authenticated %}
+                    <div class="panel panel-primary">
+                        <div class="panel-body">
+                            <div class="form-horizontal">
+                                <fieldset>
+                                    <legend>Subscriptions</legend>
+                                    <ul class="list-group">
+                                        {% for topic in current_user.discussion.subscriptions %}
+                                            <li class="list-group-item">
+                                                {% if topic.is_private %}
+                                                    <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }} (Private)</a>
+                                                {% else %}
+                                                    <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }}</a>
+                                                {% endif %}
+                                                <span class="badge">
+                                                    <a onclick="unsubscribe('{{ url_for('api_discussion_bp.topicsubscribeapi', topic=topic.name) }}', jwt='{{ current_user.frontend_token.value }}'); return false;">
+                                                        Remove
+                                                    </a>
+                                                </span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </fieldset>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endif %}
+                {% endif %}
+            {% endblock %}
         </div>
     </div>
+
     <div class="col-lg-6">
         <div style="overflow-y: scroll; height: 90vh">
             {% block middle_panel %}
