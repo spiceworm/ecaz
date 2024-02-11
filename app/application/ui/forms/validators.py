@@ -13,7 +13,7 @@ __all__ = (
 def disallow_whitespace(form, field):
     s = field.data.strip()
     if " " in s:
-        raise ValidationError(messages.WHITESPACE_NOT_ALLOWED_IN_TOPIC_NAMES)
+        raise ValidationError(messages.WHITESPACE_NOT_ALLOWED)
 
 
 def require_unique_username(form, field):

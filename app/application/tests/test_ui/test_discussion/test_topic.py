@@ -49,7 +49,7 @@ def test_create_topic_fails_if_contains_whitespace(ui_user, topic_name):
         data={"name": topic_name, "description": "description"},
         follow_redirects=True,
     )
-    assert messages.WHITESPACE_NOT_ALLOWED_IN_TOPIC_NAMES in resp.data.decode()
+    assert messages.WHITESPACE_NOT_ALLOWED in resp.data.decode()
 
 
 def test_get_create_topic_page(ui_user):
