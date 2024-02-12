@@ -15,22 +15,24 @@
 
             {{ render_thread(current_user, thread) }}
 
-            <form class="form-horizontal" action="{{ url_for('ui_bp.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
-                {{ create_comment_form.csrf_token }}
+            {% if not thread.is_hidden or (current_user.is_authenticated and current_user.discussion == thread.discussion) %}
+                <form class="form-horizontal" action="{{ url_for('ui_bp.create_comment', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug, parent_unique_id=thread.unique_id) }}" method="post">
+                    {{ create_comment_form.csrf_token }}
 
-                <fieldset>
-                    <div class="form-group">
-                        <div class="col-lg-12">
-                            {{ create_comment_form.body(class_="form-control input-lg") }}
+                    <fieldset>
+                        <div class="form-group">
+                            <div class="col-lg-12">
+                                {{ create_comment_form.body(class_="form-control input-lg") }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-lg-12">
-                            <button class="btn btn-default" type="submit">Submit</button>
+                        <div class="form-group">
+                            <div class="col-lg-12">
+                                <button class="btn btn-default" type="submit">Submit</button>
+                            </div>
                         </div>
-                    </div>
-                </fieldset>
-            </form>
+                    </fieldset>
+                </form>
+            {% endif %}
 
             {% for comment in thread.comments %}
                 <!-- Only pass top level comments. All responses comments will be rendered recursively in the macro. -->

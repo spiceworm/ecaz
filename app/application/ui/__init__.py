@@ -17,6 +17,8 @@ POST = "POST"
 ui_bp.add_url_rule("/", view_func=views.login, methods=[GET, POST])
 ui_bp.add_url_rule("/discussion/moderation", view_func=views.moderation_home, methods=[GET])
 ui_bp.add_url_rule("/discussion/moderation/<topic>", view_func=views.moderation_topic, methods=[GET, POST])
+ui_bp.add_url_rule("/discussion/moderation/<topic>/bans", view_func=views.moderation_topic_bans, methods=[GET, POST])
+ui_bp.add_url_rule("/discussion/moderation/<topic>/subscribe-requests", view_func=views.moderation_topic_subscribe_requests, methods=[GET, POST])
 ui_bp.add_url_rule("/discussion/saved", view_func=views.view_saved, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics", view_func=views.view_topics, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>", view_func=views.view_topic, methods=[GET])

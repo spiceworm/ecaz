@@ -5,6 +5,7 @@ import click
 import flask
 import flask_mailman
 import IPython
+from sqlalchemy.sql.expression import func
 
 from application.constants import messages
 from application.models import (
@@ -57,10 +58,16 @@ def generate_data(object_multiplier, wipe_db):
         db.drop_all()
         db.create_all()
 
+    click.echo("Creating admin account")
+    admin = User(email="admin@test.com", password="qqqqqqqq", username="admin")
+    db.session.add(admin)
+    db.session.commit()
+
     topic_count = 5 * object_multiplier
     with click.progressbar(range(topic_count), label=f"Creating {topic_count} topics") as count:
         for i in count:
             topic = Topic(name=f"Topic-{i}", description=f"Topic {i} description")
+            topic.add_moderator(admin.discussion)
             db.session.add(topic)
             db.session.commit()
 
@@ -98,8 +105,21 @@ def generate_data(object_multiplier, wipe_db):
     with click.progressbar(range(private_topic_count), label=f"Creating {private_topic_count} private topics") as count:
         for i in count:
             topic = Topic(name=f"Private-topic-{i}", description=f"Private topic {i} description", is_private=True)
+            topic.add_moderator(admin.discussion)
             db.session.add(topic)
             db.session.commit()
+
+            topic_subscribe_request_count = 5 * object_multiplier
+            query = User.query.order_by(func.random()).limit(topic_subscribe_request_count)
+            with click.progressbar(query, label=f"Creating {topic_subscribe_request_count} private topic subscribe requests") as users:
+                for user in users:
+                    user.discussion.create_subscribe_request(topic)
+
+            ban_count = 5 * object_multiplier
+            query = User.query.order_by(func.random()).limit(ban_count)
+            with click.progressbar(query, label=f"Creating {ban_count} bans") as users:
+                for idx, user in enumerate(users):
+                    topic.create_ban(created_by=admin.discussion, discussion=user.discussion, reason=f"test {idx}")
 
 
 @cli_bp.cli.command("mark-admin")

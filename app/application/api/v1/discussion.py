@@ -9,6 +9,7 @@ import flask_restful
 from flask_restful import reqparse
 
 from application.models import (
+    Ban,
     Comment,
     CommentSchema,
     db,
@@ -133,6 +134,24 @@ class TopicApi(flask_restful.Resource):
         return {}, http.HTTPStatus.NOT_FOUND
 
 
+class TopicBanApi(flask_restful.Resource):
+    @jwt_required()
+    def delete(self, topic):
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            if _topic := Topic.query.filter_by(name=topic).one_or_none():
+                if user.discussion.is_moderator_of(_topic):
+                    parser = reqparse.RequestParser()
+                    parser.add_argument("topic_ban_id", type=int, required=True)
+                    args = parser.parse_args()
+                    if ban := Ban.query.filter_by(id=args.topic_ban_id).one_or_none():
+                        db.session.delete(ban)
+                        db.session.commit()
+                        return {}, http.HTTPStatus.OK
+                    return {}, http.HTTPStatus.NOT_FOUND
+                return {}, http.HTTPStatus.UNAUTHORIZED
+        return {}, http.HTTPStatus.NOT_FOUND
+
+
 class TopicSubscribeApi(flask_restful.Resource):
     @jwt_required()
     def delete(self, topic):
@@ -224,5 +243,6 @@ api.add_resource(ThreadSaveApi, "/thread/<unique_id>/save")
 api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
 api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
 api.add_resource(TopicApi, "/topic/<topic>")
+api.add_resource(TopicBanApi, "/topic/<topic>/ban")
 api.add_resource(TopicSubscribeApi, "/topic/<topic>/subscribe")
 api.add_resource(TopicSubscribeRequestApi, "/topic/<topic>/subscribe/request")

@@ -3,6 +3,7 @@ from typing import Union
 import flask
 import flask_login
 
+from application.constants import messages
 from application.models import (
     db,
     Thread,
@@ -34,21 +35,29 @@ def create_thread(topic=None) -> Union[str, flask.Response]:
     form.topic_id.choices = topic_choices
 
     if form.validate_on_submit():
+        user = flask_login.current_user
         topic_name = dict(topic_choices)[int(form.topic_id.data)]
         _topic = Topic.query.filter_by(name=topic_name).one_or_none()
-        thread = _topic.create_thread(
-            body=form.body.data,
-            discussion=flask_login.current_user.discussion,
-            title=form.title.data,
-        )
-        return flask.redirect(
-            flask.url_for(
-                ".view_thread",
-                topic=_topic.name,
-                thread_unique_id=thread.unique_id,
-                slug=thread.slug,
+
+        ban = user.discussion.get_ban_for(_topic)
+        if ban and not ban.is_shadow:
+            msg = f"{messages.BANNED_FROM_CONTRIBUTING} to {topic_name}. Expires {ban.humanized_expires_at}."
+            flask.flash(message=msg, category="info")
+        else:
+            thread = _topic.create_thread(
+                body=form.body.data,
+                discussion=user.discussion,
+                is_hidden=user.discussion.is_shadow_banned_from(_topic),
+                title=form.title.data,
             )
-        )
+            return flask.redirect(
+                flask.url_for(
+                    "ui_bp.view_thread",
+                    topic=_topic.name,
+                    thread_unique_id=thread.unique_id,
+                    slug=thread.slug,
+                )
+            )
     return flask.render_template(
         "discussion/thread/create.html",
         form=form,

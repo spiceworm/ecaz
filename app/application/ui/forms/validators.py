@@ -7,6 +7,7 @@ from application.models import User
 __all__ = (
     "disallow_whitespace",
     "require_unique_username",
+    "require_valid_user",
 )
 
 
@@ -19,3 +20,8 @@ def disallow_whitespace(form, field):
 def require_unique_username(form, field):
     if User.query.filter_by(username=field.data).one_or_none():
         raise ValidationError(messages.DUPLICATE_USERNAME_ERROR)
+
+
+def require_valid_user(form, field):
+    if not User.query.filter_by(username=field.data).one_or_none():
+        raise ValidationError(messages.NO_USER_FOR_PROVIDED_USERNAME)

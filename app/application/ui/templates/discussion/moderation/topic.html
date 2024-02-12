@@ -15,35 +15,9 @@
             <div class="well">
                 <h3>Moderation tools for {{ topic.name }}</h3>
 
+                <a href="{{ url_for('ui_bp.moderation_topic_bans', topic=topic.name) }}">Bans</a>
                 {% if topic.is_private %}
-                    <h4>Subscribe Requests</h4>
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Decision</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for subscribe_request in topic.subscribe_requests %}
-                                <tr>
-                                    <td>{{ subscribe_request.discussion.user.username }}</td>
-                                    <td>{{ subscribe_request.discussion.user.email }}</td>
-                                    <td>
-                                        <div>
-                                            <button class="btn btn-primary" type="button" onclick="approveTopicSubscribeRequest('{{ url_for('api_discussion_bp.topicsubscriberequestapi', topic=topic.name) }}', subscribe_request_id='{{ subscribe_request.id }}', jwt='{{ current_user.frontend_token.value }}');">
-                                                Approve
-                                            </button>
-                                            <button class="btn btn-danger" type="button" onclick="denyTopicSubscribeRequest('{{ url_for('api_discussion_bp.topicsubscriberequestapi', topic=topic.name) }}', subscribe_request_id='{{ subscribe_request.id }}', jwt='{{ current_user.frontend_token.value }}');">
-                                                Deny
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <a href="{{ url_for('ui_bp.moderation_topic_subscribe_requests', topic=topic.name) }}">Subscribe Requests</a>
                 {% endif %}
             </div>
         </div>

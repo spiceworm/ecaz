@@ -130,6 +130,13 @@ class CreatedAtMixin:
         return humanize.naturaltime(self.created_at)
 
 
+class IsHiddenMixin:
+    is_hidden = sa.Column(
+        sa.Boolean,
+        default=False,
+    )
+
+
 class UniqueIdMixin:
     unique_id = sa.Column(
         sa.String,
@@ -197,6 +204,8 @@ class Ban(db.Model, CreatedAtMixin):
 
     @property
     def humanized_expires_at(self) -> str:
+        if not self.expires_at:
+            return "Never"
         return humanize.naturaltime(self.expires_at)
 
     @hybrid_property
@@ -213,7 +222,7 @@ class Ban(db.Model, CreatedAtMixin):
         )
 
 
-class Comment(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
+class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, VotingMixin):
     """Represents a single comment that could be a top level comment or a response to a parent comment"""
 
     id: Mapped[int] = mapped_column(
@@ -422,14 +431,32 @@ class Discussion(db.Model):
         db.session.commit()
         return t
 
+    def get_ban_for(self, topic: Topic) -> Union[Ban, None]:
+        for ban in self.bans:
+            if ban.topic == topic:
+                return ban
+        return
+
     def has_subscribe_request_for(self, topic: Topic) -> bool:
         for sr in self.topic_subscribe_requests:
             if sr.topic == topic:
                 return True
         return False
 
+    def is_banned_from(self, topic: Topic) -> bool:
+        for ban in self.bans:
+            if ban.topic == topic:
+                return True
+        return False
+
     def is_moderator_of(self, topic: Topic) -> bool:
         return self in topic.moderators
+
+    def is_shadow_banned_from(self, topic: Topic) -> bool:
+        for ban in self.bans:
+            if ban.topic == topic:
+                return ban.is_shadow
+        return False
 
     def is_subscribed_to(self, topic: Topic) -> bool:
         return topic in self.subscriptions
@@ -441,7 +468,7 @@ class Discussion(db.Model):
             db.session.commit()
 
 
-class Thread(db.Model, BodyMixin, CreatedAtMixin, UniqueIdMixin, VotingMixin):
+class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, VotingMixin):
     """Represents a discussion thread containing multiple comments"""
 
     id: Mapped[int] = mapped_column(

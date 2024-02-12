@@ -1,5 +1,7 @@
 ACCOUNT_ALREADY_VERIFIED = "Your account has already been verified"
 ACCOUNT_VERIFIED_SUCCESS = "Account verified"
+BANNED_FROM_CONTRIBUTING = "You are banned from contributing"
+BAN_ALREADY_EXISTS_FOR_USER = "A ban already exists for that user"
 DELETE_ACCOUNT_SUCCESS = "Account deleted"
 DELETE_ACCOUNT_PENDING = "Account is scheduled for deletion"
 EMAIL_VERIFIED_BY_DIFFERENT_ACCOUNT_ERROR = "The email associated with your account is already verified for a different user's account"

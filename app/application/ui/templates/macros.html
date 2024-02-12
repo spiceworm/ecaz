@@ -25,164 +25,59 @@
 
 
 {% macro render_comment(current_user, comment, create_comment_form, render_child_comments=True, show_thread_details=False) %}
-    <div class="panel panel-default">
-        <div class="panel-body">
-            {% if show_thread_details %}
-                <div>
-                    <small>
-                        <a href="{{ url_for('ui_bp.view_thread', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug) }}">
-                            {{ comment.thread.title }}
-                        </a> by <a>
-                            {{ comment.thread.discussion.user.username }}
-                        </a> in <a href="{{ url_for('ui_bp.view_topic', topic=comment.thread.topic.name) }}">
-                            {{ comment.thread.topic.name }}
-                        </a>
-                    </small>
-                </div>
-            {% endif %}
-
-            <div>
-                {% if not comment.is_deleted %}
-                    {{ render_voting(current_user, 'api_discussion_bp.commentvoteapi', comment) }}
-                {% endif %}
-
-                <small>
-                    <a onclick="toggleCommentFolding(this);">[-]</a>
-                </small>
-
-                {% if comment.is_deleted %}
-                    <small>[removed] - {{ comment.humanized_created_at }}</small>
-                {% else %}
-                    <small>{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
-                {% endif %}
-            </div>
-
-            <div style="display: block">
-                {% if comment.is_deleted %}
-                    <p>[removed]</p>
-                {% else %}
-                    <p id="body-{{ comment.unique_id }}">{{ comment.body }}</p>
-                    {% if comment.discussion == current_user.discussion %}
-                        <div id="edit-{{ comment.unique_id }}" hidden>
-                            <fieldset>
-                                <div class="form-group">
-                                    <div class="col-lg-12">
-                                        <textarea class="form-control input-lg" id="editInput-{{ comment.unique_id }}"></textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-lg-12">
-                                        <button class="btn btn-default" type="submit" onclick="saveEditComment('{{ comment.unique_id }}', '{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">
-                                            Save
-                                        </button>
-                                        <button class="btn btn-default" type="button" onclick="hideEditFields('{{ comment.unique_id }}')">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </div>
-                    {% endif %}
-
-                    <small>
-                        <a onclick="showReplyForm(this);">Reply</a>
-                    </small>
-
-                    <small>
-                        {% if current_user.is_authenticated %}
-                            {% if comment.is_saved_by(current_user.discussion) %}
-                                <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
-                            {% else %}
-                                <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
-                            {% endif %}
-                        {% endif %}
-                    </small>
-
-                    {% if comment.discussion == current_user.discussion %}
-                        <small>
-                            <a onclick="showEditCommentFields('{{ comment.unique_id }}');">Edit</a>
-                        </small>
-                        <small>
-                            <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
-                        </small>
-                    {% endif %}
-
-                    <small>
-                        <a href="{{ url_for('ui_bp.view_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, comment_unique_id=comment.unique_id) }}">Permalink</a>
-                    </small>
-
-                    <small>
-                        <a>Report</a>
-                    </small>
-
-                    <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('ui_bp.create_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
-                        {{ create_comment_form.csrf_token }}
-
-                        <fieldset>
-                            <div class="form-group">
-                                <div class="col-lg-12">
-                                    {{ create_comment_form.body(class_="form-control") }}
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-lg-12">
-                                    <button class="btn btn-default" type="submit">Save</button>
-                                    <button class="btn btn-default" type="button" onclick="hideReplyForm(this); return false;">Cancel</button>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </form>
-                {% endif %}
-
-                {% if render_child_comments %}
-                    {% for response in comment.responses %}
-                        {{ render_comment(current_user, response, create_comment_form, depth, show_thread_details) }}
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-    </div>
-{% endmacro %}
-
-
-{% macro render_thread(current_user, thread, title_only=False, include_comment_count=False) %}
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <div class="panel-heading">
-                {{ render_voting(current_user, 'api_discussion_bp.threadvoteapi', thread) }}
-                <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}" style="font-size: 16px;">
-                    {{ thread.title }}
-                </a>
-            </div>
-
+    <!-- If a `Comment.is_hidden`, only allow the user who created it to see it. This happens for comments created while a user is shadow banned. -->
+    {% if not comment.is_hidden or (current_user.is_authenticated and current_user.discussion == comment.discussion) %}
+        <div class="panel panel-default">
             <div class="panel-body">
-                {% if thread.is_deleted %}
-                    <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
-                {% else %}
-                    <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
+                {% if show_thread_details %}
+                    <div>
+                        <small>
+                            <a href="{{ url_for('ui_bp.view_thread', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug) }}">
+                                {{ comment.thread.title }}
+                            </a> by <a>
+                                {{ comment.thread.discussion.user.username }}
+                            </a> in <a href="{{ url_for('ui_bp.view_topic', topic=comment.thread.topic.name) }}">
+                                {{ comment.thread.topic.name }}
+                            </a>
+                        </small>
+                    </div>
                 {% endif %}
-            </div>
 
-            {% if not title_only %}
-                <div class="panel-body">
-                    {% if thread.is_deleted %}
-                        [removed]
+                <div>
+                    {% if not comment.is_deleted %}
+                        {{ render_voting(current_user, 'api_discussion_bp.commentvoteapi', comment) }}
+                    {% endif %}
+
+                    <small>
+                        <a onclick="toggleCommentFolding(this);">[-]</a>
+                    </small>
+
+                    {% if comment.is_deleted %}
+                        <small>[removed] - {{ comment.humanized_created_at }}</small>
                     {% else %}
-                        <div id="body-{{ thread.unique_id }}">{{ thread.markdown_body | safe }}</div>
-                        {% if thread.discussion == current_user.discussion %}
-                            <div id="edit-{{ thread.unique_id }}" hidden>
+                        <small>{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
+                    {% endif %}
+                </div>
+
+                <div style="display: block">
+                    {% if comment.is_deleted %}
+                        <p>[removed]</p>
+                    {% else %}
+                        <p id="body-{{ comment.unique_id }}">{{ comment.body }}</p>
+                        {% if comment.discussion == current_user.discussion %}
+                            <div id="edit-{{ comment.unique_id }}" hidden>
                                 <fieldset>
                                     <div class="form-group">
                                         <div class="col-lg-12">
-                                            <textarea class="form-control input-lg" id="editInput-{{ thread.unique_id }}"></textarea>
+                                            <textarea class="form-control input-lg" id="editInput-{{ comment.unique_id }}"></textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-lg-12">
-                                            <button class="btn btn-default" type="submit" onclick="saveEditThread('{{ thread.unique_id }}', '{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">
+                                            <button class="btn btn-default" type="submit" onclick="saveEditComment('{{ comment.unique_id }}', '{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">
                                                 Save
                                             </button>
-                                            <button class="btn btn-default" type="button" onclick="hideEditFields('{{ thread.unique_id }}')">
+                                            <button class="btn btn-default" type="button" onclick="hideEditFields('{{ comment.unique_id }}')">
                                                 Cancel
                                             </button>
                                         </div>
@@ -190,40 +85,151 @@
                                 </fieldset>
                             </div>
                         {% endif %}
+
+                        <small>
+                            <a onclick="showReplyForm(this);">Reply</a>
+                        </small>
+
+                        <small>
+                            {% if current_user.is_authenticated %}
+                                {% if comment.is_saved_by(current_user.discussion) %}
+                                    <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
+                                {% else %}
+                                    <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.commentsaveapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
+                                {% endif %}
+                            {% endif %}
+                        </small>
+
+                        {% if comment.discussion == current_user.discussion %}
+                            <small>
+                                <a onclick="showEditCommentFields('{{ comment.unique_id }}');">Edit</a>
+                            </small>
+                            <small>
+                                <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.commentapi', unique_id=comment.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
+                            </small>
+                        {% endif %}
+
+                        <small>
+                            <a href="{{ url_for('ui_bp.view_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, comment_unique_id=comment.unique_id) }}">Permalink</a>
+                        </small>
+
+                        <small>
+                            <a>Report</a>
+                        </small>
+
+                        <form class="form-horizontal" id="reply" style="display: none" action="{{ url_for('ui_bp.create_comment', topic=comment.thread.topic.name, thread_unique_id=comment.thread.unique_id, slug=comment.thread.slug, parent_unique_id=comment.unique_id) }}" method="post">
+                            {{ create_comment_form.csrf_token }}
+
+                            <fieldset>
+                                <div class="form-group">
+                                    <div class="col-lg-12">
+                                        {{ create_comment_form.body(class_="form-control") }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-lg-12">
+                                        <button class="btn btn-default" type="submit">Save</button>
+                                        <button class="btn btn-default" type="button" onclick="hideReplyForm(this); return false;">Cancel</button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    {% endif %}
+
+                    {% if render_child_comments %}
+                        {% for response in comment.responses %}
+                            {{ render_comment(current_user, response, create_comment_form, depth, show_thread_details) }}
+                        {% endfor %}
                     {% endif %}
                 </div>
-            {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}
 
-            {% if include_comment_count %}
-                <small>
-                    <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">{{ thread.comments | length }} comments</a>
-                </small>
-            {% endif %}
 
-            <small>
-                {% if current_user.is_authenticated %}
-                    {% if thread.is_saved_by(current_user.discussion) %}
-                        <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
+{% macro render_thread(current_user, thread, title_only=False, include_comment_count=False) %}
+    <!-- If a `Thread.is_hidden`, only allow the user who created it to see it. This happens for threads created while a user is shadow banned. -->
+    {% if not thread.is_hidden or (current_user.is_authenticated and current_user.discussion == thread.discussion) %}
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="panel-heading">
+                    {{ render_voting(current_user, 'api_discussion_bp.threadvoteapi', thread) }}
+                    <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}" style="font-size: 16px;">
+                        {{ thread.title }}
+                    </a>
+                </div>
+
+                <div class="panel-body">
+                    {% if thread.is_deleted %}
+                        <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
                     {% else %}
-                        <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
+                        <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
                     {% endif %}
+                </div>
+
+                {% if not title_only %}
+                    <div class="panel-body">
+                        {% if thread.is_deleted %}
+                            [removed]
+                        {% else %}
+                            <div id="body-{{ thread.unique_id }}">{{ thread.markdown_body | safe }}</div>
+                            {% if thread.discussion == current_user.discussion %}
+                                <div id="edit-{{ thread.unique_id }}" hidden>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <div class="col-lg-12">
+                                                <textarea class="form-control input-lg" id="editInput-{{ thread.unique_id }}"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-lg-12">
+                                                <button class="btn btn-default" type="submit" onclick="saveEditThread('{{ thread.unique_id }}', '{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">
+                                                    Save
+                                                </button>
+                                                <button class="btn btn-default" type="button" onclick="hideEditFields('{{ thread.unique_id }}')">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 {% endif %}
-            </small>
-            {% if thread.discussion == current_user.discussion %}
-                <small>
-                    <a onclick="showEditThreadFields('{{ thread.unique_id }}');">Edit</a>
-                </small>
-                {% if not thread.is_deleted %}
+
+                {% if include_comment_count %}
                     <small>
-                        <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
+                        <a href="{{ url_for('ui_bp.view_thread', topic=thread.topic.name, thread_unique_id=thread.unique_id, slug=thread.slug) }}">{{ thread.comments | length }} comments</a>
                     </small>
                 {% endif %}
-            {% endif %}
-            <small>
-                <a>Report</a>
-            </small>
+
+                <small>
+                    {% if current_user.is_authenticated %}
+                        {% if thread.is_saved_by(current_user.discussion) %}
+                            <a onclick="unsaveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unsave</a>
+                        {% else %}
+                            <a onclick="saveCommentOrThread('{{ url_for('api_discussion_bp.threadsaveapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Save</a>
+                        {% endif %}
+                    {% endif %}
+                </small>
+                {% if thread.discussion == current_user.discussion %}
+                    <small>
+                        <a onclick="showEditThreadFields('{{ thread.unique_id }}');">Edit</a>
+                    </small>
+                    {% if not thread.is_deleted %}
+                        <small>
+                            <a onclick="deleteCommentOrThread('{{ url_for('api_discussion_bp.threadapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}');">Delete</a>
+                        </small>
+                    {% endif %}
+                {% endif %}
+                <small>
+                    <a>Report</a>
+                </small>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endmacro %}
 
 

@@ -43,7 +43,7 @@ class TestCreateTopic:
             " this is also invalid ",
         ],
     )
-    def test_create_topic_fails_if_contains_whitespace(self, ui_user, topic_name):
+    def test_create_fails_if_contains_whitespace(self, ui_user, topic_name):
         user = ui_user()
         resp = user.post(
             url_for(self.endpoint),
@@ -88,7 +88,7 @@ class TestViewTopic:
         resp = user.get(url_for(self.endpoint, topic=_topic.name))
         assert thread.title in resp.data.decode()
 
-    def test_view_topic_if_is_private_and_is_subscribed(self, topic, ui_user):
+    def test_view_if_is_private_and_is_subscribed(self, topic, ui_user):
         user = ui_user()
         _topic = topic(is_private=True)
         thread = _topic.create_thread(body="b", title="This is the title", discussion=user.discussion)
@@ -96,12 +96,34 @@ class TestViewTopic:
         resp = user.get(url_for(self.endpoint, topic=_topic.name))
         assert thread.title in resp.data.decode()
 
-    def test_view_topic_if_is_private_and_is_unauthenticated(self, client, topic):
+    def test_view_if_is_private_and_is_unauthenticated(self, client, topic):
         _topic = topic(is_private=True)
         resp = client.get(url_for(self.endpoint, topic=_topic.name))
         assert "This topic is private" in resp.data.decode()
 
-    def test_view_topic_that_does_not_exist(self, ui_user):
+    def test_view_if_does_not_exist(self, ui_user):
         user = ui_user()
         resp = user.get(url_for(self.endpoint, topic="does-not-exist"))
         assert resp.status_code == HTTPStatus.NOT_FOUND
+
+    def test_view_as_creator_of_hidden_thread(self, topic, ui_user):
+        u = ui_user()
+        _topic = topic()
+        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True)
+        resp = u.get(url_for(self.endpoint, topic=_topic.name))
+        assert thread.title in resp.data.decode()
+
+    def test_view_as_authenticated_noncreator_of_hidden_thread(self, topic, ui_user):
+        u1 = ui_user()
+        u2 = ui_user()
+        _topic = topic()
+        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u1.discussion, is_hidden=True)
+        resp = u2.get(url_for(self.endpoint, topic=_topic.name))
+        assert thread.title not in resp.data.decode()
+
+    def test_view_as_unauthenticated_noncreator_of_hidden_thread(self, client, topic, user):
+        u = user()
+        _topic = topic()
+        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True)
+        resp = client.get(url_for(self.endpoint, topic=_topic.name))
+        assert thread.title not in resp.data.decode()

@@ -1,0 +1,97 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('ui_bp.moderation_home') }}">moderation</a></li>
+                <li><a href="{{ url_for('ui_bp.moderation_topic', topic=topic.name) }}">{{ topic.name }}</a></li>
+                <li class="active"><a href="{{ url_for('ui_bp.moderation_topic_bans', topic=topic.name) }}">bans</a></li>
+            </ul>
+
+            <div class="well">
+                <h3>Ban tools for {{ topic.name }}</h3>
+
+                <form action="{{ url_for('ui_bp.moderation_topic_bans', topic=topic.name) }}" method="post">
+                    {{ create_topic_ban_form.csrf_token }}
+
+                    <div class="form-group">
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="username">Username</label>
+                                <div class="col-lg-10">
+                                    {{ create_topic_ban_form.username(class_="form-control") }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="reason">Reason</label>
+                                <div class="col-lg-10">
+                                    {{ create_topic_ban_form.reason(class_="form-control") }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="expires_toggle">Expires</label>
+                                <div class="col-lg-4">
+                                    {{ create_topic_ban_form.expires_at_number(class_="form-control") }}
+                                </div>
+                                <div class="col-lg-6">
+                                    {{ create_topic_ban_form.expires_at_unit(class_="form-control", onchange="toggleExpiresAtNumber()") }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="is_shadow">Is Shadow</label>
+                                <div class="col-lg-offset-2">
+                                    {{ create_topic_ban_form.is_shadow() }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-offset-2">
+                                    <button class="btn btn-primary" type="submit" id="submit" name="submit">Create Ban</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Created By</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Is Shadow</th>
+                            <th>Reason</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ban in topic.bans %}
+                            <tr>
+                                <td>{{ ban.discussion.user.username }}</td>
+                                <td>{{ ban.created_by.user.username }}</td>
+                                <td title="{{ ban.created_at }}">{{ ban.humanized_created_at }}</td>
+                                <td title="{{ ban.expires_at }}">{{ ban.humanized_expires_at }}</td>
+                                <td>{{ ban.is_shadow }}</td>
+                                <td>{{ ban.reason }}</td>
+                                <td>
+                                    <button class="btn btn-danger" type="button" onclick="deleteTopicBan('{{ url_for('api_discussion_bp.topicbanapi', topic=topic.name) }}', topic_ban_id='{{ ban.id }}', jwt='{{ current_user.frontend_token.value }}');">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
