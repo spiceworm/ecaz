@@ -111,7 +111,9 @@ def generate_data(object_multiplier, wipe_db):
 
             topic_subscribe_request_count = 5 * object_multiplier
             query = User.query.order_by(func.random()).limit(topic_subscribe_request_count)
-            with click.progressbar(query, label=f"Creating {topic_subscribe_request_count} private topic subscribe requests") as users:
+            with click.progressbar(
+                query, label=f"Creating {topic_subscribe_request_count} private topic subscribe requests"
+            ) as users:
                 for user in users:
                     user.discussion.create_subscribe_request(topic)
 

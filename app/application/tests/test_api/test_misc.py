@@ -88,7 +88,7 @@ class TestVerifyEmailApi:
         different account and tries to verify it under their own account.
         """
         user1 = api_user(email="same@test.com", is_verified=True)
-        user2 = api_user(email="same@test.com",)
+        user2 = api_user(email="same@test.com")
         assert len(user2.auth_tokens) == 1
         resp = user2.post(url_for(self.endpoint))
         assert resp.json == messages.EMAIL_VERIFIED_BY_DIFFERENT_ACCOUNT_ERROR

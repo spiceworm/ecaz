@@ -4,7 +4,9 @@ BANNED_FROM_CONTRIBUTING = "You are banned from contributing"
 BAN_ALREADY_EXISTS_FOR_USER = "A ban already exists for that user"
 DELETE_ACCOUNT_SUCCESS = "Account deleted"
 DELETE_ACCOUNT_PENDING = "Account is scheduled for deletion"
-EMAIL_VERIFIED_BY_DIFFERENT_ACCOUNT_ERROR = "The email associated with your account is already verified for a different user's account"
+EMAIL_VERIFIED_BY_DIFFERENT_ACCOUNT_ERROR = (
+    "The email associated with your account is already verified for a different user's account"
+)
 DUPLICATE_USERNAME_ERROR = "Username already token"
 EMAIL_UPDATE_SUCCESS = "Email updated"
 INVALID_EMAIL_ADDRESS = "Invalid email address"

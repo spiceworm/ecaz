@@ -39,7 +39,7 @@ def create_comment(topic: str, thread_unique_id: str, slug: str, parent_unique_i
             parent_obj.create_comment(
                 body=form.body.data,
                 discussion=user.discussion,
-                is_hidden=user.discussion.is_shadow_banned_from(thread.topic)
+                is_hidden=user.discussion.is_shadow_banned_from(thread.topic),
             )
 
     return flask.redirect(

@@ -95,9 +95,7 @@ class CreateTopicBanForm(BaseForm):
         ],
         default=EXPIRES_NEVER,
     )
-    is_shadow = BooleanField(
-        "is_shadow"
-    )
+    is_shadow = BooleanField("is_shadow")
     reason = StringField(
         "reason",
         render_kw={"placeholder": "Reason"},

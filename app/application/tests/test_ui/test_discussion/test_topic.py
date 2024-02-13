@@ -109,7 +109,9 @@ class TestViewTopic:
     def test_view_as_creator_of_hidden_thread(self, topic, ui_user):
         u = ui_user()
         _topic = topic()
-        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True)
+        thread = _topic.create_thread(
+            title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True
+        )
         resp = u.get(url_for(self.endpoint, topic=_topic.name))
         assert thread.title in resp.data.decode()
 
@@ -117,13 +119,17 @@ class TestViewTopic:
         u1 = ui_user()
         u2 = ui_user()
         _topic = topic()
-        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u1.discussion, is_hidden=True)
+        thread = _topic.create_thread(
+            title="a unique title for the thread", body="b", discussion=u1.discussion, is_hidden=True
+        )
         resp = u2.get(url_for(self.endpoint, topic=_topic.name))
         assert thread.title not in resp.data.decode()
 
     def test_view_as_unauthenticated_noncreator_of_hidden_thread(self, client, topic, user):
         u = user()
         _topic = topic()
-        thread = _topic.create_thread(title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True)
+        thread = _topic.create_thread(
+            title="a unique title for the thread", body="b", discussion=u.discussion, is_hidden=True
+        )
         resp = client.get(url_for(self.endpoint, topic=_topic.name))
         assert thread.title not in resp.data.decode()
