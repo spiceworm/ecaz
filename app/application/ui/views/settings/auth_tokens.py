@@ -4,6 +4,7 @@ import flask
 import flask_login
 from werkzeug.wrappers import Response
 
+from application.constants import expires
 from application.ui import forms
 from application.models import (
     AuthToken,
@@ -34,7 +35,7 @@ def create_auth_token() -> Response:
     form = forms.CreateAuthTokenForm()
     if form.validate_on_submit():
         expires_at_unit = form.expires_at_unit.data
-        if expires_at_unit == form.EXPIRES_NEVER:
+        if expires_at_unit == expires.NEVER:
             expires_delta = False
         else:
             expires_delta = datetime.timedelta(**{expires_at_unit.lower(): int(form.expires_at_number.data)})

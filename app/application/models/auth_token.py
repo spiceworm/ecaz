@@ -17,6 +17,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy_utils import StringEncryptedType
 
+from application.constants import expires
 from application.models import (
     db,
     get_encryption_key,
@@ -145,9 +146,9 @@ class AuthToken(db.Model):
     def humanized_expires_at(self) -> str:
         match exp := self.expires_at:
             case True:
-                return "Expired"
+                return expires.EXPIRED
             case False:
-                return "Never"
+                return expires.NEVER
             case _:
                 return humanize.naturaldelta(exp)
 

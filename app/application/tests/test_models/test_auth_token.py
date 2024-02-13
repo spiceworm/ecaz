@@ -3,6 +3,7 @@ import time
 
 import pytest
 
+from application.constants import expires
 from application.models import AuthToken, db
 
 
@@ -42,8 +43,8 @@ def test_action_specific_tokens(user, method, tag):
 @pytest.mark.parametrize(
     "expires_delta, exp",
     [
-        (False, "Never"),
-        (timedelta(hours=-1), "Expired"),
+        (False, expires.NEVER),
+        (timedelta(hours=-1), expires.EXPIRED),
         (timedelta(days=6, minutes=1), "6 days"),
     ],
 )

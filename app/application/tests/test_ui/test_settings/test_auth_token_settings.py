@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from flask import url_for
 
-from application.ui.forms import CreateAuthTokenForm
+from application.constants import expires
 
 
 def test_create_auth_token(ui_user):
@@ -28,7 +28,7 @@ def test_create_expiring_auth_token(ui_user):
         url_for("ui_bp.create_auth_token"),
         data={
             "expires_at_number": "1",
-            "expires_at_unit": CreateAuthTokenForm.EXPIRES_UNIT_DAYS,
+            "expires_at_unit": expires.UNIT_DAYS,
             "token_name": token_name,
         },
     )

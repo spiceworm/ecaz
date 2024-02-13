@@ -3,6 +3,7 @@
 
 {% block head %}
     {{ super() }}
+    <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='common.js') }}"></script>
 
     <script>
         function copyTokenToClipboard(token_id) {
@@ -10,12 +11,6 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999); // For mobile devices
             navigator.clipboard.writeText(copyText.value);
-        }
-
-        function toggle_expires_number() {
-            const expires_at_dropdown = document.getElementById("expires_at_unit");
-            let expires_at_input = document.getElementById("expires_at_number");
-            expires_at_input.disabled = (expires_at_dropdown.value === "Never");
         }
     </script>
 {% endblock %}
@@ -85,7 +80,7 @@
                                             {{ create_auth_token_form.expires_at_number(class_="form-control") }}
                                         </div>
                                         <div class="col-lg-6">
-                                            {{ create_auth_token_form.expires_at_unit(class_="form-control", onchange="toggle_expires_at_number()") }}
+                                            {{ create_auth_token_form.expires_at_unit(class_="form-control", onchange="toggleExpiresAtNumber()") }}
                                         </div>
                                     </div>
 

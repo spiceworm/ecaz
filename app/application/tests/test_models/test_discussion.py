@@ -7,6 +7,7 @@ from datetime import (
 import pytest
 import sqlalchemy as sa
 
+from application.constants import expires
 from application.models import Ban
 from application.util.exceptions import (
     ModeratorRequired,
@@ -18,7 +19,7 @@ class TestBan:
     @pytest.mark.parametrize(
         "expires_at, exp",
         [
-            (None, "Never"),
+            (None, expires.NEVER),
             (datetime.now(tz=timezone.utc) + timedelta(days=7, minutes=1), "7 days from now"),
         ],
     )

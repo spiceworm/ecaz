@@ -21,6 +21,7 @@ from sqlalchemy.orm import (
     relationship,
 )
 
+from application.constants import expires
 from application.models import (
     db,
     utcnow,
@@ -205,7 +206,7 @@ class Ban(db.Model, CreatedAtMixin):
     @property
     def humanized_expires_at(self) -> str:
         if not self.expires_at:
-            return "Never"
+            return expires.NEVER
         return humanize.naturaltime(self.expires_at)
 
     @hybrid_property

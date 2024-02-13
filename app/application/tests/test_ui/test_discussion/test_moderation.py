@@ -1,7 +1,9 @@
 from flask import url_for
 
-from application.constants import messages
-from application.ui import forms
+from application.constants import (
+    expires,
+    messages,
+)
 
 
 class TestModerationHome:
@@ -72,12 +74,11 @@ class TestModerationTopicBans:
         u2 = ui_user()
         t = topic(moderators=[u1.discussion])
         url = url_for(self.endpoint, topic=t.name)
-        form = forms.CreateTopicBanForm()
         resp = u1.post(
             url,
             data={
                 "expires_at_number": 0,
-                "expires_at_unit": form.EXPIRES_NEVER,
+                "expires_at_unit": expires.NEVER,
                 "is_shadow": False,
                 "reason": "testing",
                 "username": u2.username,
@@ -91,12 +92,11 @@ class TestModerationTopicBans:
         u2 = ui_user()
         t = topic(moderators=[u1.discussion])
         url = url_for(self.endpoint, topic=t.name)
-        form = forms.CreateTopicBanForm()
         resp = u1.post(
             url,
             data={
                 "expires_at_number": 0,
-                "expires_at_unit": form.EXPIRES_NEVER,
+                "expires_at_unit": expires.NEVER,
                 "is_shadow": False,
                 "reason": "testing",
                 "username": "this-is-invalid",
@@ -111,12 +111,11 @@ class TestModerationTopicBans:
         t = topic(moderators=[u1.discussion])
         t.create_ban(created_by=u1.discussion, discussion=u2.discussion, reason="testing")
         url = url_for(self.endpoint, topic=t.name)
-        form = forms.CreateTopicBanForm()
         resp = u1.post(
             url,
             data={
                 "expires_at_number": 0,
-                "expires_at_unit": form.EXPIRES_NEVER,
+                "expires_at_unit": expires.NEVER,
                 "is_shadow": False,
                 "reason": "testing",
                 "username": u2.username,
@@ -130,12 +129,11 @@ class TestModerationTopicBans:
         u2 = ui_user()
         t = topic(moderators=[u1.discussion])
         url = url_for(self.endpoint, topic=t.name)
-        form = forms.CreateTopicBanForm()
         resp = u1.post(
             url,
             data={
                 "expires_at_number": 1,
-                "expires_at_unit": form.EXPIRES_UNIT_WEEKS,
+                "expires_at_unit": expires.UNIT_WEEKS,
                 "is_shadow": False,
                 "reason": "testing",
                 "username": u2.username,

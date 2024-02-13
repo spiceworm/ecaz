@@ -7,7 +7,10 @@ from datetime import (
 import flask
 import flask_login
 
-from application.constants import messages
+from application.constants import (
+    expires,
+    messages,
+)
 from application.models import (
     Ban,
     Topic,
@@ -33,7 +36,7 @@ def moderation_topic_bans(topic):
             form = forms.CreateTopicBanForm()
             if form.validate_on_submit():
                 expires_unit = form.expires_at_unit.data
-                if expires_unit == form.EXPIRES_NEVER:
+                if expires_unit == expires.NEVER:
                     expires_at = None
                 else:
                     expires_delta = timedelta(**{expires_unit.lower(): int(form.expires_at_number.data)})
