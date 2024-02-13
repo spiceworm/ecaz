@@ -33,18 +33,18 @@ def create_auth_token() -> Response:
     user = flask_login.current_user
     form = forms.CreateAuthTokenForm()
     if form.validate_on_submit():
-        expires_unit = form.expires_unit.data
-        if expires_unit == form.EXPIRES_NEVER:
+        expires_at_unit = form.expires_at_unit.data
+        if expires_at_unit == form.EXPIRES_NEVER:
             expires_delta = False
         else:
-            expires_delta = datetime.timedelta(**{expires_unit.lower(): int(form.expires_number.data)})
+            expires_delta = datetime.timedelta(**{expires_at_unit.lower(): int(form.expires_at_number.data)})
 
         AuthToken.create(
             user=user,
             name=form.token_name.data,
             expires_delta=expires_delta,
         )
-    return flask.redirect(flask.url_for(".auth_token_settings"))
+    return flask.redirect(flask.url_for("ui_bp.auth_token_settings"))
 
 
 @flask_login.login_required
@@ -56,4 +56,4 @@ def delete_auth_token() -> Response:
             AuthToken.user_id == flask_login.current_user.id,
         ).delete()
         db.session.commit()
-    return flask.redirect(flask.url_for(".auth_token_settings"))
+    return flask.redirect(flask.url_for("ui_bp.auth_token_settings"))

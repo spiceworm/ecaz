@@ -128,7 +128,7 @@ class AuthToken(db.Model):
         )
 
     @property
-    def expires_in(self) -> Union[bool, timedelta]:
+    def expires_at(self) -> Union[bool, timedelta]:
         try:
             claims = flask_jwt_extended.decode_token(self.value)
         except jwt.ExpiredSignatureError:
@@ -142,8 +142,8 @@ class AuthToken(db.Model):
                 return timedelta(seconds=claims["exp"] - time.time())
 
     @property
-    def humanized_expires_in(self) -> str:
-        match exp := self.expires_in:
+    def humanized_expires_at(self) -> str:
+        match exp := self.expires_at:
             case True:
                 return "Expired"
             case False:
@@ -153,7 +153,7 @@ class AuthToken(db.Model):
 
     @property
     def is_expired(self) -> bool:
-        return self.expires_in is True
+        return self.expires_at is True
 
     @property
     def meta(self) -> dict:

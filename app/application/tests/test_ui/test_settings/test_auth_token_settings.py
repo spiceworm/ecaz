@@ -27,15 +27,15 @@ def test_create_expiring_auth_token(ui_user):
     user.post(
         url_for("ui_bp.create_auth_token"),
         data={
-            "expires_number": "1",
-            "expires_unit": CreateAuthTokenForm.EXPIRES_UNIT_DAYS,
+            "expires_at_number": "1",
+            "expires_at_unit": CreateAuthTokenForm.EXPIRES_UNIT_DAYS,
             "token_name": token_name,
         },
     )
     assert len(user.auth_tokens) == 1
     token = user.auth_tokens[0]
     assert token.name == token_name
-    assert timedelta(hours=23, minutes=59) < token.expires_in < timedelta(days=1, seconds=1)
+    assert timedelta(hours=23, minutes=59) < token.expires_at < timedelta(days=1, seconds=1)
 
 
 def test_delete_auth_token(ui_user):

@@ -13,9 +13,9 @@
         }
 
         function toggle_expires_number() {
-            const expires_dropdown = document.getElementById("expires_unit");
-            let expires_input = document.getElementById("expires_number");
-            expires_input.disabled = (expires_dropdown.value === "Never");
+            const expires_at_dropdown = document.getElementById("expires_at_unit");
+            let expires_at_input = document.getElementById("expires_at_number");
+            expires_at_input.disabled = (expires_at_dropdown.value === "Never");
         }
     </script>
 {% endblock %}
@@ -43,13 +43,13 @@
 
                                     <div class="form-group">
                                         <div class="col-lg-4">
-                                            {% if token.humanized_expires_in == "Never" %}
+                                            {% if token.humanized_expires_at == "Never" %}
                                                 <label class="control-label" for="token_{{ loop.index }}">
-                                                    {{ token.name }} ({{ token.humanized_expires_in }} expires)
+                                                    {{ token.name }} ({{ token.humanized_expires_at }} expires)
                                                 </label>
                                             {% else %}
-                                                <label class="control-label" for="token_{{ loop.index }}" title="{{ token.expires_in }}">
-                                                    {{ token.name }} (Expires in {{ token.humanized_expires_in }})
+                                                <label class="control-label" for="token_{{ loop.index }}" title="{{ token.expires_at }}">
+                                                    {{ token.name }} (Expires in {{ token.humanized_expires_at }})
                                                 </label>
                                             {% endif %}
                                         </div>
@@ -80,12 +80,12 @@
                                     </div>
 
                                     <div class="row">
-                                        <label class="col-lg-2 control-label" for="expires_toggle">Expires</label>
+                                        <label class="col-lg-2 control-label" for="expires_at_toggle">Expires</label>
                                         <div class="col-lg-4">
-                                            {{ create_auth_token_form.expires_number(class_="form-control") }}
+                                            {{ create_auth_token_form.expires_at_number(class_="form-control") }}
                                         </div>
                                         <div class="col-lg-6">
-                                            {{ create_auth_token_form.expires_unit(class_="form-control", onchange="toggle_expires_number()") }}
+                                            {{ create_auth_token_form.expires_at_unit(class_="form-control", onchange="toggle_expires_at_number()") }}
                                         </div>
                                     </div>
 

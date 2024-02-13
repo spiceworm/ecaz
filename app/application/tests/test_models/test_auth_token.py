@@ -47,13 +47,13 @@ def test_action_specific_tokens(user, method, tag):
         (timedelta(days=6, minutes=1), "6 days"),
     ],
 )
-def test_humanized_expires_in(user, expires_delta, exp):
+def test_humanized_expires_at(user, expires_delta, exp):
     """
-    Test `AuthToken.humanized_expires_in` property.
+    Test `AuthToken.humanized_expires_at` property.
     """
     u = user()
     t = AuthToken.create(user=u, name="t", expires_delta=expires_delta)
-    assert t.humanized_expires_in == exp
+    assert t.humanized_expires_at == exp
 
 
 def test_is_expired(user):

@@ -27,13 +27,13 @@ class CreateAuthTokenForm(BaseForm):
     EXPIRES_UNIT_DAYS = "Days"
     EXPIRES_UNIT_WEEKS = "Weeks"
 
-    expires_number = IntegerField(
-        "expires_number",
+    expires_at_number = IntegerField(
+        "expires_at_number",
         render_kw={"disabled": True},
         default=0,
     )
-    expires_unit = SelectField(
-        "expires_unit",
+    expires_at_unit = SelectField(
+        "expires_at_unit",
         choices=[
             (EXPIRES_NEVER, EXPIRES_NEVER),
             (EXPIRES_UNIT_MICROSECONDS, EXPIRES_UNIT_MICROSECONDS),
