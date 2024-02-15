@@ -64,6 +64,24 @@ class TestBanIsActive:
 
 
 class TestComment:
+    def test_get_comments(self, comment, user):
+        d = user().discussion
+        c0 = comment(discussion=d)
+        c1 = c0.create_comment(body="c1", discussion=d)
+        c2 = c0.create_comment(body="c2", discussion=d)
+        c3 = c0.create_comment(body="c3", discussion=d)
+        assert c0.get_comments() == [c1, c2, c3]
+
+    def test_get_comments_default_ordering(self, comment, user):
+        d = user().discussion
+        c0 = comment(discussion=d)
+        c1 = c0.create_comment(body="c1", discussion=d)
+        c2 = c0.create_comment(body="c2", discussion=d)
+        c3 = c0.create_comment(body="c3", discussion=d)
+        c3.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert c0.get_comments() == [c3, c2, c1]
+
     def test_is_downvoted_by(self, comment, user):
         d1 = user().discussion
         d2 = user().discussion
@@ -99,6 +117,20 @@ class TestComment:
         assert c.votes == [v2]
         c.delete_vote(discussion=d)
         assert c.votes == []
+
+    def test_vote_sum(self, comment, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        d3 = user().discussion
+        c = comment(discussion=d1)
+        c.upvote(discussion=d1)
+        c.upvote(discussion=d2)
+        c.upvote(discussion=d3)
+        assert c.vote_sum == 3
+        c.downvote(discussion=d1)
+        c.downvote(discussion=d2)
+        c.downvote(discussion=d3)
+        assert c.vote_sum == -3
 
 
 class TestDiscussion:
@@ -165,6 +197,24 @@ class TestDiscussion:
 
 
 class TestThread:
+    def test_get_comments(self, thread, user):
+        d = user().discussion
+        t = thread(discussion=d)
+        c1 = t.create_comment(body="c1", discussion=d)
+        c2 = t.create_comment(body="c2", discussion=d)
+        c3 = t.create_comment(body="c3", discussion=d)
+        assert t.get_comments() == [c1, c2, c3]
+
+    def test_get_comments_default_ordering(self, thread, user):
+        d = user().discussion
+        t = thread(discussion=d)
+        c1 = t.create_comment(body="c1", discussion=d)
+        c2 = t.create_comment(body="c2", discussion=d)
+        c3 = t.create_comment(body="c3", discussion=d)
+        c3.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert t.get_comments() == [c3, c2, c1]
+
     def test_is_downvoted_by(self, thread, user):
         d1 = user().discussion
         d2 = user().discussion
@@ -201,6 +251,20 @@ class TestThread:
         t.delete_vote(discussion=d)
         assert t.votes == []
 
+    def test_vote_sum(self, thread, user):
+        d1 = user().discussion
+        d2 = user().discussion
+        d3 = user().discussion
+        t = thread(discussion=d1)
+        t.upvote(discussion=d1)
+        t.upvote(discussion=d2)
+        t.upvote(discussion=d3)
+        assert t.vote_sum == 3
+        t.downvote(discussion=d1)
+        t.downvote(discussion=d2)
+        t.downvote(discussion=d3)
+        assert t.vote_sum == -3
+
 
 class TestTopic:
     def test_add_moderator(self, topic, user):
@@ -210,6 +274,24 @@ class TestTopic:
         t.add_moderator(d1)
         assert d1.is_moderator_of(t)
         assert not d2.is_moderator_of(t)
+
+    def test_get_threads(self, topic, user):
+        d = user().discussion
+        t = topic()
+        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
+        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
+        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
+        assert t.get_threads() == [thread1, thread2, thread3]
+
+    def test_get_threads_default_ordering(self, topic, user):
+        d = user().discussion
+        t = topic()
+        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
+        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
+        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
+        thread3.upvote(discussion=d)
+        thread1.downvote(discussion=d)
+        assert t.get_threads() == [thread3, thread2, thread1]
 
 
 class TestTopicSubscribeRequest:

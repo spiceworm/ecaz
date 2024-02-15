@@ -112,6 +112,54 @@ topic_moderators = db.Table(
 )
 
 
+class CommentVote(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    comment: Mapped["Comment"] = relationship(
+        back_populates="votes",
+    )
+    comment_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("comment.id"),
+        nullable=False,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="comment_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
+
+
+class ThreadVote(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="thread_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    thread: Mapped["Thread"] = relationship(
+        back_populates="votes",
+    )
+    thread_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("thread.id"),
+        nullable=False,
+    )
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
+
+
 class BodyMixin:
     body = sa.Column(
         sa.String,
@@ -155,13 +203,42 @@ class VotingMixin:
     def _create_vote(self, discussion: Discussion, value: int) -> Union[CommentVote, None]:
         raise NotImplementedError  # pragma: no cover
 
+    def delete_vote(self, discussion: Discussion) -> None:
+        raise NotImplementedError  # pragma: no cover
+
     def downvote(self, discussion: Discussion) -> Union[CommentVote, ThreadVote]:
         self.delete_vote(discussion)
         return self._create_vote(discussion, self.DOWNVOTE)
 
+    @property
+    def id(self):
+        raise NotImplementedError  # pragma: no cover
+
     def upvote(self, discussion: Discussion) -> Union[CommentVote, ThreadVote]:
         self.delete_vote(discussion)
         return self._create_vote(discussion, self.UPVOTE)
+
+    @property
+    def vote_cls(self):
+        raise NotImplementedError  # pragma: no cover
+
+    @property
+    def vote_sum(self) -> int:
+        """
+        Returns the sum of all votes for the Comment/Thread object
+        E.g. if votes = -1, -1, 1, 1, 1, 1 then return 2
+        """
+        return (
+            db.session.query(
+                sa.func.coalesce(
+                    sa.func.sum(self.vote_cls.value),  # `CommentVote` / `ThreadVote`
+                    0,
+                )
+            )
+            .join(self.__class__)  # `Comment` / `Thread`
+            .filter_by(id=self.id)
+            .one()[0]
+        )
 
 
 class Ban(db.Model, CreatedAtMixin):
@@ -226,6 +303,8 @@ class Ban(db.Model, CreatedAtMixin):
 class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, VotingMixin):
     """Represents a single comment that could be a top level comment or a response to a parent comment"""
 
+    vote_cls = CommentVote
+
     id: Mapped[int] = mapped_column(
         nullable=False,
         primary_key=True,
@@ -289,6 +368,25 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin,
             db.session.delete(vote)
             db.session.commit()
 
+    def get_comments(self):
+        return (
+            db.session.query(
+                Comment,
+            )
+            .filter_by(
+                parent=self,
+            )
+            .outerjoin(CommentVote)
+            .group_by(Comment.id)
+            .order_by(
+                sa.func.coalesce(
+                    sa.func.sum(CommentVote.value),
+                    0,
+                ).desc(),
+            )
+            .all()
+        )
+
     def is_downvoted_by(self, discussion: Discussion) -> bool:
         if votes := set(discussion.comment_votes).intersection(self.votes):
             vote = votes.pop()
@@ -314,30 +412,6 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin,
         if self in discussion.saved_comments:
             discussion.saved_comments.remove(self)
             db.session.commit()
-
-
-class CommentVote(db.Model):
-    id: Mapped[int] = mapped_column(
-        nullable=False,
-        primary_key=True,
-    )
-    comment: Mapped["Comment"] = relationship(
-        back_populates="votes",
-    )
-    comment_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("comment.id"),
-        nullable=False,
-    )
-    discussion: Mapped["Discussion"] = relationship(
-        back_populates="comment_votes",
-    )
-    discussion_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("discussion.id"),
-        nullable=False,
-    )
-    value = sa.Column(
-        sa.Integer,
-    )  # 1 or -1
 
 
 class Discussion(db.Model):
@@ -472,6 +546,8 @@ class Discussion(db.Model):
 class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, VotingMixin):
     """Represents a discussion thread containing multiple comments"""
 
+    vote_cls = ThreadVote
+
     id: Mapped[int] = mapped_column(
         nullable=False,
         primary_key=True,
@@ -540,6 +616,25 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, 
             db.session.delete(vote)
             db.session.commit()
 
+    def get_comments(self):
+        return (
+            db.session.query(
+                Comment,
+            )
+            .filter_by(
+                thread=self,
+            )
+            .outerjoin(CommentVote)
+            .group_by(Comment.id)
+            .order_by(
+                sa.func.coalesce(
+                    sa.func.sum(CommentVote.value),
+                    0,
+                ).desc(),
+            )
+            .all()
+        )
+
     def is_downvoted_by(self, discussion: Discussion) -> bool:
         if votes := set(discussion.thread_votes).intersection(self.votes):
             vote = votes.pop()
@@ -569,30 +664,6 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, 
         if self in discussion.saved_threads:
             discussion.saved_threads.remove(self)
             db.session.commit()
-
-
-class ThreadVote(db.Model):
-    id: Mapped[int] = mapped_column(
-        nullable=False,
-        primary_key=True,
-    )
-    discussion: Mapped["Discussion"] = relationship(
-        back_populates="thread_votes",
-    )
-    discussion_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("discussion.id"),
-        nullable=False,
-    )
-    thread: Mapped["Thread"] = relationship(
-        back_populates="votes",
-    )
-    thread_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("thread.id"),
-        nullable=False,
-    )
-    value = sa.Column(
-        sa.Integer,
-    )  # 1 or -1
 
 
 class Topic(db.Model, CreatedAtMixin):
@@ -660,6 +731,23 @@ class Topic(db.Model, CreatedAtMixin):
         db.session.add(thread)
         db.session.commit()
         return thread
+
+    def get_threads(self):
+        return (
+            db.session.query(Thread)
+            .filter_by(
+                topic=self,
+            )
+            .outerjoin(ThreadVote)
+            .group_by(Thread.id)
+            .order_by(
+                sa.func.coalesce(
+                    sa.func.sum(ThreadVote.value),
+                    0,
+                ).desc(),
+            )
+            .all()
+        )
 
 
 class TopicSubscribeRequest(db.Model, CreatedAtMixin):

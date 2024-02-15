@@ -53,8 +53,7 @@ def create_comment(topic: str, thread_unique_id: str, slug: str, parent_unique_i
 
 
 def view_comment(topic: str, thread_unique_id: str, slug: str, comment_unique_id: str) -> str:
-    query = Comment.query.filter_by(unique_id=comment_unique_id)
-    comment = db.one_or_404(query)
+    comment = db.one_or_404(Comment.query.filter_by(unique_id=comment_unique_id))
     return flask.render_template(
         "discussion/comment/view.html",
         create_comment_form=forms.CreateCommentForm(),

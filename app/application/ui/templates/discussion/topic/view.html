@@ -13,13 +13,9 @@
                 <li><a href="{{ url_for('ui_bp.create_thread', topic=topic.name) }}">[ new thread ]</a></li>
             </ul>
 
-            {% if topic.threads %}
-                {% for thread in topic.threads %}
-                    {{ render_thread(current_user, thread, title_only=True, include_comment_count=True) }}
-                {% endfor %}
-            {% else %}
-                <p>No threads exist yet</p>
-            {% endif %}
+            {% for thread in topic.get_threads() %}
+                {{ render_thread(current_user, thread, title_only=True, include_comment_count=True) }}
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

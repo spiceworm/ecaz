@@ -12,7 +12,7 @@
             </ul>
 
             <div class="well">
-                {% for topic in topics %}
+                {% for topic, topic_thread_count in query.all() %}
                     <ul class="list-group">
                         <li class="list-group-item">
                             {% if topic.is_private %}
@@ -20,7 +20,7 @@
                             {% else %}
                                 <a href="{{ url_for('ui_bp.view_topic', topic=topic.name) }}">{{ topic.name }} | {{ topic.description }}</a>
                             {% endif %}
-                            <span class="badge">{{ topic.threads | length }}</span>
+                            <span class="badge">{{ topic_thread_count }}</span>
                         </li>
                     </ul>
                 {% endfor %}

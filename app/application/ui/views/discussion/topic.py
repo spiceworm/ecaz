@@ -44,11 +44,9 @@ def create_topic() -> Union[str, flask.Response]:
 
 
 def view_topic(topic: str) -> str:
-    query = Topic.query.filter_by(name=topic)
-    topic = db.one_or_404(query)
+    topic = db.one_or_404(Topic.query.filter_by(name=topic))
     user = flask_login.current_user
     template = "view.html"
-
     if topic.is_private:
         template = "is_private.html"
 

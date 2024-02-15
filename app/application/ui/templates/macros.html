@@ -137,8 +137,8 @@
                     {% endif %}
 
                     {% if render_child_comments %}
-                        {% for response in comment.responses %}
-                            {{ render_comment(current_user, response, create_comment_form, depth, show_thread_details) }}
+                        {% for response in comment.get_comments() %}
+                            {{ render_comment(current_user, response, create_comment_form, render_child_comments, show_thread_details) }}
                         {% endfor %}
                     {% endif %}
                 </div>
@@ -249,5 +249,6 @@
                 <i class="bi bi-arrow-down-square"></i>
             {% endif %}
         </a>
+        ({{ comment_or_thread.vote_sum }})
     {% endif %}
 {% endmacro %}

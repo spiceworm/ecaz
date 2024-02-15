@@ -67,8 +67,7 @@ def create_thread(topic=None) -> Union[str, flask.Response]:
 
 
 def view_thread(topic: str, thread_unique_id: str, slug: str) -> str:
-    query = Thread.query.filter_by(unique_id=thread_unique_id)
-    thread = db.one_or_404(query)
+    thread = db.one_or_404(Thread.query.filter_by(unique_id=thread_unique_id))
     return flask.render_template(
         "discussion/thread/view.html",
         create_comment_form=forms.CreateCommentForm(),
