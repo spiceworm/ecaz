@@ -53,9 +53,9 @@
                     </small>
 
                     {% if comment.is_deleted %}
-                        <small>[removed] - {{ comment.humanized_created_at }}</small>
+                        <small title="{{ comment.created_at }}">[removed] - {{ comment.humanized_created_at }}</small>
                     {% else %}
-                        <small>{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
+                        <small title="{{ comment.created_at }}">{{ comment.discussion.user.username }} - {{ comment.humanized_created_at }}</small>
                     {% endif %}
                 </div>
 
@@ -162,9 +162,9 @@
 
                 <div class="panel-body">
                     {% if thread.is_deleted %}
-                        <small>Submitted {{ thread.humanized_created_at }} by [removed]</small>
+                        <small title="{{ thread.created_at }}">Submitted {{ thread.humanized_created_at }} by [removed]</small>
                     {% else %}
-                        <small>Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
+                        <small title="{{ thread.created_at }}">Submitted {{ thread.humanized_created_at }} by {{ thread.discussion.user.username }}</small>
                     {% endif %}
                 </div>
 
