@@ -8,6 +8,21 @@
     <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='node_modules/turndown/dist/turndown.js') }}"></script>
     <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='common.js') }}"></script>
     <script type="application/javascript" src="{{ url_for('ui_bp.static', filename='discussion.js') }}"></script>
+
+    <script>
+        window.addEventListener("load", () => {
+            // Update URL to include the selected sorting parameter and reload the page
+            const sortPostsDropdown = document.getElementById("sorting");
+            if (sortPostsDropdown !== null) {
+                sortPostsDropdown.addEventListener("change", (e) => {
+                    const sorting = e.target.value;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.set('sorting', sorting);
+                    window.location.search = urlParams;
+                });
+            }
+        });
+    </script>
 {% endblock %}
 
 

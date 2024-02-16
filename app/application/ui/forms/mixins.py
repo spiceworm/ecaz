@@ -8,12 +8,10 @@ from application.constants import expires
 
 class ExpiresAtMixin:
     expires_at_number = IntegerField(
-        "expires_at_number",
         render_kw={"disabled": True},
         default=0,
     )
     expires_at_unit = SelectField(
-        "expires_at_unit",
         choices=[
             (expires.NEVER, expires.NEVER),
             (expires.UNIT_MICROSECONDS, expires.UNIT_MICROSECONDS),

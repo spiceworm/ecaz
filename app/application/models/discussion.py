@@ -16,12 +16,16 @@ import slugify
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
+    load_only,
     Mapped,
     mapped_column,
     relationship,
 )
 
-from application.constants import expires
+from application.constants import (
+    expires,
+    sort_by,
+)
 from application.models import (
     db,
     utcnow,
@@ -368,22 +372,22 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin,
             db.session.delete(vote)
             db.session.commit()
 
-    def get_comments(self):
+    def get_comments(self, sorting=sort_by.COMMENTS_DEFAULT):
+        default_sorting = sa.func.coalesce(sa.func.sum(CommentVote.value), 0).desc()
+        match sorting:
+            case sort_by.TOP:
+                order_by = default_sorting
+            case sort_by.NEW:
+                order_by = Comment.created_at.desc()
+            case _:
+                order_by = default_sorting
+
         return (
-            db.session.query(
-                Comment,
-            )
-            .filter_by(
-                parent=self,
-            )
+            db.session.query(Comment)
+            .filter_by(parent=self)
             .outerjoin(CommentVote)
             .group_by(Comment.id)
-            .order_by(
-                sa.func.coalesce(
-                    sa.func.sum(CommentVote.value),
-                    0,
-                ).desc(),
-            )
+            .order_by(order_by)
             .all()
         )
 
@@ -512,6 +516,39 @@ class Discussion(db.Model):
                 return ban
         return
 
+    @staticmethod
+    def get_topics(sorting=sort_by.TOPICS_DEFAULT, include_thread_count=False):
+        default_sorting = sa.func.count(Topic.threads).desc()
+        match sorting:
+            case sort_by.TOP:
+                order_by = default_sorting
+            case sort_by.NEW:
+                order_by = Topic.created_at.desc()
+            case sort_by.ALPHABETICAL:
+                order_by = Topic.name.asc()
+            case sort_by.REVERSE_ALPHABETICAL:
+                order_by = Topic.name.desc()
+            case _:
+                order_by = default_sorting
+
+        query_entities = [Topic]
+        if include_thread_count:
+            thread_count = sa.func.count(Topic.threads)
+            query_entities.append(thread_count)
+        return (
+            db.session.query(*query_entities)
+            .outerjoin(Thread)
+            .group_by(Topic.id)
+            .order_by(order_by)
+            .options(
+                load_only(
+                    Topic.description,
+                    Topic.is_private,
+                    Topic.name,
+                )
+            ).all()
+        )
+
     def has_subscribe_request_for(self, topic: Topic) -> bool:
         for sr in self.topic_subscribe_requests:
             if sr.topic == topic:
@@ -616,22 +653,22 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, 
             db.session.delete(vote)
             db.session.commit()
 
-    def get_comments(self):
+    def get_comments(self, sorting=sort_by.COMMENTS_DEFAULT):
+        default_sorting = sa.func.coalesce(sa.func.sum(CommentVote.value), 0).desc()
+        match sorting:
+            case sort_by.TOP:
+                order_by = default_sorting
+            case sort_by.NEW:
+                order_by = Comment.created_at.desc()
+            case _:
+                order_by = default_sorting
+
         return (
-            db.session.query(
-                Comment,
-            )
-            .filter_by(
-                thread=self,
-            )
+            db.session.query(Comment)
+            .filter_by(thread=self)
             .outerjoin(CommentVote)
             .group_by(Comment.id)
-            .order_by(
-                sa.func.coalesce(
-                    sa.func.sum(CommentVote.value),
-                    0,
-                ).desc(),
-            )
+            .order_by(order_by)
             .all()
         )
 
@@ -732,20 +769,22 @@ class Topic(db.Model, CreatedAtMixin):
         db.session.commit()
         return thread
 
-    def get_threads(self):
+    def get_threads(self, sorting=sort_by.THREADS_DEFAULT):
+        default_sorting = sa.func.coalesce(sa.func.sum(ThreadVote.value), 0).desc()
+        match sorting:
+            case sort_by.TOP:
+                order_by = default_sorting
+            case sort_by.NEW:
+                order_by = Thread.created_at.desc()
+            case _:
+                order_by = default_sorting
+
         return (
             db.session.query(Thread)
-            .filter_by(
-                topic=self,
-            )
+            .filter_by(topic=self)
             .outerjoin(ThreadVote)
             .group_by(Thread.id)
-            .order_by(
-                sa.func.coalesce(
-                    sa.func.sum(ThreadVote.value),
-                    0,
-                ).desc(),
-            )
+            .order_by(order_by)
             .all()
         )
 

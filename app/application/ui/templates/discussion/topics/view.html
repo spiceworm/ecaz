@@ -11,8 +11,10 @@
                 <li><a href="{{ url_for('ui_bp.create_topic') }}">[ new topic ]</a></li>
             </ul>
 
+            {{ sort_topics_form.sorting(class_="form-control") }}
+
             <div class="well">
-                {% for topic, topic_thread_count in query.all() %}
+                {% for topic, topic_thread_count in topics_thread_count %}
                     <ul class="list-group">
                         <li class="list-group-item">
                             {% if topic.is_private %}

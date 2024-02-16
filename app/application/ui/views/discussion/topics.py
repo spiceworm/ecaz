@@ -1,12 +1,7 @@
 import flask
-import sqlalchemy as sa
-from sqlalchemy.orm import load_only
 
-from application.models import (
-    db,
-    Thread,
-    Topic,
-)
+from application.constants import sort_by
+from application.models import Discussion
 from application.ui import forms
 
 
@@ -14,24 +9,14 @@ __all__ = ("view_topics",)
 
 
 def view_topics() -> str:
-    thread_count = sa.func.count(Topic.threads)
-
-    query = (
-        db.session.query(Topic, thread_count)
-        .outerjoin(Thread)
-        .group_by(Topic.id)
-        .order_by(thread_count.desc())
-        .options(
-            load_only(
-                Topic.description,
-                Topic.is_private,
-                Topic.name,
-            )
-        )
+    topics_sorting = flask.request.args.get("sorting", sort_by.TOPICS_DEFAULT)
+    topics_thread_count = Discussion.get_topics(
+        sorting=topics_sorting,
+        include_thread_count=True,
     )
-
     return flask.render_template(
         "discussion/topics/view.html",
-        query=query,
+        topics_thread_count=topics_thread_count,
         logout_form=forms.LogoutForm(),
+        sort_topics_form=forms.SortTopicsForm(sorting=topics_sorting),
     )

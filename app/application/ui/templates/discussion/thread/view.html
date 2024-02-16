@@ -34,7 +34,9 @@
                 </form>
             {% endif %}
 
-            {% for comment in thread.get_comments() %}
+            {{ sort_comments_form.sorting(class_="form-control") }}
+
+            {% for comment in comments %}
                 <!-- Only pass top level comments. All responses comments will be rendered recursively in the macro. -->
                 {% if not comment.parent %}
                     {{ render_comment(current_user, comment, create_comment_form) }}

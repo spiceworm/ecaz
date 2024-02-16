@@ -3,7 +3,10 @@ from typing import Union
 import flask
 import flask_login
 
-from application.constants import messages
+from application.constants import (
+    messages,
+    sort_by,
+)
 from application.models import (
     db,
     Thread,
@@ -68,9 +71,13 @@ def create_thread(topic=None) -> Union[str, flask.Response]:
 
 def view_thread(topic: str, thread_unique_id: str, slug: str) -> str:
     thread = db.one_or_404(Thread.query.filter_by(unique_id=thread_unique_id))
+    comments_sorting = flask.request.args.get("sorting", sort_by.COMMENTS_DEFAULT)
+    comments = thread.get_comments(sorting=comments_sorting)
     return flask.render_template(
         "discussion/thread/view.html",
+        comments=comments,
         create_comment_form=forms.CreateCommentForm(),
         thread=thread,
         logout_form=forms.LogoutForm(),
+        sort_comments_form=forms.SortCommentsForm(sorting=comments_sorting),
     )

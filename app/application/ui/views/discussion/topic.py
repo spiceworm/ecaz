@@ -3,7 +3,10 @@ from typing import Union
 import flask
 import flask_login
 
-from application.constants import messages
+from application.constants import (
+    messages,
+    sort_by,
+)
 from application.models import (
     db,
     Topic,
@@ -56,8 +59,15 @@ def view_topic(topic: str) -> str:
             if user.discussion.is_subscribed_to(topic) or user.discussion.is_moderator_of(topic):
                 template = "view.html"
 
+    threads = []
+    threads_sorting = flask.request.args.get("sorting", sort_by.THREADS_DEFAULT)
+    if template == "view.html":
+        threads = topic.get_threads(sorting=threads_sorting)
+
     return flask.render_template(
         f"discussion/topic/{template}",
         topic=topic,
+        threads=threads,
         logout_form=forms.LogoutForm(),
+        sort_threads_form=forms.SortThreadsForm(sorting=threads_sorting),
     )

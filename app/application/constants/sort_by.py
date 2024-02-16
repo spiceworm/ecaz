@@ -1,0 +1,7 @@
+ALPHABETICAL = "alphabetical_a-z"
+NEW = "new"
+REVERSE_ALPHABETICAL = "alphabetical_z-a"
+TOP = "top"
+COMMENTS_DEFAULT = TOP
+THREADS_DEFAULT = TOP
+TOPICS_DEFAULT = TOP

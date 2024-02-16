@@ -13,7 +13,9 @@
                 <li><a href="{{ url_for('ui_bp.create_thread', topic=topic.name) }}">[ new thread ]</a></li>
             </ul>
 
-            {% for thread in topic.get_threads() %}
+            {{ sort_threads_form.sorting(class_="form-control") }}
+
+            {% for thread in threads %}
                 {{ render_thread(current_user, thread, title_only=True, include_comment_count=True) }}
             {% endfor %}
         </div>
