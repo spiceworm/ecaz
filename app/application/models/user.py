@@ -116,6 +116,9 @@ class User(db.Model, flask_login.UserMixin):
         )
         db.session.commit()
 
+    def __repr__(self):  # pragma: no cover
+        return f"User(username={self.username})"
+
     @property
     def humanized_created_at(self) -> str:
         return humanize.naturaltime(self.created_at)

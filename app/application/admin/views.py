@@ -24,6 +24,30 @@ class AuthTokenModelView(ModelView):
     can_edit = False
 
 
+class BanModelView(ModelView):
+    can_view_details = True
+
+
+class CommentModelView(ModelView):
+    can_view_details = True
+
+
+class DiscussionModelView(ModelView):
+    can_view_details = True
+
+
+class ThreadModelView(ModelView):
+    can_view_details = True
+
+
+class TopicModelView(ModelView):
+    can_view_details = True
+
+
+class TopicSubscribeRequest(ModelView):
+    can_view_details = True
+
+
 class UserModelView(ModelView):
     can_create = False
     can_edit = False

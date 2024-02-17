@@ -61,6 +61,9 @@ class AuthToken(db.Model):
         nullable=False,
     )
 
+    def __repr__(self):  # pragma: no cover
+        return f"AuthToken(name={self.name}, user={self.user})"
+
     @classmethod
     def create(cls, user, name, tags=None, meta=None, expires_delta=False) -> AuthToken:
         token_value = flask_jwt_extended.create_access_token(

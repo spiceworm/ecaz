@@ -17,9 +17,15 @@ def create_app() -> flask.Flask:
     from application.cli import cli_bp
     from application.models import (
         AuthToken,
+        Ban,
+        Comment,
         db,
+        Discussion,
         marshmallow,
         migrate,
+        Thread,
+        Topic,
+        TopicSubscribeRequest,
         User,
     )
     from application.util.misc import csv_to_list
@@ -37,6 +43,7 @@ def create_app() -> flask.Flask:
         PROD = decouple.config("PROD", cast=bool, default=False)
         TESTING = decouple.config("TESTING", cast=bool, default=False)
 
+        FLASK_ADMIN_FLUID_LAYOUT = decouple.config("FLASK_ADMIN_FLUID_LAYOUT", cast=bool, default=True)
         FLASK_ADMIN_SWATCH = decouple.config("FLASK_ADMIN_SWATCH", default="cerulean")
         WTF_CSRF_ENABLED = decouple.config("WTF_CSRF_ENABLED", cast=bool, default=True)
 
@@ -120,6 +127,12 @@ def create_app() -> flask.Flask:
     )
     admin.add_link(flask_admin.base.MenuLink(name="Site", url="/"))
     admin.add_view(admin_views.AuthTokenModelView(AuthToken, db.session))
+    admin.add_view(admin_views.BanModelView(Ban, db.session))
+    admin.add_view(admin_views.CommentModelView(Comment, db.session))
+    admin.add_view(admin_views.DiscussionModelView(Discussion, db.session))
+    admin.add_view(admin_views.ThreadModelView(Thread, db.session))
+    admin.add_view(admin_views.TopicModelView(Topic, db.session))
+    admin.add_view(admin_views.TopicSubscribeRequest(TopicSubscribeRequest, db.session))
     admin.add_view(admin_views.UserModelView(User, db.session))
 
     db.init_app(app)

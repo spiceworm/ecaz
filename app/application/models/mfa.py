@@ -77,6 +77,9 @@ class MFA(db.Model):
         )
         db.session.commit()
 
+    def __repr__(self):  # pragma: no cover
+        return f"MFA({self.user=})"
+
 
 class Totp(db.Model):
     id: Mapped[int] = mapped_column(
@@ -105,6 +108,9 @@ class Totp(db.Model):
         ),
         default=pyotp.random_base32,
     )
+
+    def __repr__(self):  # pragma: no cover
+        return f"Totp({self.mfa=}, {self.enabled=})"
 
     def generate_qr_code(self) -> str:
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -185,6 +191,9 @@ class WebAuthn(db.Model):
         ),
         default=user_handle_default,
     )
+
+    def __repr__(self):  # pragma: no cover
+        return f"WebAuthn(mfa={self.mfa}, enabled={self.enabled})"
 
     @property
     def challenge(self) -> ByteString:

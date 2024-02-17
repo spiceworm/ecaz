@@ -139,6 +139,9 @@ class CommentVote(db.Model):
         sa.Integer,
     )  # 1 or -1
 
+    def __repr__(self):  # pragma: no cover
+        return f"CommentVote(discussion={self.discussion}, value={self.value})"
+
 
 class ThreadVote(db.Model):
     id: Mapped[int] = mapped_column(
@@ -162,6 +165,9 @@ class ThreadVote(db.Model):
     value = sa.Column(
         sa.Integer,
     )  # 1 or -1
+
+    def __repr__(self):  # pragma: no cover
+        return f"ThreadVote(discussion={self.discussion}, value={self.value})"
 
 
 class BodyMixin:
@@ -284,6 +290,9 @@ class Ban(db.Model, CreatedAtMixin):
         sa.String,
     )
 
+    def __repr__(self):  # pragma: no cover
+        return f"Ban(discussion={self.discussion}, topic={self.topic}, is_shadow={self.is_shadow})"
+
     @property
     def humanized_expires_at(self) -> str:
         if not self.expires_at:
@@ -351,6 +360,9 @@ class Comment(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin,
         back_populates="comment",
         cascade="all, delete-orphan",
     )
+
+    def __repr__(self):  # pragma: no cover
+        return f"Comment(discussion={self.discussion}, unique_id={self.unique_id})"
 
     def create_comment(self, body: str, discussion: Discussion, **kwargs) -> Comment:
         c = Comment(body=body, discussion=discussion, parent=self, thread=self.thread, **kwargs)
@@ -487,6 +499,9 @@ class Discussion(db.Model):
         cascade="all, delete-orphan",
     )
 
+    def __repr__(self):  # pragma: no cover
+        return f"Discussion(user={self.user})"
+
     def add_subscription(self, topic: Topic) -> None:
         if not self.is_subscribed_to(topic):
             self.subscriptions.append(topic)
@@ -546,7 +561,8 @@ class Discussion(db.Model):
                     Topic.is_private,
                     Topic.name,
                 )
-            ).all()
+            )
+            .all()
         )
 
     def has_subscribe_request_for(self, topic: Topic) -> bool:
@@ -632,6 +648,9 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, 
         back_populates="thread",
         cascade="all, delete-orphan",
     )
+
+    def __repr__(self):  # pragma: no cover
+        return f"Thread(discussion={self.discussion}, unique_id={self.unique_id})"
 
     def create_comment(self, body: str, discussion: Discussion, **kwargs) -> Comment:
         c = Comment(body=body, discussion=discussion, thread=self, **kwargs)
@@ -749,6 +768,9 @@ class Topic(db.Model, CreatedAtMixin):
         cascade="all, delete-orphan",
     )
 
+    def __repr__(self):  # pragma: no cover
+        return f"Topic(name={self.name}, is_private={self.is_private})"
+
     def add_moderator(self, discussion: Discussion) -> None:
         self.moderators.append(discussion)
         db.session.add(self)
@@ -808,6 +830,9 @@ class TopicSubscribeRequest(db.Model, CreatedAtMixin):
         sa.ForeignKey("discussion.id"),
         nullable=False,
     )
+
+    def __repr__(self):  # pragma: no cover
+        return f"TopicSubscribeRequest(discussion={self.discussion}, topic={self.topic})"
 
     def approve(self, discussion: Discussion):
         if discussion.is_moderator_of(self.topic):
