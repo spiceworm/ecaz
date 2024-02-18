@@ -168,6 +168,34 @@ class TestModerationTopicBans:
         assert resp.request.base_url == url_for("ui_bp.profile")
 
 
+class TestModerationTopicSettings:
+    endpoint = "ui_bp.moderation_topic_settings"
+
+    def test_get(self, topic, ui_user):
+        u = ui_user()
+        t = topic(moderators=[u.discussion])
+        url = url_for(self.endpoint, topic=t.name)
+        resp = u.get(url)
+        assert resp.request.base_url == url
+
+    def test_get_if_not_moderator_of_topic(self, topic, ui_user):
+        user = ui_user()
+        topic(name="t1", moderators=[user.discussion])
+        t = topic(name="t2")
+        url = url_for(self.endpoint, topic=t.name)
+        resp = user.get(url, follow_redirects=True)
+        assert len(resp.history) == 1
+        assert resp.request.base_url == url_for("ui_bp.profile")
+
+    def test_get_if_topic_does_not_exist(self, topic, ui_user):
+        user = ui_user()
+        topic(moderators=[user.discussion])
+        url = url_for(self.endpoint, topic="does-not-exist")
+        resp = user.get(url, follow_redirects=True)
+        assert len(resp.history) == 1
+        assert resp.request.base_url == url_for("ui_bp.profile")
+
+
 class TestModerationTopicSubscribeRequests:
     endpoint = "ui_bp.moderation_topic_subscribe_requests"
 

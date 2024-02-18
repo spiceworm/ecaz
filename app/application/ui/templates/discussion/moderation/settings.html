@@ -1,0 +1,21 @@
+{% extends "bases/discussion_base.html" %}
+
+
+{% block middle_panel %}
+    {{ super() }}
+
+    <div class="panel panel-primary">
+        <div class="panel-body">
+            <ul class="breadcrumb">
+                <li><a>discussion</a></li>
+                <li><a href="{{ url_for('ui_bp.moderation_home') }}">moderation</a></li>
+                <li><a href="{{ url_for('ui_bp.moderation_topic', topic=topic.name) }}">{{ topic.name }}</a></li>
+                <li class="active"><a href="{{ url_for('ui_bp.moderation_topic_settings', topic=topic.name) }}">settings</a></li>
+            </ul>
+
+            <div class="well">
+                <h3>Settings for {{ topic.name }}</h3>
+            </div>
+        </div>
+    </div>
+{% endblock %}

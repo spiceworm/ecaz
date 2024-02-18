@@ -16,6 +16,7 @@
                 <h3>Moderation tools for {{ topic.name }}</h3>
 
                 <a href="{{ url_for('ui_bp.moderation_topic_bans', topic=topic.name) }}">Bans</a>
+                <a href="{{ url_for('ui_bp.moderation_topic_settings', topic=topic.name) }}">Settings</a>
                 {% if topic.is_private %}
                     <a href="{{ url_for('ui_bp.moderation_topic_subscribe_requests', topic=topic.name) }}">Subscribe Requests</a>
                 {% endif %}

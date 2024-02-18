@@ -20,7 +20,7 @@ class TestBan:
         "expires_at, exp",
         [
             (None, expires.NEVER),
-            (datetime.now(tz=timezone.utc) + timedelta(days=7, minutes=1), "7 days from now"),
+            (datetime.now(tz=timezone.utc) + timedelta(days=7, hours=1), "7 days from now"),
         ],
     )
     def test_humanized_expires_at(self, topic, user, expires_at, exp):
