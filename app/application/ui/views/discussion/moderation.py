@@ -105,7 +105,7 @@ def moderation_topic_settings(topic):
                 db.session.commit()
                 flask.flash(messages.TOPIC_SETTINGS_UPDATED, category="info")
             return flask.render_template(
-                "discussion/moderation/settings.html",
+                "discussion/moderation/topic_settings.html",
                 moderate_topic_settings_form=form,
                 topic=_topic,
                 logout_form=forms.LogoutForm(),
