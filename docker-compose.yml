@@ -29,7 +29,7 @@ services:
       - ./app:/app
 
   db:
-    image: postgres:15.5-bookworm
+    image: postgres:16.1-bookworm
     environment: *env
     networks:
       default:
