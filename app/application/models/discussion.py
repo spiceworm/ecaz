@@ -527,7 +527,7 @@ class Discussion(db.Model):
 
     def get_ban_for(self, topic: Topic) -> Union[TopicBan, None]:
         for ban in self.topic_bans:
-            if ban.topic == topic:
+            if ban.topic == topic and ban.is_active:
                 return ban
         return
 
@@ -573,7 +573,7 @@ class Discussion(db.Model):
 
     def is_banned_from(self, topic: Topic) -> bool:
         for ban in self.topic_bans:
-            if ban.topic == topic:
+            if ban.topic == topic and ban.is_active:
                 return True
         return False
 
@@ -582,7 +582,7 @@ class Discussion(db.Model):
 
     def is_shadow_banned_from(self, topic: Topic) -> bool:
         for ban in self.topic_bans:
-            if ban.topic == topic:
+            if ban.topic == topic and ban.is_active:
                 return ban.is_shadow
         return False
 

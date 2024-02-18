@@ -156,6 +156,19 @@ class TestDiscussion:
         assert u1.discussion.get_ban_for(t) is None
         assert u2.discussion.get_ban_for(t) == b
 
+    def test_get_ban_for_if_ban_inactive(self, topic, user):
+        u1 = user()
+        u2 = user()
+        t = topic(moderators=[u1.discussion])
+        b = t.create_ban(
+            created_by=u1.discussion,
+            discussion=u2.discussion,
+            expires_at=datetime.now(tz=timezone.utc) - timedelta(minutes=1),
+            reason="testing",
+        )
+        assert not b.is_active
+        assert u2.discussion.get_ban_for(t) is None
+
     def test_is_banned_from(self, topic, user):
         u1 = user()
         u2 = user()
@@ -164,6 +177,19 @@ class TestDiscussion:
         assert u2.discussion.is_banned_from(t)
         assert not u1.discussion.is_banned_from(t)
 
+    def test_is_banned_from_if_inactive_bans_exist(self, topic, user):
+        u1 = user()
+        u2 = user()
+        t = topic(moderators=[u1.discussion])
+        b = t.create_ban(
+            created_by=u1.discussion,
+            discussion=u2.discussion,
+            expires_at=datetime.now(tz=timezone.utc) - timedelta(minutes=1),
+            reason="testing",
+        )
+        assert not b.is_active
+        assert not u2.discussion.is_banned_from(t)
+
     def test_is_shadow_banned_from(self, topic, user):
         u1 = user()
         u2 = user()
@@ -171,6 +197,20 @@ class TestDiscussion:
         b = t.create_ban(created_by=u1.discussion, discussion=u2.discussion, reason="testing", is_shadow=True)
         assert not u1.discussion.is_shadow_banned_from(t)
         assert u2.discussion.is_shadow_banned_from(t)
+
+    def test_is_shadow_banned_from_if_inactive_bans_exist(self, topic, user):
+        u1 = user()
+        u2 = user()
+        t = topic(moderators=[u1.discussion])
+        b = t.create_ban(
+            created_by=u1.discussion,
+            discussion=u2.discussion,
+            expires_at=datetime.now(tz=timezone.utc) - timedelta(minutes=1),
+            is_shadow=True,
+            reason="testing",
+        )
+        assert not b.is_active
+        assert not u2.discussion.is_shadow_banned_from(t)
 
     def test_is_subscribed_to(self, topic, user):
         u = user()
