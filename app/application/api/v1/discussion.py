@@ -9,13 +9,13 @@ import flask_restful
 from flask_restful import reqparse
 
 from application.models import (
-    Ban,
     Comment,
     CommentSchema,
     db,
     Thread,
     ThreadSchema,
     Topic,
+    TopicBan,
     TopicSchema,
     TopicSubscribeRequest,
     User,
@@ -143,7 +143,7 @@ class TopicBanApi(flask_restful.Resource):
                     parser = reqparse.RequestParser()
                     parser.add_argument("topic_ban_id", type=int, required=True)
                     args = parser.parse_args()
-                    if ban := Ban.query.filter_by(id=args.topic_ban_id).one_or_none():
+                    if ban := TopicBan.query.filter_by(id=args.topic_ban_id).one_or_none():
                         db.session.delete(ban)
                         db.session.commit()
                         return {}, http.HTTPStatus.OK

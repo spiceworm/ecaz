@@ -8,7 +8,7 @@ import pytest
 import sqlalchemy as sa
 
 from application.constants import expires
-from application.models import Ban
+from application.models import TopicBan
 from application.util.exceptions import (
     ModeratorRequired,
     TopicSubscribeRequestError,
@@ -60,7 +60,7 @@ class TestBanIsActive:
         _topic = topic(moderators=[d1])
         b = _topic.create_ban(created_by=d1, discussion=d2, expires_at=expires_at)
         expected_bool = sa.true() if is_active else sa.false()
-        assert Ban.query.filter(Ban.is_active == expected_bool).all() == [b]
+        assert TopicBan.query.filter(TopicBan.is_active == expected_bool).all() == [b]
 
 
 class TestComment:
@@ -372,10 +372,10 @@ class TestRelation:
         b2 = topic1.create_ban(created_by=d0, discussion=d2)
         b3 = topic2.create_ban(created_by=d0, discussion=d1)
         assert topic1.bans == [b1, b2]
-        assert d0.created_bans == [b1, b2, b3]
-        assert d0.bans == []
-        assert d1.bans == [b1, b3]
-        assert d2.bans == [b2]
+        assert d0.created_topic_bans == [b1, b2, b3]
+        assert d0.topic_bans == []
+        assert d1.topic_bans == [b1, b3]
+        assert d2.topic_bans == [b2]
         assert b1.discussion is d1
         assert b2.discussion is d2
         assert b3.discussion is d1
@@ -450,11 +450,11 @@ class TestRelation:
         topic2 = topic(name="t2", moderators=[d1])
         b1 = topic1.create_ban(created_by=d1, discussion=d2, is_shadow=True)
         b2 = topic2.create_ban(created_by=d1, discussion=d2, is_shadow=True)
-        assert d2.bans == [b1, b2]
+        assert d2.topic_bans == [b1, b2]
         assert b1.discussion is d2
         assert b2.discussion is d2
-        assert d2.bans[0].is_shadow
-        assert d2.bans[1].is_shadow
+        assert d2.topic_bans[0].is_shadow
+        assert d2.topic_bans[1].is_shadow
 
     def test_multiple_comments_to_multiple_users(self, thread, user):
         d1 = user().discussion

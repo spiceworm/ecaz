@@ -140,7 +140,7 @@ class TestModerationTopicBans:
             },
         )
         assert u2.discussion.is_banned_from(t)
-        assert u2.discussion.bans[0].expires_at is not None
+        assert u2.discussion.topic_bans[0].expires_at is not None
         assert resp.request.base_url == url
 
     def test_get(self, topic, ui_user):

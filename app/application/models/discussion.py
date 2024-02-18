@@ -37,11 +37,11 @@ from application.util.exceptions import (
 
 
 __all__ = (
-    "Ban",
     "Comment",
     "Discussion",
     "Thread",
     "Topic",
+    "TopicBan",
     "TopicSubscribeRequest",
 )
 
@@ -251,7 +251,7 @@ class VotingMixin:
         )
 
 
-class Ban(db.Model, CreatedAtMixin):
+class TopicBan(db.Model, CreatedAtMixin):
     """Object used to represent the action of banning a `User.discussion` from a `Topic`"""
 
     id: Mapped[int] = mapped_column(
@@ -291,7 +291,7 @@ class Ban(db.Model, CreatedAtMixin):
     )
 
     def __repr__(self):  # pragma: no cover
-        return f"Ban(discussion={self.discussion}, topic={self.topic}, is_shadow={self.is_shadow})"
+        return f"TopicBan(discussion={self.discussion}, topic={self.topic}, is_shadow={self.is_shadow})"
 
     @property
     def humanized_expires_at(self) -> str:
@@ -443,17 +443,13 @@ class Discussion(db.Model):
         nullable=False,
         primary_key=True,
     )
-    bans: Mapped[List["Ban"]] = relationship(
-        cascade="all, delete-orphan",
-        foreign_keys=[Ban.discussion_id],
-    )
     comments: Mapped[List["Comment"]] = relationship(
         back_populates="discussion",
         cascade="all, delete-orphan",
     )
-    created_bans: Mapped[List["Ban"]] = relationship(
+    created_topic_bans: Mapped[List["TopicBan"]] = relationship(
         cascade="all, delete-orphan",
-        foreign_keys=[Ban.created_by_id],
+        foreign_keys=[TopicBan.created_by_id],
     )
     is_banned = sa.Column(
         sa.Boolean,
@@ -478,6 +474,10 @@ class Discussion(db.Model):
     threads: Mapped[List["Thread"]] = relationship(
         back_populates="discussion",
         cascade="all, delete-orphan",
+    )
+    topic_bans: Mapped[List["TopicBan"]] = relationship(
+        cascade="all, delete-orphan",
+        foreign_keys=[TopicBan.discussion_id],
     )
     topic_subscribe_requests: Mapped[List["TopicSubscribeRequest"]] = relationship(
         back_populates="discussion",
@@ -525,8 +525,8 @@ class Discussion(db.Model):
         db.session.commit()
         return t
 
-    def get_ban_for(self, topic: Topic) -> Union[Ban, None]:
-        for ban in self.bans:
+    def get_ban_for(self, topic: Topic) -> Union[TopicBan, None]:
+        for ban in self.topic_bans:
             if ban.topic == topic:
                 return ban
         return
@@ -572,7 +572,7 @@ class Discussion(db.Model):
         return False
 
     def is_banned_from(self, topic: Topic) -> bool:
-        for ban in self.bans:
+        for ban in self.topic_bans:
             if ban.topic == topic:
                 return True
         return False
@@ -581,7 +581,7 @@ class Discussion(db.Model):
         return self in topic.moderators
 
     def is_shadow_banned_from(self, topic: Topic) -> bool:
-        for ban in self.bans:
+        for ban in self.topic_bans:
             if ban.topic == topic:
                 return ban.is_shadow
         return False
@@ -729,7 +729,7 @@ class Topic(db.Model, CreatedAtMixin):
         nullable=False,
         primary_key=True,
     )
-    bans: Mapped[List["Ban"]] = relationship(
+    bans: Mapped[List["TopicBan"]] = relationship(
         back_populates="topic",
         cascade="all, delete-orphan",
     )
@@ -776,9 +776,9 @@ class Topic(db.Model, CreatedAtMixin):
         db.session.add(self)
         db.session.commit()
 
-    def create_ban(self, created_by: Discussion, discussion: Discussion, **kwargs) -> Ban:
+    def create_ban(self, created_by: Discussion, discussion: Discussion, **kwargs) -> TopicBan:
         if created_by.is_moderator_of(self):
-            ban = Ban(created_by=created_by, discussion=discussion, topic=self, **kwargs)
+            ban = TopicBan(created_by=created_by, discussion=discussion, topic=self, **kwargs)
             db.session.add(ban)
             db.session.commit()
             return ban

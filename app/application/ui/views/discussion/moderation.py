@@ -12,9 +12,9 @@ from application.constants import (
     messages,
 )
 from application.models import (
-    Ban,
     db,
     Topic,
+    TopicBan,
     User,
 )
 from application.ui import forms
@@ -69,7 +69,7 @@ def moderation_topic_bans(topic):
                 # We have already validated that `form.username` corresponds to an existing `User`
                 banned_user = User.query.filter_by(username=form.username.data).first()
 
-                if Ban.query.filter_by(discussion=banned_user.discussion, topic=_topic).one_or_none():
+                if TopicBan.query.filter_by(discussion=banned_user.discussion, topic=_topic).one_or_none():
                     flask.flash(message=messages.BAN_ALREADY_EXISTS_FOR_USER, category="error")
                 else:
                     _topic.create_ban(
@@ -81,7 +81,7 @@ def moderation_topic_bans(topic):
                     )
 
             return flask.render_template(
-                "discussion/moderation/bans.html",
+                "discussion/moderation/topic_bans.html",
                 create_topic_ban_form=form,
                 topic=_topic,
                 logout_form=forms.LogoutForm(),

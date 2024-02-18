@@ -24,10 +24,6 @@ class AuthTokenModelView(ModelView):
     can_edit = False
 
 
-class BanModelView(ModelView):
-    can_view_details = True
-
-
 class CommentModelView(ModelView):
     can_view_details = True
 
@@ -41,6 +37,10 @@ class ThreadModelView(ModelView):
 
 
 class TopicModelView(ModelView):
+    can_view_details = True
+
+
+class TopicBanModelView(ModelView):
     can_view_details = True
 
 

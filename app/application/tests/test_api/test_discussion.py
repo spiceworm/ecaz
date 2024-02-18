@@ -343,30 +343,30 @@ class TestTopicBanApi:
         u2 = api_user()
         t = topic(moderators=[u1.discussion])
         ban = t.create_ban(created_by=u1.discussion, discussion=u2.discussion)
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
         resp = u1.delete(url_for(self.endpoint, topic=t.name), json={"topic_ban_id": ban.id})
         assert resp.status_code == http.HTTPStatus.OK
-        assert u2.discussion.bans == []
+        assert u2.discussion.topic_bans == []
 
     def test_delete_if_invalid_topic(self, api_user, topic):
         u1 = api_user()
         u2 = api_user()
         t = topic(moderators=[u1.discussion])
         ban = t.create_ban(created_by=u1.discussion, discussion=u2.discussion)
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
         resp = u1.delete(url_for(self.endpoint, topic="this-is-invalid"), json={"topic_ban_id": ban.id + 1})
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
 
     def test_delete_if_invalid_topic_ban_id(self, api_user, topic):
         u1 = api_user()
         u2 = api_user()
         t = topic(moderators=[u1.discussion])
         ban = t.create_ban(created_by=u1.discussion, discussion=u2.discussion)
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
         resp = u1.delete(url_for(self.endpoint, topic=t.name), json={"topic_ban_id": ban.id + 1})
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
 
     def test_delete_if_invalid_user(self, bad_auth_token_api_user, api_user, topic):
         u0 = bad_auth_token_api_user()
@@ -374,20 +374,20 @@ class TestTopicBanApi:
         u2 = api_user()
         t = topic(moderators=[u1.discussion])
         ban = t.create_ban(created_by=u1.discussion, discussion=u2.discussion)
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
         resp = u0.delete(url_for(self.endpoint, topic=t.name), json={"topic_ban_id": ban.id})
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
 
     def test_delete_if_not_moderator(self, api_user, topic):
         u1 = api_user()
         u2 = api_user()
         t = topic(moderators=[u1.discussion])
         ban = t.create_ban(created_by=u1.discussion, discussion=u2.discussion)
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
         resp = u2.delete(url_for(self.endpoint, topic=t.name), json={"topic_ban_id": ban.id})
         assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
-        assert u2.discussion.bans == [ban]
+        assert u2.discussion.topic_bans == [ban]
 
 
 class TestTopicSubscribeApi:
