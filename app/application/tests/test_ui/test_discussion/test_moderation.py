@@ -195,6 +195,22 @@ class TestModerationTopicSettings:
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.profile")
 
+    def test_update_settings(self, topic, ui_user):
+        u = ui_user()
+        t = topic(moderators=[u.discussion])
+        url = url_for(self.endpoint, topic=t.name)
+        resp = u.post(
+            url,
+            data={
+                "description": "new-description",
+                "is_private": True,
+            }
+        )
+        assert messages.TOPIC_SETTINGS_UPDATED in resp.data.decode()
+        assert resp.request.base_url == url
+        assert t.is_private
+        assert t.description == "new-description"
+
 
 class TestModerationTopicSubscribeRequests:
     endpoint = "ui_bp.moderation_topic_subscribe_requests"

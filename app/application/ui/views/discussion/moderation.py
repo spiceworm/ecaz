@@ -13,6 +13,7 @@ from application.constants import (
 )
 from application.models import (
     Ban,
+    db,
     Topic,
     User,
 )
@@ -93,8 +94,19 @@ def moderation_topic_bans(topic):
 def moderation_topic_settings(topic):
     if _topic := Topic.query.filter_by(name=topic).one_or_none():
         if flask_login.current_user.discussion.is_moderator_of(_topic):
+            form = forms.ModerateTopicSettingsForm(
+                description=_topic.description,
+                is_private=_topic.is_private,
+            )
+            if form.validate_on_submit():
+                _topic.description = form.description.data
+                _topic.is_private = form.is_private.data
+                db.session.add(_topic)
+                db.session.commit()
+                flask.flash(messages.TOPIC_SETTINGS_UPDATED, category="info")
             return flask.render_template(
                 "discussion/moderation/settings.html",
+                moderate_topic_settings_form=form,
                 topic=_topic,
                 logout_form=forms.LogoutForm(),
             )

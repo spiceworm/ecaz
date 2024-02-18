@@ -24,6 +24,7 @@ __all__ = (
     "CreateThreadForm",
     "CreateTopicForm",
     "CreateTopicBanForm",
+    "ModerateTopicSettingsForm",
     "SortCommentsForm",
     "SortThreadsForm",
     "SortTopicsForm",
@@ -86,6 +87,14 @@ class CreateTopicBanForm(ExpiresAtMixin, BaseForm):
             require_valid_user,
         ],
     )
+
+
+class ModerateTopicSettingsForm(BaseForm):
+    description = StringField(
+        validators=[validators.DataRequired()],
+        widget=TextArea(),
+    )
+    is_private = BooleanField()
 
 
 class SortCommentsForm(BaseForm):

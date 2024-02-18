@@ -15,6 +15,34 @@
 
             <div class="well">
                 <h3>Settings for {{ topic.name }}</h3>
+
+                <form action="{{ url_for('ui_bp.moderation_topic_settings', topic=topic.name) }}" method="post">
+                    {{ moderate_topic_settings_form.csrf_token }}
+
+                    <div class="form-group">
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="description">Description</label>
+                                <div class="col-lg-10">
+                                    {{ moderate_topic_settings_form.description(class_="form-control") }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <label class="col-lg-2 control-label" for="is_private">Is Private</label>
+                                <div class="col-lg-offset-2">
+                                    {{ moderate_topic_settings_form.is_private() }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-offset-2">
+                                    <button class="btn btn-primary" type="submit" id="submit" name="submit">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
