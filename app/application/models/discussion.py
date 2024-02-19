@@ -20,6 +20,7 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
+    synonym,
 )
 
 from application.constants import (
@@ -116,60 +117,6 @@ topic_moderators = db.Table(
 )
 
 
-class CommentVote(db.Model):
-    id: Mapped[int] = mapped_column(
-        nullable=False,
-        primary_key=True,
-    )
-    comment: Mapped["Comment"] = relationship(
-        back_populates="votes",
-    )
-    comment_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("comment.id"),
-        nullable=False,
-    )
-    discussion: Mapped["Discussion"] = relationship(
-        back_populates="comment_votes",
-    )
-    discussion_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("discussion.id"),
-        nullable=False,
-    )
-    value = sa.Column(
-        sa.Integer,
-    )  # 1 or -1
-
-    def __repr__(self):  # pragma: no cover
-        return f"CommentVote(discussion={self.discussion}, value={self.value})"
-
-
-class ThreadVote(db.Model):
-    id: Mapped[int] = mapped_column(
-        nullable=False,
-        primary_key=True,
-    )
-    discussion: Mapped["Discussion"] = relationship(
-        back_populates="thread_votes",
-    )
-    discussion_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("discussion.id"),
-        nullable=False,
-    )
-    thread: Mapped["Thread"] = relationship(
-        back_populates="votes",
-    )
-    thread_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("thread.id"),
-        nullable=False,
-    )
-    value = sa.Column(
-        sa.Integer,
-    )  # 1 or -1
-
-    def __repr__(self):  # pragma: no cover
-        return f"ThreadVote(discussion={self.discussion}, value={self.value})"
-
-
 class BodyMixin:
     body = sa.Column(
         sa.String,
@@ -204,6 +151,62 @@ class UniqueIdMixin:
         index=True,
         unique=True,
     )
+
+
+class CommentVote(CreatedAtMixin, db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    comment: Mapped["Comment"] = relationship(
+        back_populates="votes",
+    )
+    comment_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("comment.id"),
+        nullable=False,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="comment_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    submission = synonym("comment")
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
+
+    def __repr__(self):  # pragma: no cover
+        return f"CommentVote(discussion={self.discussion}, value={self.value})"
+
+
+class ThreadVote(CreatedAtMixin, db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    discussion: Mapped["Discussion"] = relationship(
+        back_populates="thread_votes",
+    )
+    discussion_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("discussion.id"),
+        nullable=False,
+    )
+    submission = synonym("thread")
+    thread: Mapped["Thread"] = relationship(
+        back_populates="votes",
+    )
+    thread_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("thread.id"),
+        nullable=False,
+    )
+    value = sa.Column(
+        sa.Integer,
+    )  # 1 or -1
+
+    def __repr__(self):  # pragma: no cover
+        return f"ThreadVote(discussion={self.discussion}, value={self.value})"
 
 
 class VotingMixin:

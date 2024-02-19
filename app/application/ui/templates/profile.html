@@ -1,17 +1,28 @@
 {% extends "bases/discussion_base.html" %}
+{% from "macros.html" import render_comment, render_thread %}
 
 
 {% block middle_panel %}
     {{ super() }}
     <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h3 class="panel-title">Discussion</h3>
-        </div>
-
         <div class="panel-body">
-            <button class="btn btn-primary" onclick="window.location.href='{{ url_for("ui_bp.view_topics") }}'">
-                Browse Topics
+            <button class="btn btn-default" onclick="window.location.href='{{ url_for("ui_bp.profile_submissions") }}'">
+                Submissions
             </button>
+            <button class="btn btn-default" onclick="window.location.href='{{ url_for("ui_bp.profile_saved") }}'">
+                Saved Posts
+            </button>
+            <button class="btn btn-default" onclick="window.location.href='{{ url_for("ui_bp.profile_votes") }}'">
+                Votes
+            </button>
+
+            {% for obj in objects %}
+                {% if obj.__class__.__name__ == "Comment" %}
+                    {{ render_comment(current_user, obj, create_comment_form, render_child_comments=False, show_thread_details=True) }}
+                {% else %}
+                    {{ render_thread(current_user, obj) }}
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

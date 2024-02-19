@@ -26,7 +26,6 @@ ui_bp.add_url_rule(
     view_func=views.moderation_topic_subscribe_requests,
     methods=[GET, POST],
 )
-ui_bp.add_url_rule("/discussion/saved", view_func=views.view_saved, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics", view_func=views.view_topics, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>", view_func=views.view_topic, methods=[GET])
 ui_bp.add_url_rule("/discussion/topics/<topic>/<thread_unique_id>/<slug>", view_func=views.view_thread, methods=[GET])
@@ -50,7 +49,12 @@ ui_bp.add_url_rule("/login/mfa/webauthn/<jwt>", view_func=views.webauthn_login, 
 ui_bp.add_url_rule("/logout", view_func=views.logout, methods=[POST])
 ui_bp.add_url_rule("/register", view_func=views.register, methods=[GET, POST])
 ui_bp.add_url_rule("/reset_password/<jwt>", view_func=views.reset_password, methods=[GET, POST])
+
 ui_bp.add_url_rule("/profile", view_func=views.profile, methods=[GET])
+ui_bp.add_url_rule("/profile/saved", view_func=views.profile_saved, methods=[GET])
+ui_bp.add_url_rule("/profile/submissions", view_func=views.profile_submissions, methods=[GET])
+ui_bp.add_url_rule("/profile/votes", view_func=views.profile_votes, methods=[GET])
+
 ui_bp.add_url_rule("/settings", view_func=views.settings, methods=[GET])
 ui_bp.add_url_rule("/settings/auth_token", view_func=views.auth_token_settings, methods=[GET])
 ui_bp.add_url_rule("/settings/auth_token/create", view_func=views.create_auth_token, methods=[POST])
