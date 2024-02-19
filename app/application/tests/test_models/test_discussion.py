@@ -7,7 +7,10 @@ from datetime import (
 import pytest
 import sqlalchemy as sa
 
-from application.constants import expires
+from application.constants import (
+    expires,
+    sort_by,
+)
 from application.models import TopicBan
 from application.util.exceptions import (
     ModeratorRequired,
@@ -72,15 +75,43 @@ class TestComment:
         c3 = c0.create_comment(body="c3", discussion=d)
         assert c0.get_comments() == [c1, c2, c3]
 
-    def test_get_comments_default_ordering(self, comment, user):
+    def test_get_comments_order_by_default(self, comment, user):
         d = user().discussion
         c0 = comment(discussion=d)
         c1 = c0.create_comment(body="c1", discussion=d)
         c2 = c0.create_comment(body="c2", discussion=d)
         c3 = c0.create_comment(body="c3", discussion=d)
-        c3.upvote(discussion=d)
+        c2.upvote(discussion=d)
         c1.downvote(discussion=d)
-        assert c0.get_comments() == [c3, c2, c1]
+        assert c0.get_comments(sorting=sort_by.COMMENTS_DEFAULT) == [c2, c3, c1]
+
+    def test_get_comments_order_by_invalid(self, comment, user):
+        d = user().discussion
+        c0 = comment(discussion=d)
+        c1 = c0.create_comment(body="c1", discussion=d)
+        c2 = c0.create_comment(body="c2", discussion=d)
+        c3 = c0.create_comment(body="c3", discussion=d)
+        c2.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert c0.get_comments(sorting="invalid-triggers-default") == [c2, c3, c1]
+
+    def test_get_comments_order_by_new(self, comment, user):
+        d = user().discussion
+        c0 = comment(discussion=d)
+        c1 = c0.create_comment(body="c1", discussion=d)
+        c2 = c0.create_comment(body="c2", discussion=d)
+        c3 = c0.create_comment(body="c3", discussion=d)
+        assert c0.get_comments(sorting=sort_by.NEW) == [c3, c2, c1]
+
+    def test_get_comments_order_by_top(self, comment, user):
+        d = user().discussion
+        c0 = comment(discussion=d)
+        c1 = c0.create_comment(body="c1", discussion=d)
+        c2 = c0.create_comment(body="c2", discussion=d)
+        c3 = c0.create_comment(body="c3", discussion=d)
+        c2.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert c0.get_comments(sorting=sort_by.TOP) == [c2, c3, c1]
 
     def test_is_downvoted_by(self, comment, user):
         d1 = user().discussion
@@ -169,6 +200,57 @@ class TestDiscussion:
         assert not b.is_active
         assert u2.discussion.get_ban_for(t) is None
 
+    def test_get_topics_order_by_alphabetical(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t2 = topic(name="b")
+        t3 = topic(name="c")
+        assert d.get_topics(sorting=sort_by.ALPHABETICAL) == [t1, t2, t3]
+
+    def test_get_topics_order_by_default(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t1.create_thread(title="t1", body="b1", discussion=d)
+        t2 = topic(name="b")
+        t2.create_thread(title="t2", body="b2", discussion=d)
+        t2.create_thread(title="t3", body="b3", discussion=d)
+        t3 = topic(name="c")
+        assert d.get_topics(sorting=sort_by.TOPICS_DEFAULT) == [t2, t1, t3]
+
+    def test_get_topics_order_by_invalid(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t1.create_thread(title="t1", body="b1", discussion=d)
+        t2 = topic(name="b")
+        t2.create_thread(title="t2", body="b2", discussion=d)
+        t2.create_thread(title="t3", body="b3", discussion=d)
+        t3 = topic(name="c")
+        assert d.get_topics(sorting="invalid-triggers-default") == [t2, t1, t3]
+
+    def test_get_topics_order_by_new(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t2 = topic(name="b")
+        t3 = topic(name="c")
+        assert d.get_topics(sorting=sort_by.NEW) == [t3, t2, t1]
+
+    def test_get_topics_order_by_reverse_alphabetical(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t2 = topic(name="b")
+        t3 = topic(name="c")
+        assert d.get_topics(sorting=sort_by.REVERSE_ALPHABETICAL) == [t3, t2, t1]
+
+    def test_get_topics_order_by_top(self, topic, user):
+        d = user().discussion
+        t1 = topic(name="a")
+        t1.create_thread(title="t1", body="b1", discussion=d)
+        t2 = topic(name="b")
+        t2.create_thread(title="t2", body="b2", discussion=d)
+        t2.create_thread(title="t3", body="b3", discussion=d)
+        t3 = topic(name="c")
+        assert d.get_topics(sorting=sort_by.TOP) == [t2, t1, t3]
+
     def test_is_banned_from(self, topic, user):
         u1 = user()
         u2 = user()
@@ -245,15 +327,43 @@ class TestThread:
         c3 = t.create_comment(body="c3", discussion=d)
         assert t.get_comments() == [c1, c2, c3]
 
-    def test_get_comments_default_ordering(self, thread, user):
+    def test_get_comments_order_by_default(self, thread, user):
         d = user().discussion
         t = thread(discussion=d)
         c1 = t.create_comment(body="c1", discussion=d)
         c2 = t.create_comment(body="c2", discussion=d)
         c3 = t.create_comment(body="c3", discussion=d)
-        c3.upvote(discussion=d)
+        c2.upvote(discussion=d)
         c1.downvote(discussion=d)
-        assert t.get_comments() == [c3, c2, c1]
+        assert t.get_comments(sorting=sort_by.THREADS_DEFAULT) == [c2, c3, c1]
+
+    def test_get_comments_order_by_invalid(self, thread, user):
+        d = user().discussion
+        t = thread(discussion=d)
+        c1 = t.create_comment(body="c1", discussion=d)
+        c2 = t.create_comment(body="c2", discussion=d)
+        c3 = t.create_comment(body="c3", discussion=d)
+        c2.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert t.get_comments(sorting="invalid-triggers-default") == [c2, c3, c1]
+
+    def test_get_comments_order_by_new(self, thread, user):
+        d = user().discussion
+        t = thread(discussion=d)
+        c1 = t.create_comment(body="c1", discussion=d)
+        c2 = t.create_comment(body="c2", discussion=d)
+        c3 = t.create_comment(body="c3", discussion=d)
+        assert t.get_comments(sorting=sort_by.NEW) == [c3, c2, c1]
+
+    def test_get_comments_order_by_top(self, thread, user):
+        d = user().discussion
+        t = thread(discussion=d)
+        c1 = t.create_comment(body="c1", discussion=d)
+        c2 = t.create_comment(body="c2", discussion=d)
+        c3 = t.create_comment(body="c3", discussion=d)
+        c2.upvote(discussion=d)
+        c1.downvote(discussion=d)
+        assert t.get_comments(sorting=sort_by.TOP) == [c2, c3, c1]
 
     def test_is_downvoted_by(self, thread, user):
         d1 = user().discussion
@@ -315,23 +425,43 @@ class TestTopic:
         assert d1.is_moderator_of(t)
         assert not d2.is_moderator_of(t)
 
-    def test_get_threads(self, topic, user):
+    def test_get_threads_order_by_default(self, topic, user):
         d = user().discussion
         t = topic()
         thread1 = t.create_thread(title="t1", body="b1", discussion=d)
         thread2 = t.create_thread(title="t2", body="b2", discussion=d)
         thread3 = t.create_thread(title="t3", body="b3", discussion=d)
-        assert t.get_threads() == [thread1, thread2, thread3]
-
-    def test_get_threads_default_ordering(self, topic, user):
-        d = user().discussion
-        t = topic()
-        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
-        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
-        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
-        thread3.upvote(discussion=d)
         thread1.downvote(discussion=d)
-        assert t.get_threads() == [thread3, thread2, thread1]
+        thread2.upvote(discussion=d)
+        assert t.get_threads(sorting=sort_by.THREADS_DEFAULT) == [thread2, thread3, thread1]
+
+    def test_get_threads_order_by_invalid(self, topic, user):
+        d = user().discussion
+        t = topic()
+        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
+        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
+        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
+        thread1.downvote(discussion=d)
+        thread2.upvote(discussion=d)
+        assert t.get_threads(sorting="invalid-triggers-default") == [thread2, thread3, thread1]
+
+    def test_get_threads_order_by_new(self, topic, user):
+        d = user().discussion
+        t = topic()
+        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
+        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
+        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
+        assert t.get_threads(sorting=sort_by.NEW) == [thread3, thread2, thread1]
+
+    def test_get_threads_order_by_top(self, topic, user):
+        d = user().discussion
+        t = topic()
+        thread1 = t.create_thread(title="t1", body="b1", discussion=d)
+        thread2 = t.create_thread(title="t2", body="b2", discussion=d)
+        thread3 = t.create_thread(title="t3", body="b3", discussion=d)
+        thread1.downvote(discussion=d)
+        thread2.upvote(discussion=d)
+        assert t.get_threads(sorting=sort_by.TOP) == [thread2, thread3, thread1]
 
 
 class TestTopicSubscribeRequest:

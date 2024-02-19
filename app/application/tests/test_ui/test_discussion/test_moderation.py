@@ -204,7 +204,7 @@ class TestModerationTopicSettings:
             data={
                 "description": "new-description",
                 "is_private": True,
-            }
+            },
         )
         assert messages.TOPIC_SETTINGS_UPDATED in resp.data.decode()
         assert resp.request.base_url == url
