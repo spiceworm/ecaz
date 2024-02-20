@@ -126,6 +126,34 @@ class ThreadApi(flask_restful.Resource, _CommentThreadApiBase):
     schema = ThreadSchema
 
 
+class ThreadLockApi(flask_restful.Resource):
+    @jwt_required()
+    def delete(self, unique_id):
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            if thread := Thread.query.filter_by(unique_id=unique_id).one_or_none():
+                if user.discussion.is_moderator_of(thread.topic):
+                    thread.is_locked = False
+                    db.session.add(thread)
+                    db.session.commit()
+                    return {}, http.HTTPStatus.OK
+                return {}, http.HTTPStatus.UNAUTHORIZED
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+    @jwt_required()
+    def post(self, unique_id):
+        if user := User.from_jwt_identity(get_jwt_identity()):
+            if thread := Thread.query.filter_by(unique_id=unique_id).one_or_none():
+                if user.discussion.is_moderator_of(thread.topic):
+                    thread.is_locked = True
+                    db.session.add(thread)
+                    db.session.commit()
+                    return {}, http.HTTPStatus.OK
+                return {}, http.HTTPStatus.UNAUTHORIZED
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
+
+
 class TopicApi(flask_restful.Resource):
     def get(self, topic):
         if _topic := Topic.query.filter_by(name=topic).one_or_none():
@@ -240,10 +268,11 @@ class ThreadVoteApi(flask_restful.Resource, _CommentThreadVoteApiBase):
 
 api = flask_restful.Api(api_discussion_bp)
 api.add_resource(CommentApi, "/comment/<unique_id>")
-api.add_resource(ThreadApi, "/thread/<unique_id>")
 api.add_resource(CommentSaveApi, "/comment/<unique_id>/save")
-api.add_resource(ThreadSaveApi, "/thread/<unique_id>/save")
 api.add_resource(CommentVoteApi, "/comment/<unique_id>/vote")
+api.add_resource(ThreadApi, "/thread/<unique_id>")
+api.add_resource(ThreadLockApi, "/thread/<unique_id>/lock")
+api.add_resource(ThreadSaveApi, "/thread/<unique_id>/save")
 api.add_resource(ThreadVoteApi, "/thread/<unique_id>/vote")
 api.add_resource(TopicApi, "/topic/<topic>")
 api.add_resource(TopicBanApi, "/topic/<topic>/ban")

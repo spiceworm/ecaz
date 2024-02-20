@@ -214,10 +214,70 @@ class TestThread:
         assert resp.status_code == http.HTTPStatus.NOT_FOUND
 
 
+class TestThreadLockApi:
+    endpoint = "api_discussion_bp.threadlockapi"
+
+    def test_delete(self, api_user, thread):
+        u = api_user()
+        t = thread(discussion=u.discussion, is_locked=True)
+        t.topic.add_moderator(u.discussion)
+        assert t.is_locked
+        resp = u.delete(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.OK
+        assert not t.is_locked
+
+    def test_delete_if_invalid_thread(self, api_user, thread):
+        u = api_user()
+        resp = u.delete(url_for(self.endpoint, unique_id="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_delete_if_invalid_user(self, bad_auth_token_api_user, thread):
+        u = bad_auth_token_api_user()
+        t = thread(discussion=u.discussion)
+        resp = u.delete(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_delete_if_not_moderator(self, api_user, thread):
+        u = api_user()
+        t = thread(discussion=u.discussion, is_locked=True)
+        assert t.is_locked
+        resp = u.delete(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert t.is_locked
+
+    def test_post(self, api_user, thread):
+        u = api_user()
+        t = thread(discussion=u.discussion)
+        t.topic.add_moderator(u.discussion)
+        assert not t.is_locked
+        resp = u.post(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.OK
+        assert t.is_locked
+
+    def test_post_if_invalid_thread(self, api_user, thread):
+        u = api_user()
+        resp = u.post(url_for(self.endpoint, unique_id="this-is-invalid"))
+        assert resp.status_code == http.HTTPStatus.NOT_FOUND
+
+    def test_post_if_invalid_user(self, bad_auth_token_api_user, thread):
+        u = bad_auth_token_api_user()
+        t = thread(discussion=u.discussion)
+        resp = u.post(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+
+    def test_post_if_not_moderator(self, api_user, thread):
+        u = api_user()
+        t = thread(discussion=u.discussion)
+        assert not t.is_locked
+        resp = u.post(url_for(self.endpoint, unique_id=t.unique_id))
+        assert resp.status_code == http.HTTPStatus.UNAUTHORIZED
+        assert not t.is_locked
+
+
 class TestSaveCommentApi:
     endpoint = "api_discussion_bp.commentsaveapi"
 
-    def test_save(self, api_user, comment):
+    def test_delete(self, api_user, comment):
         user = api_user()
         c = comment(discussion=user.discussion)
         url = url_for(self.endpoint, unique_id=c.unique_id)

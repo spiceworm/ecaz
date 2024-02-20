@@ -232,6 +232,17 @@
                 <small>
                     <a>Report</a>
                 </small>
+                <small>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.discussion.is_moderator_of(thread.topic) %}
+                            {% if thread.is_locked %}
+                                <a onclick="unlockThread('{{ url_for('api_discussion_bp.threadlockapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Unlock</a>
+                            {% else %}
+                                <a onclick="lockThread('{{ url_for('api_discussion_bp.threadlockapi', unique_id=thread.unique_id) }}', jwt='{{ current_user.frontend_token.value }}')">Lock</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </small>
             </div>
         </div>
     {% endif %}
