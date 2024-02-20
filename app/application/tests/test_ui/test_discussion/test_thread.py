@@ -90,19 +90,6 @@ class TestViewThread:
         resp = user.get(url)
         assert resp.request.base_url == url
 
-    def test_view_if_does_not_exist(self, thread, ui_user):
-        user = ui_user()
-        t = thread(discussion=user.discussion)
-        resp = user.get(
-            url_for(
-                self.endpoint,
-                topic=t.topic.name,
-                thread_unique_id="this-in-invalid",
-                slug=t.slug,
-            ),
-        )
-        assert resp.status_code == HTTPStatus.NOT_FOUND
-
     def test_view_as_creator_of_hidden_comment(self, comment, ui_user):
         u = ui_user()
         c = comment(body="unique text for the comment body", discussion=u.discussion, is_hidden=True)
@@ -139,3 +126,28 @@ class TestViewThread:
         )
         resp = client.get(url)
         assert c.body not in resp.data.decode()
+
+    def test_view_if_does_not_exist(self, thread, ui_user):
+        user = ui_user()
+        t = thread(discussion=user.discussion)
+        resp = user.get(
+            url_for(
+                self.endpoint,
+                topic=t.topic.name,
+                thread_unique_id="this-in-invalid",
+                slug=t.slug,
+            ),
+        )
+        assert resp.status_code == HTTPStatus.NOT_FOUND
+
+    def test_view_if_thread_is_locked(self, thread, ui_user):
+        user = ui_user()
+        t = thread(discussion=user.discussion, is_locked=True)
+        url = url_for(
+            self.endpoint,
+            topic=t.topic.name,
+            thread_unique_id=t.unique_id,
+            slug=t.slug,
+        )
+        resp = user.get(url)
+        assert messages.THREAD_IS_LOCKED in resp.data.decode()

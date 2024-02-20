@@ -60,6 +60,24 @@ class TestCreateComment:
             slug=t.slug,
         )
 
+    def test_create_if_thread_is_locked(self, thread, ui_user):
+        user = ui_user()
+        t = thread(body="b", title="t", discussion=user.discussion, is_locked=True)
+        body = "this is the body of the comment i want to post to the locked thread"
+        resp = user.post(
+            url_for(
+                self.endpoint,
+                topic=t.topic.name,
+                thread_unique_id=t.unique_id,
+                slug=t.slug,
+                parent_unique_id=t.unique_id,
+            ),
+            data={"body": "comment"},
+            follow_redirects=True,
+        )
+        assert messages.THREAD_IS_LOCKED in resp.data.decode()
+        assert Comment.query.filter_by(body=body).one_or_none() is None
+
     def test_nested_comment(self, comment, ui_user):
         user = ui_user()
         d = user.discussion

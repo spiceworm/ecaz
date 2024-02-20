@@ -67,7 +67,8 @@ def profile_submissions() -> str:
 def profile_votes() -> str:
     discussion = flask_login.current_user.discussion
     objects = [
-        v.submission for v in sorted(
+        v.submission
+        for v in sorted(
             discussion.comment_votes + discussion.thread_votes,
             key=operator.attrgetter("created_at"),
             reverse=True,

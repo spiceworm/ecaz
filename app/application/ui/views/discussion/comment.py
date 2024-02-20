@@ -29,6 +29,8 @@ def create_comment(topic: str, thread_unique_id: str, slug: str, parent_unique_i
         if ban and not ban.is_shadow:
             msg = f"{messages.BANNED_FROM_CONTRIBUTING} to {thread.topic.name}. Expires {ban.humanized_expires_at}."
             flask.flash(message=msg, category="info")
+        elif thread.is_locked:
+            flask.flash(message=messages.THREAD_IS_LOCKED, category="info")
         else:
             # `parent_unique_id` will be equal to `Thread.unique_id` if a top level comment is being created.
             # Otherwise a nested comment is being created.
