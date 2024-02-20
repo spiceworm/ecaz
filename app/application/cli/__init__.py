@@ -11,6 +11,7 @@ from application.constants import messages
 from application.models import (
     Comment,
     db,
+    ReservedUsername,
     Thread,
     Topic,
     User,
@@ -25,6 +26,32 @@ cli_bp = flask.Blueprint(
     "cli",
     __name__,
 )
+
+
+@cli_bp.cli.command("add-reserved-username")
+@click.option(
+    "--from-file",
+    type=str,
+)
+@click.option(
+    "--usernames",
+    type=str,
+)
+def add_reserved_username(from_file, usernames):
+    """
+    If `from_file` is provided, create a `ReservedUsername` entry for each line in the file.
+    If `username` is provided, create a `ReservedUsername` entry for the provided string.
+    """
+    objects = []
+    if from_file:
+        with open(from_file) as f:
+            objects += [ReservedUsername(username=line.strip()) for line in f.readlines()]
+    if usernames:
+        objects += [ReservedUsername(username=username) for username in csv_to_list(usernames)]
+    click.echo(f"Adding {len(objects)} usernames")
+    db.session.add_all(objects)
+    db.session.commit()
+    click.echo("Done")
 
 
 @cli_bp.cli.command("get-config")

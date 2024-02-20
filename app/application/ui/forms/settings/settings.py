@@ -9,7 +9,10 @@ from application.ui.forms import (
     BaseForm,
     filters,
 )
-from application.ui.forms.validators import require_unique_username
+from application.ui.forms.validators import (
+    disallow_reserved_usernames,
+    require_unique_username,
+)
 
 
 __all__ = (
@@ -61,6 +64,7 @@ class ChangeUsernameForm(BaseForm):
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),
+            disallow_reserved_usernames,
             require_unique_username,
         ],
     )

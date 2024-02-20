@@ -4,12 +4,13 @@ from flask import url_for
 
 
 @pytest.mark.parametrize(
-    "endpoint", [
+    "endpoint",
+    [
         "ui_bp.profile",
         "ui_bp.profile_saved",
         "ui_bp.profile_submissions",
         "ui_bp.profile_votes",
-    ]
+    ],
 )
 def test_profile(ui_user, endpoint):
     """

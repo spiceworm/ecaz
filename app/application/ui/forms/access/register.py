@@ -6,7 +6,10 @@ from wtforms import (
 from wtforms.fields import EmailField
 
 from application.ui.forms import BaseForm
-from application.ui.forms.validators import require_unique_username
+from application.ui.forms.validators import (
+    disallow_reserved_usernames,
+    require_unique_username,
+)
 from application.util.misc import generate_unique_username
 
 
@@ -38,6 +41,7 @@ class RegisterForm(BaseForm):
         render_kw={"placeholder": "Username"},
         validators=[
             validators.DataRequired(),
+            disallow_reserved_usernames,
             require_unique_username,
         ],
     )

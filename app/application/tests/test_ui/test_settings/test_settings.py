@@ -5,6 +5,8 @@ from flask import url_for
 from application.constants import messages
 from application.models import (
     AuthToken,
+    db,
+    ReservedUsername,
     User,
 )
 
@@ -114,6 +116,27 @@ def test_change_username_to_duplicate(ui_user):
     )
     assert user.username == old_username
     assert messages.DUPLICATE_USERNAME_ERROR in resp.data.decode()
+
+
+def test_change_username_to_reserved_username(ui_user):
+    """
+    Verify behavior for submitting the form to change the username on the
+    settings page when the username a user is trying to change to is a
+    reserved username.
+    """
+    obj = ReservedUsername(username="admin")
+    db.session.add(obj)
+    db.session.commit()
+
+    user = ui_user(email="user2@test.com", password="password2")
+    old_username = user.username
+    resp = user.post(
+        url_for("ui_bp.change_username"),
+        follow_redirects=True,
+        data={"username": obj.username},
+    )
+    assert user.username == old_username
+    assert messages.RESERVED_USERNAME_ERROR in resp.data.decode()
 
 
 def test_delete_account(ui_user):

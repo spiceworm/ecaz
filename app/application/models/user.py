@@ -24,7 +24,22 @@ from application.models import (
 )
 
 
-__all__ = ("User",)
+__all__ = (
+    "ReservedUsername",
+    "User",
+)
+
+
+class ReservedUsername(db.Model):
+    id: Mapped[int] = mapped_column(
+        nullable=False,
+        primary_key=True,
+    )
+    username = sa.Column(
+        sa.String,
+        nullable=False,
+        unique=True,
+    )
 
 
 class User(db.Model, flask_login.UserMixin):

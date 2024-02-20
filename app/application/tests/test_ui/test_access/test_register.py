@@ -5,6 +5,7 @@ from flask import url_for
 from application.constants import messages
 from application.models import (
     db,
+    ReservedUsername,
     User,
 )
 
@@ -36,6 +37,22 @@ class TestRegister:
         )
         assert len(resp.history) == 1
         assert resp.request.base_url == url_for("ui_bp.profile")
+
+    def test_if_registering_reserved_username(self, client):
+        """
+        Verify the appropriate error message is shown if a user attempts to register using
+        a username that exists in the reserved_username database table.
+        """
+        obj = ReservedUsername(username="admin")
+        db.session.add(obj)
+        db.session.commit()
+        resp = client.post(
+            url_for("ui_bp.register"),
+            follow_redirects=True,
+            data={"email": "user@test.com", "password": "password123", "username": obj.username},
+        )
+        assert messages.RESERVED_USERNAME_ERROR in resp.data.decode()
+        assert User.query.filter_by(username=obj.username).one_or_none() is None
 
     def test_if_registration_disabled(self, client, monkeypatch):
         """

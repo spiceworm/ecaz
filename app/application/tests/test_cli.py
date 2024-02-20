@@ -1,6 +1,30 @@
 import flask
 
 from application.constants import messages
+from application.models import ReservedUsername
+
+
+def test_add_reserved_username_with_from_file(cli_runner):
+    """
+    Verify reserved usernames can be added using `flask cli add-reserved-entries --file-path=<file-path>`
+    """
+    fp = "/tmp/reserved-usernames/reserved-usernames.txt"
+    with open(fp) as f:
+        entries_count = len(f.readlines())
+    cli_runner.invoke(args=["cli", "add-reserved-username", f"--from-file={fp}"])
+    assert ReservedUsername.query.count() == entries_count
+
+
+def test_add_reserved_username_with_usernames(cli_runner):
+    """
+    Verify reserved usernames can be added using `flask cli add-reserved-entries --usernames=<usernames>`
+    """
+    usernames = {"admin", "administrator", "mod"}
+    cli_runner.invoke(args=["cli", "add-reserved-username", f"--usernames={','.join(usernames)}"])
+    for obj in ReservedUsername.query.all():
+        assert obj.username in usernames
+        usernames.remove(obj.username)
+    assert len(usernames) == 0
 
 
 def test_get_config(cli_runner):
