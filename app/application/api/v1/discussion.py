@@ -149,7 +149,8 @@ class TopicBanApi(flask_restful.Resource):
                         return {}, http.HTTPStatus.OK
                     return {}, http.HTTPStatus.NOT_FOUND
                 return {}, http.HTTPStatus.UNAUTHORIZED
-        return {}, http.HTTPStatus.NOT_FOUND
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
 
 
 class TopicSubscribeApi(flask_restful.Resource):
@@ -192,7 +193,8 @@ class TopicSubscribeRequestApi(flask_restful.Resource):
                     sr.deny(user.discussion)
                     return {}, http.HTTPStatus.OK
                 return {}, http.HTTPStatus.UNAUTHORIZED
-        return {}, http.HTTPStatus.NOT_FOUND
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
 
     @jwt_required()
     def post(self, topic):
@@ -216,7 +218,8 @@ class TopicSubscribeRequestApi(flask_restful.Resource):
                     sr.approve(user.discussion)
                     return {}, http.HTTPStatus.OK
                 return {}, http.HTTPStatus.UNAUTHORIZED
-        return {}, http.HTTPStatus.NOT_FOUND
+            return {}, http.HTTPStatus.NOT_FOUND
+        return {}, http.HTTPStatus.UNAUTHORIZED
 
 
 class CommentSaveApi(flask_restful.Resource, _CommentThreadSaveApiBase):
