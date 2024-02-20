@@ -173,7 +173,7 @@
                         {% if thread.is_deleted %}
                             [removed]
                         {% else %}
-                            <div id="body-{{ thread.unique_id }}">{{ thread.markdown_body | safe }}</div>
+                            <div id="body-{{ thread.unique_id }}">{{ thread.body }}</div>
                             {% if thread.discussion == current_user.discussion %}
                                 <div id="edit-{{ thread.unique_id }}" hidden>
                                     <fieldset>

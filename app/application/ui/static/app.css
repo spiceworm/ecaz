@@ -1,6 +1,0 @@
-/* Resize images embedded using markdown to the size of the container they are placed */
-img {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-}

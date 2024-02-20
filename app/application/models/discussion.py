@@ -11,7 +11,6 @@ from typing import (
 )
 
 import humanize
-import markdown
 import slugify
 import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -708,10 +707,6 @@ class Thread(db.Model, BodyMixin, CreatedAtMixin, IsHiddenMixin, UniqueIdMixin, 
             vote = votes.pop()
             return vote.value == self.UPVOTE
         return False
-
-    @property
-    def markdown_body(self) -> str:
-        return markdown.markdown(self.body)
 
     def save(self, discussion: Discussion) -> None:
         if self not in discussion.saved_threads:

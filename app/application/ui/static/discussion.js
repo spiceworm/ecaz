@@ -94,11 +94,7 @@ function saveEditThread(comment_id, url, jwt) {
         body: JSON.stringify({body: editInput.value})
     }).then(resp => {
         let commentText = document.getElementById(`body-${comment_id}`);
-
-        // Convert markdown in edit field back to HTML before saving it
-        const converter = new showdown.Converter();
-        commentText.innerHTML = converter.makeHtml(editInput.value);
-
+        commentText.innerHTML = editInput.value;
         hideEditFields(comment_id);
     })
 }
@@ -119,10 +115,7 @@ function showEditThreadFields(comment_id) {
     commentText.hidden = true;
 
     let editInput = document.getElementById(`editInput-${comment_id}`);
-
-    // Convert HTML thread body to markdown so the user can edit markdown
-    const turndownService = new TurndownService();
-    editInput.value = turndownService.turndown(commentText.innerHTML);
+    editInput.value = commentText.innerHTML;
 
     let editDiv = document.getElementById(`edit-${comment_id}`);
     editDiv.hidden = false;
