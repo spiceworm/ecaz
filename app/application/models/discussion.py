@@ -580,7 +580,7 @@ class Discussion(db.Model):
         return False
 
     def is_moderator_of(self, topic: Topic) -> bool:
-        return self in topic.moderators
+        return self in topic.moderators or self.user.is_admin
 
     def is_shadow_banned_from(self, topic: Topic) -> bool:
         for ban in self.topic_bans:
